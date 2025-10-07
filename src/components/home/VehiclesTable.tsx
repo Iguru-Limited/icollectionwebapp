@@ -1,0 +1,147 @@
+"use client";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { data } from "../../data";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.2
+    }
+  }
+};
+
+const rowVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut"
+    }
+  }
+};
+
+const buttonVariants = {
+  hover: { scale: 1.05 },
+  tap: { scale: 0.95 }
+};
+
+export default function VehiclesTable() {
+  return (
+    <motion.section
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col md:flex-row md:items-center justify-between mb-6"
+      >
+        <h2 className="text-xl font-bold font-mono pb-3">VEHICLES</h2>
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="flex items-center space-x-4"
+        >
+          <div className="relative">
+            <Input 
+              placeholder="Quickly search vehicle...." 
+              className="md:w-80 bg-gray-50 border-gray-200 rounded-none"
+            />
+          </div>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button className="text-white rounded-none">
+              Search
+            </Button>
+          </motion.div>
+        </motion.div>
+      </motion.div>
+
+      {/* Vehicles Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        <Card className="rounded-none">
+          <Table>
+            <TableHeader>
+              <TableRow className="">
+                <TableHead className="text-grey-400 font-medium">#</TableHead>
+                <TableHead className="text-grey-400 font-medium">Vehicle</TableHead>
+                <TableHead className="flex text-grey-400 font-medium justify-end items-center">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+              <TableBody>
+                {data.vehicles.map((vehicle, i) => (
+                  <motion.tr
+                    key={vehicle.id}
+                    variants={rowVariants}
+                    whileHover={{ 
+                      backgroundColor: "rgba(249, 250, 251, 0.8)",
+                      transition: { duration: 0.2 }
+                    }}
+                    className="hover:bg-gray-50"
+                  >
+                    <TableCell className="font-mono">{vehicle.id}</TableCell>
+                    <TableCell className="font-mono">{vehicle.plateNumber}</TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2 justify-end">
+                      <motion.div
+                        variants={buttonVariants}
+                        whileHover="hover"
+                        whileTap="tap"
+                      >
+                        <Button 
+                          size="sm" 
+                          className="bg-green-600 hover:bg-green-700 text-white rounded-none"
+                          onClick={() => window.location.href = '/collection'}
+                        >
+                          Collect
+                        </Button>
+                      </motion.div>
+                      <motion.div
+                        variants={buttonVariants}
+                        whileHover="hover"
+                        whileTap="tap"
+                      >
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-none"
+                        >
+                          Reports
+                        </Button>
+                      </motion.div>
+                    </div>
+                  </TableCell>
+                </motion.tr>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      </motion.div>
+    </motion.section>
+  );
+}
