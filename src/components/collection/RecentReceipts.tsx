@@ -31,7 +31,7 @@ const rowVariants = {
     x: 0,
     transition: {
       duration: 0.4,
-      ease: "easeOut"
+      ease: "easeOut" as const
     }
   }
 };
@@ -41,7 +41,16 @@ const buttonVariants = {
   tap: { scale: 0.95 }
 };
 
-const ReceiptCard = ({ receipt, index }: { receipt: any; index: number }) => (
+interface Receipt {
+  id: number;
+  receiptId: string;
+  operation: string;
+  amount: string;
+  date: string;
+  time: string;
+}
+
+const ReceiptCard = ({ receipt }: { receipt: Receipt }) => (
   <motion.div
     key={receipt.id}
     variants={rowVariants}
@@ -110,8 +119,8 @@ export default function RecentReceipts() {
       >
         {isMobile ? (
           <div className="space-y-0">
-            {receipts.map((receipt, index) => (
-              <ReceiptCard key={receipt.id} receipt={receipt} index={index} />
+            {receipts.map((receipt) => (
+              <ReceiptCard key={receipt.id} receipt={receipt} />
             ))}
           </div>
         ) : (
@@ -129,7 +138,7 @@ export default function RecentReceipts() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {receipts.map((receipt, index) => (
+                {receipts.map((receipt) => (
                   <motion.tr
                     key={receipt.id}
                     variants={rowVariants}

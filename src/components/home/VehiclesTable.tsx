@@ -31,7 +31,7 @@ const rowVariants = {
     x: 0,
     transition: {
       duration: 0.4,
-      ease: "easeOut"
+      ease: "easeOut" as const
     }
   }
 };
@@ -94,7 +94,7 @@ export default function VehiclesTable() {
               </TableRow>
             </TableHeader>
               <TableBody>
-                {data.vehicles.map((vehicle, i) => (
+                {data.vehicles.map((vehicle) => (
                   <motion.tr
                     key={vehicle.id}
                     variants={rowVariants}
