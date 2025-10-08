@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Roboto_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 
@@ -12,11 +13,6 @@ const outfit = Outfit({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "I-Collection",
-  description: "I-collection web app",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,6 +20,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <title>I-Collection</title>
+        <meta name="description" content="I-collection web app" />
+      </head>
       <body
         className={`${robotoMono.variable} ${outfit.variable} antialiased`}
       >

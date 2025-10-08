@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 import { data } from "../../data";
+import { PrintService } from "@/utils/printService";
 
 interface CollectionEntry {
   id: string;
@@ -237,16 +238,41 @@ export default function CollectionForm() {
     }
   };
 
-  const handleProcess = () => {
-    // Here you would typically process the form data
-    console.log('Processing entries:', entries);
-    // For now, just show an alert
-    alert(`Processing ${entries.length} collection(s)`);
-    
-    if (isMobile) {
-      setIsDrawerOpen(false);
-    } else {
-      router.push('/');
+  const handleProcess = async () => {
+    try {
+      const printService = new PrintService();
+      
+      // Prepare receipt data
+      const receiptData = {
+        receiptId: `ICR-${Date.now()}`,
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toTimeString().split(' ')[0],
+        vehicle: data.currentVehicle.plateNumber,
+        items: entries.map(entry => ({
+          type: entry.type,
+          amount: `KSH ${entry.amount}`
+        })),
+        total: `KSH ${entries.reduce((sum, entry) => sum + parseFloat(entry.amount || '0'), 0)}`
+      };
+
+      // Print receipt (works in both Electron and web)
+      const printResult = await printService.printReceipt(receiptData);
+      
+      if (printResult.success) {
+        alert(`Receipt printed successfully on ${printResult.printer}`);
+      } else {
+        alert(`Print failed: ${printResult.error}`);
+      }
+      
+      // Navigate back
+      if (isMobile) {
+        setIsDrawerOpen(false);
+      } else {
+        router.push('/');
+      }
+    } catch (error) {
+      console.error('Process error:', error);
+      alert('An error occurred while processing');
     }
   };
 
