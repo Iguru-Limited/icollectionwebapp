@@ -10,19 +10,25 @@ export default function Home() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="container min-h-screen bg-white mx-auto max-w-4xl"
+      className="min-h-screen bg-white"
     >
-      <Header />
+      <div className="sticky top-0 z-50 bg-white">
+        <div className="container mx-auto max-w-4xl">
+          <Header />
+        </div>
+      </div>
       
-      <motion.main 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="px-6 py-8 space-y-8"
-      >
-        <Metrics />
-        <VehiclesTable />
-      </motion.main>
+      <div className="container mx-auto max-w-4xl">
+        <motion.main 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="px-6 py-8 space-y-8"
+        >
+          <Metrics />
+          <VehiclesTable />
+        </motion.main>
+      </div>
     </motion.div>
   );
 }

@@ -73,5 +73,97 @@ export const data = {
   },
   currentVehicle: {
     plateNumber: "KDK 345G"
-  }
+  },
+  reports: [
+    {
+      id: 1,
+      vehicle: "KCA 762G",
+      receipt: "ICR-897",
+      amount: "KES 450",
+      collection: "OPERATIONS",
+      date: "13-08-2025",
+      time: "09:00"
+    },
+    {
+      id: 2,
+      vehicle: "KCA 762G",
+      receipt: "ICR-897",
+      amount: "KES 2,300",
+      collection: "SACCO",
+      date: "13-08-2025",
+      time: "09:00"
+    },
+    {
+      id: 3,
+      vehicle: "KCA 762G",
+      receipt: "ICR-897",
+      amount: "KES 5,000",
+      collection: "TERMINUS",
+      date: "13-08-2025",
+      time: "09:00"
+    },
+    {
+      id: 4,
+      vehicle: "KCA 762G",
+      receipt: "ICR-897",
+      amount: "KES 3,000",
+      collection: "LOAN",
+      date: "13-08-2025",
+      time: "09:00"
+    },
+    {
+      id: 5,
+      vehicle: "KCA 762G",
+      receipt: "ICR-897",
+      amount: "KES 450",
+      collection: "OPERATIONS",
+      date: "13-08-2025",
+      time: "09:00"
+    },
+    {
+      id: 6,
+      vehicle: "KCA 762G",
+      receipt: "ICR-897",
+      amount: "KES 2,300",
+      collection: "SACCO",
+      date: "13-08-2025",
+      time: "09:00"
+    },
+    {
+      id: 7,
+      vehicle: "KCA 762G",
+      receipt: "ICR-897",
+      amount: "KES 5,000",
+      collection: "TERMINUS",
+      date: "13-08-2025",
+      time: "09:00"
+    },
+    {
+      id: 8,
+      vehicle: "KCA 762G",
+      receipt: "ICR-897",
+      amount: "KES 3,000",
+      collection: "LOAN",
+      date: "13-08-2025",
+      time: "09:00"
+    },
+    {
+      id: 9,
+      vehicle: "KCA 762G",
+      receipt: "ICR-897",
+      amount: "KES 450",
+      collection: "OPERATIONS",
+      date: "13-08-2025",
+      time: "09:00"
+    },
+    {
+      id: 10,
+      vehicle: "KCA 762G",
+      receipt: "ICR-897",
+      amount: "KES 2,300",
+      collection: "SACCO",
+      date: "13-08-2025",
+      time: "09:00"
+    }
+  ]
 };
