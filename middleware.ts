@@ -5,12 +5,19 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Define public routes that don't require authentication
+  const publicRoutes = ['/login', '/api/auth'];
+  
   // Define protected routes and their required roles
   const protectedRoutes = {
     '/user': ['user'],
-    '/user/collection': ['user'],
+    '/user/collection': ['user'],    
   };
 
+  // Check if the current path is public
+  const isPublicRoute = publicRoutes.some(route => 
+    pathname.startsWith(route)
+  );
 
   // Check if the current path requires authentication
   const requiresAuth = Object.keys(protectedRoutes).some(route => 
@@ -25,6 +32,7 @@ export async function middleware(request: NextRequest) {
 
   // If route requires authentication but user is not authenticated
   if (requiresAuth && !token) {
+    console.log(`Unauthorized access attempt to ${pathname} - redirecting to login`);
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
@@ -42,37 +50,39 @@ export async function middleware(request: NextRequest) {
       
       // Check if user's role is allowed for this route
       if (!allowedRoles.includes(userRole)) {
+        console.log(`Access denied: User with role '${userRole}' tried to access '${pathname}' which requires roles: ${allowedRoles.join(', ')}`);
+        
         // Redirect to appropriate dashboard based on user role
         if (userRole === 'user') {
           return NextResponse.redirect(new URL('/user', request.url));
+        } else {
+          // Unknown role, redirect to login
+          return NextResponse.redirect(new URL('/login', request.url));
         }
-        // For other roles, send to login for now
-        return NextResponse.redirect(new URL('/login', request.url));
       }
-      // Role is allowed; fall through to NextResponse.next()
     }
   }
 
   // If user is authenticated and trying to access login page, redirect to appropriate dashboard
   if (token && pathname === '/login') {
     const userRole = token.role;
+    console.log(`Authenticated user with role '${userRole}' accessing login page - redirecting to dashboard`);
     if (userRole === 'user') {
       return NextResponse.redirect(new URL('/user', request.url));
-    } 
+    }
   }
 
   // If user is authenticated and accessing root, redirect to appropriate dashboard
   if (token && pathname === '/') {
     const userRole = token.role;
+    console.log(`Authenticated user with role '${userRole}' accessing root - redirecting to dashboard`);
     if (userRole === 'user') {
-      return NextResponse.redirect(new URL('/user', request.url));    
+      return NextResponse.redirect(new URL('/user', request.url));
     } 
   }
-
   // Allow access to public routes and authenticated users
   return NextResponse.next();
 }
-
 // Configure which routes the middleware should run on
 export const config = {
   matcher: [
