@@ -19,12 +19,9 @@ export function useSessionTimeout() {
       // For now, we'll use a placeholder approach
       const checkExpiry = () => {
         // In a real implementation, you'd get the expiresAt from the JWT token
-        // For now, we'll simulate with a 1-hour window from login
-        const loginTime = sessionStorage.getItem('loginTime');
-        if (loginTime) {
-          const expiresAt = parseInt(loginTime) + (60 * 60 * 1000);
-          const remaining = getTimeUntilExpiry(expiresAt);
-          const expired = isSessionExpired(expiresAt);
+        if (session) {
+          const remaining = getTimeUntilExpiry(session);
+          const expired = isSessionExpired(session);
           
           setTimeRemaining(formatTimeRemaining(remaining));
           setIsExpired(expired);
