@@ -5,18 +5,11 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Define public routes that don't require authentication
-  const publicRoutes = ['/login', '/api/auth'];
-  
   // Define protected routes and their required roles
   const protectedRoutes = {
     '/user': ['user'],    
   };
 
-  // Check if the current path is public
-  const isPublicRoute = publicRoutes.some(route => 
-    pathname.startsWith(route)
-  );
 
   // Check if the current path requires authentication
   const requiresAuth = Object.keys(protectedRoutes).some(route => 
@@ -55,10 +48,9 @@ export async function middleware(request: NextRequest) {
         if (userRole === 'user') {
           return NextResponse.redirect(new URL('/user', request.url));
         }
-        } else {
-          // Unknown role, redirect to login
-          return NextResponse.redirect(new URL('/login', request.url));
-        }
+      } else {
+        // Unknown role, redirect to login
+        return NextResponse.redirect(new URL('/login', request.url));
       }
     }
   }
@@ -77,8 +69,8 @@ export async function middleware(request: NextRequest) {
     const userRole = token.role;
     console.log(`Authenticated user with role '${userRole}' accessing root - redirecting to dashboard`);
     if (userRole === 'user') {
-      return NextResponse.redirect(new URL('/user', request.url));    } 
-    }
+      return NextResponse.redirect(new URL('/user', request.url));    
+    } 
   }
 
   // Allow access to public routes and authenticated users
