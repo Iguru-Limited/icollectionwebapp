@@ -7,7 +7,8 @@ export async function middleware(request: NextRequest) {
 
   // Define protected routes and their required roles
   const protectedRoutes = {
-    '/user': ['user'],    
+    '/user': ['user'],
+    '/user/collection': ['user'],
   };
 
 
