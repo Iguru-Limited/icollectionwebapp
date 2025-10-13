@@ -9,7 +9,7 @@ export const authOptions: NextAuthOptions = {
       name: "credentials",
       credentials: {
         username: { label: "Username", type: "text" },
-        password: { label: "pass_phrase", type: "password" }
+        password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) {
@@ -17,45 +17,51 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
+          // Prepare data from user credentials
+          const requestData = {
+            username: credentials.username,
+            pass_phrase: credentials.password
+          };
+
           // Use external API endpoint for authentication
           const apiUrl = `${API_ENDPOINTS.BASE_URL}/auth/login.php`;
-          console.log("Attempting authentication with:", apiUrl);
-          console.log("API_BASE_URL:", API_ENDPOINTS.BASE_URL);
           
           const response = await fetch(apiUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              username: credentials.username,
-              password: credentials.password,
-            }),
+            body: JSON.stringify(requestData),
           });
 
-          console.log("Authentication response status:", response.status);
+          const responseText = await response.text();
 
           if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Authentication failed:", errorText);
             return null;
           }
 
-          const data: AuthResponse = await response.json();
-          console.log("Authentication response data:", data);
-
-          if (data.access_token) {
-            return {
-              id: data.user.username, // Use username as ID
-              username: data.user.username,
-              role: data.role,
-              token: data.access_token,
-              refresh_token: data.refresh_token,
-              company_details: data.user.company,
-            };
+          // Parse the response text as JSON
+          let data: AuthResponse;
+          try {
+            data = JSON.parse(responseText);
+          } catch {
+            console.error("Failed to parse authentication response");
+            return null;
+          }
+          
+          // Validate the response structure
+          if (!data.access_token || !data.user || !data.user.username) {
+            return null;
           }
 
-          return null;
+          return {
+            id: data.user.username,
+            username: data.user.username,
+            role: data.role,
+            token: data.access_token,
+            refresh_token: data.refresh_token,
+            company_details: data.user.company,
+          };
         } catch (error) {
           console.error("Authentication error:", error);
           return null;
@@ -64,6 +70,21 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // If user is already authenticated and accessing login, redirect to /user
+      if (url === baseUrl + "/login") {
+        return baseUrl + "/user";
+      }
+      
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      
+      // Allows callback URLs on the same origin
+      if (new URL(url).origin === baseUrl) return url;
+      
+      // Default redirect to /user for successful auth
+      return baseUrl + "/user";
+    },
     async jwt({ token, user, trigger, session }) {
       // Handle token refresh
       if (trigger === 'update' && session?.token && session?.refresh_token) {
@@ -95,23 +116,19 @@ export const authOptions: NextAuthOptions = {
         if (token.refresh_token && token.refreshExpiresAt && Date.now() < token.refreshExpiresAt) {
           // Token is expired but refresh token is still valid
           // This will be handled by the client-side refresh service
-          console.log('Token expired, refresh needed');
         } else {
-          // Both tokens are expired, mark as expired but don't return null
-          token.expiresAt = 0; // Mark as expired
-          console.log('Both tokens expired, session invalid');
+          // Both tokens are expired, mark as expired
+          token.expiresAt = 0;
         }
       }
 
       // Check for inactivity timeout (1 hour)
       if (token.lastActivity && Date.now() - token.lastActivity > (60 * 60 * 1000)) {
-        console.log('User inactive for 1 hour, marking session as expired');
         token.expiresAt = 0; // Mark as expired
       }
 
       // Check for session timeout (6 hours)
       if (token.lastActivity && Date.now() - token.lastActivity > (6 * 60 * 60 * 1000)) {
-        console.log('Session expired after 6 hours, marking as expired');
         token.expiresAt = 0; // Mark as expired
       }
       

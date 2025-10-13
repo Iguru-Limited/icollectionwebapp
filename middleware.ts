@@ -25,7 +25,6 @@ export async function middleware(request: NextRequest) {
 
   // If route requires authentication but user is not authenticated
   if (requiresAuth && !token) {
-    console.log(`Unauthorized access attempt to ${pathname} - redirecting to login`);
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
@@ -43,23 +42,20 @@ export async function middleware(request: NextRequest) {
       
       // Check if user's role is allowed for this route
       if (!allowedRoles.includes(userRole)) {
-        console.log(`Access denied: User with role '${userRole}' tried to access '${pathname}' which requires roles: ${allowedRoles.join(', ')}`);
-        
         // Redirect to appropriate dashboard based on user role
         if (userRole === 'user') {
           return NextResponse.redirect(new URL('/user', request.url));
         }
-      } else {
-        // Unknown role, redirect to login
+        // For other roles, send to login for now
         return NextResponse.redirect(new URL('/login', request.url));
       }
+      // Role is allowed; fall through to NextResponse.next()
     }
   }
 
   // If user is authenticated and trying to access login page, redirect to appropriate dashboard
   if (token && pathname === '/login') {
     const userRole = token.role;
-    console.log(`Authenticated user with role '${userRole}' accessing login page - redirecting to dashboard`);
     if (userRole === 'user') {
       return NextResponse.redirect(new URL('/user', request.url));
     } 
@@ -68,7 +64,6 @@ export async function middleware(request: NextRequest) {
   // If user is authenticated and accessing root, redirect to appropriate dashboard
   if (token && pathname === '/') {
     const userRole = token.role;
-    console.log(`Authenticated user with role '${userRole}' accessing root - redirecting to dashboard`);
     if (userRole === 'user') {
       return NextResponse.redirect(new URL('/user', request.url));    
     } 
