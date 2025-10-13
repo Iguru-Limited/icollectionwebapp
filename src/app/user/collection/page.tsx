@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import Header from "@/components/home/Header";
 import RecentReceipts from "@/components/collection/RecentReceipts";
 import CollectionForm from "@/components/collection/CollectionForm";
-import { data } from "../../data";
+import { data } from "../../../data";
 
 export default function CollectionPage() {
   return (
@@ -37,7 +37,7 @@ export default function CollectionPage() {
             <Button 
               variant="outline"
               className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-none"
-              onClick={() => window.location.href = '/'}
+              onClick={() => window.location.href = '/user'}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back

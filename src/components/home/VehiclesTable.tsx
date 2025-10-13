@@ -116,7 +116,7 @@ export default function VehiclesTable() {
                         <Button 
                           size="sm" 
                           className="bg-green-600 hover:bg-green-700 text-white rounded-none"
-                          onClick={() => window.location.href = '/collection'}
+                          onClick={() => window.location.href = '/user/collection'}
                         >
                           Collect
                         </Button>

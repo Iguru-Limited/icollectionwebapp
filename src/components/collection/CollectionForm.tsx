@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 import { data } from "../../data";
-import { PrintService } from "@/utils/printService";
+import { PrintService } from "@/lib/utils/printService";
 
 interface CollectionEntry {
   id: string;
