@@ -12,7 +12,9 @@ export async function middleware(request: NextRequest) {
   const protectedRoutes = {
     '/user': ['user'],
     '/user/collection': ['user'],
-    '/user/reports': ['user'],   
+    '/user/reports': ['user'],
+
+
   };
 
   // Check if the current path is public
