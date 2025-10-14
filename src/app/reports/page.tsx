@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useIsMobile } from "@/hooks/useMediaQuery";
-import { generateCollectionReportPDFWithLogo } from "@/utils/reportPDF";
+import { generateCollectionReportPDFWithLogo } from "@/lib/utils/reportPDF";
 import { data } from "@/data";
 
 const containerVariants = {
