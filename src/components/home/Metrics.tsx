@@ -34,7 +34,7 @@ export default function Metrics() {
   const router = useRouter();
 
   const handleCardClick = () => {
-    router.push('/reports');
+    router.push('/user/reports');
   };
 
   return (

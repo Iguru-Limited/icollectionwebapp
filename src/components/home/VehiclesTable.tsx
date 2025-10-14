@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { data } from "../../data";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -42,6 +43,7 @@ const buttonVariants = {
 };
 
 export default function VehiclesTable() {
+  const router = useRouter();
   return (
     <motion.section
       initial="hidden"
@@ -129,6 +131,7 @@ export default function VehiclesTable() {
                         <Button 
                           size="sm" 
                           variant="outline" 
+                          onClick={() => router.push(`/user/report/${vehicle.id}`)}
                           className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-none"
                         >
                           Reports
