@@ -1,6 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, Filter } from "lucide-react";
 import Header from "@/components/home/Header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -114,17 +114,44 @@ export default function VehicleReportPage() {
               className="flex flex-col md:flex-row md:items-center justify-between mb-6"
             >
               <h2 className="text-xl font-bold font-mono pb-3">
-                Vehicle Reports: {vehicle.plateNumber}
+                COLLECTION REPORT: {vehicle.plateNumber}
               </h2>
-              <div className="flex items-center gap-3">
-                <Input 
-                  placeholder="Search receipts..." 
-                  className="bg-gray-50 border-gray-200 rounded-none w-64"
-                />
-                <Button className="text-white rounded-none">
-                  <Download className="w-4 h-4 mr-2" />
-                  Download
-                </Button>
+              <div className="flex flex-col items-end gap-3 w-full md:w-auto">
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                  className="flex items-center space-x-3"
+                >
+                  <Input
+                    type="date"
+                    defaultValue="2025-10-07"
+                    className="w-40 rounded-none"
+                  />
+                  <Input
+                    type="date"
+                    defaultValue="2025-10-07"
+                    className="w-40 rounded-none"
+                  />
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button className="text-white rounded-none">
+                      <Filter className="w-4 h-4 mr-2" />
+                      Filter
+                    </Button>
+                  </motion.div>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button className="text-white rounded-none">
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                </motion.div>
               </div>
             </motion.div>
           </motion.div>
