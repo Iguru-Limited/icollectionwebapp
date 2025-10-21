@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { signIn, getSession } from "next-auth/react"
+import { useCompanyTemplateStore } from "@/store/companyTemplateStore"
+import { useAppStore } from "@/store/appStore"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -42,9 +44,18 @@ export function LoginForm({
         console.error("Sign-in error:", result.error)
         setError("Invalid username or password")
       } else if (result?.ok) {
-        // Fetch and log the session to inspect what the server returned
+        // Fetch session to get company_template and printer
         const session = await getSession()
         console.log("Session after login:", session)
+        
+        // Persist company_template and printer from session to Zustand stores
+        if (session?.company_template) {
+          useCompanyTemplateStore.getState().setTemplate(session.company_template)
+        }
+        if (session?.user?.printer) {
+          useAppStore.getState().setSelectedPrinter(session.user.printer)
+        }
+        
         // Redirect to /user page on successful login
         router.push("/user")
       }

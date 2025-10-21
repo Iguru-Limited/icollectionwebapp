@@ -46,6 +46,8 @@ export interface NextAuthUser {
   token: string;
   refresh_token?: string; // Added for token refresh
   company_details: CompanyDetails;
+  company_template?: import("@/types/company-template").CompanyTemplateResponse;
+  printer?: { id: string; name: string } | null;
 }
 
 // Extend NextAuth types
@@ -57,6 +59,8 @@ declare module "next-auth" {
     token: string;
     refresh_token?: string;
     company_details: CompanyDetails;
+    company_template?: import("@/types/company-template").CompanyTemplateResponse;
+    printer?: { id: string; name: string } | null;
   }
 
   interface Session {
@@ -67,7 +71,9 @@ declare module "next-auth" {
       token: string;
       refresh_token?: string;
       company_details: CompanyDetails;
+      printer?: { id: string; name: string } | null;
     };
+    company_template?: import("@/types/company-template").CompanyTemplateResponse;
   }
 }
 
@@ -81,5 +87,7 @@ declare module "next-auth/jwt" {
     expiresAt?: number;
     refreshExpiresAt?: number; // When refresh token expires
     lastActivity?: number; // Last user activity timestamp
+    company_template?: import("@/types/company-template").CompanyTemplateResponse;
+    printer?: { id: string; name: string } | null;
   }
 }

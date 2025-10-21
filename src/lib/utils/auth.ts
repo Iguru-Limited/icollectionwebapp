@@ -1,6 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { AuthResponse } from "@/types/auth/userauthentication";
+import type { CompanyTemplateResponse } from "@/types/company-template";
 import { API_ENDPOINTS } from "@/lib/utils/constants";
 
 export const authOptions: NextAuthOptions = {
@@ -42,7 +43,10 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Parse the response text as JSON
-          let data: AuthResponse;
+          let data: AuthResponse & {
+            company_template?: CompanyTemplateResponse;
+            user?: (AuthResponse["user"] & { printer?: { id: string; name: string } | null });
+          };
           try {
             data = JSON.parse(responseText);
           } catch {
@@ -62,6 +66,8 @@ export const authOptions: NextAuthOptions = {
             token: data.access_token,
             refresh_token: data.refresh_token,
             company_details: data.user.company,
+            company_template: data.company_template,
+            printer: data.user?.printer ?? null,
           };
         } catch (error) {
           console.error("Authentication error:", error);
@@ -105,6 +111,13 @@ export const authOptions: NextAuthOptions = {
         token.refresh_token = user.refresh_token;
         token.company_details = user.company_details;
         token.username = user.username;
+        // attach large payload and device-specific settings
+        const u = user as unknown as import("next-auth").User & {
+          company_template?: CompanyTemplateResponse;
+          printer?: { id: string; name: string } | null;
+        };
+        token.company_template = u.company_template;
+        token.printer = u.printer ?? null;
         // Set token expiry to 1 hour from now (shorter for security)
         token.expiresAt = Date.now() + (60 * 60 * 1000);
         // Set refresh token expiry to 7 days
@@ -143,6 +156,14 @@ export const authOptions: NextAuthOptions = {
         session.user.refresh_token = token.refresh_token;
         session.user.company_details = token.company_details;
         session.user.username = token.username || '';
+        // expose device printer on user for convenience
+        (session.user as unknown as { printer?: { id: string; name: string } | null }).printer =
+          token.printer ?? null;
+        // expose company template at the top-level session (not in user)
+        if (token.company_template) {
+          (session as unknown as { company_template?: CompanyTemplateResponse }).company_template =
+            token.company_template as CompanyTemplateResponse;
+        }
       }
       return session;
     },

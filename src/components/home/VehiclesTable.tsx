@@ -3,8 +3,9 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { data } from "../../data";
 import { useRouter } from "next/navigation";
+import { useAppStore } from "@/store/appStore";
+import { useCompanyTemplateStore } from "@/store/companyTemplateStore";
 import {
   Table,
   TableBody,
@@ -44,6 +45,10 @@ const buttonVariants = {
 
 export default function VehiclesTable() {
   const router = useRouter();
+  const template = useCompanyTemplateStore((s) => s.template);
+  const tableSearch = useAppStore((s) => s.viewPreferences.tableSearch);
+  const setViewPreferences = useAppStore((s) => s.setViewPreferences);
+  const setSelectedVehicleId = useAppStore((s) => s.setSelectedVehicleId);
   return (
     <motion.section
       initial="hidden"
@@ -66,6 +71,8 @@ export default function VehiclesTable() {
           <div className="relative">
             <Input 
               placeholder="Quickly search vehicle...." 
+              value={tableSearch}
+              onChange={(e) => setViewPreferences({ tableSearch: e.target.value })}
               className="md:w-80 bg-gray-50 border-gray-200 rounded-none"
             />
           </div>
@@ -87,6 +94,9 @@ export default function VehiclesTable() {
         transition={{ duration: 0.6, delay: 0.2 }}
       >
         <Card className="rounded-none">
+          {!template && (
+            <div className="p-4 text-sm text-gray-500">Login to load vehicles…</div>
+          )}
           <Table>
             <TableHeader>
               <TableRow className="">
@@ -96,9 +106,15 @@ export default function VehiclesTable() {
               </TableRow>
             </TableHeader>
               <TableBody>
-                {data.vehicles.map((vehicle) => (
+                {(template?.vehicles ?? [])
+                  .filter((v) =>
+                    tableSearch
+                      ? v.number_plate.toLowerCase().includes(tableSearch.toLowerCase())
+                      : true
+                  )
+                  .map((vehicle) => (
                   <motion.tr
-                    key={vehicle.id}
+                    key={vehicle.vehicle_id}
                     variants={rowVariants}
                     whileHover={{ 
                       backgroundColor: "rgba(249, 250, 251, 0.8)",
@@ -106,8 +122,8 @@ export default function VehiclesTable() {
                     }}
                     className="hover:bg-gray-50"
                   >
-                    <TableCell className="font-mono">{vehicle.id}</TableCell>
-                    <TableCell className="font-mono">{vehicle.plateNumber}</TableCell>
+                    <TableCell className="font-mono">{vehicle.vehicle_id}</TableCell>
+                    <TableCell className="font-mono">{vehicle.number_plate}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2 justify-end">
                       <motion.div
@@ -118,7 +134,10 @@ export default function VehiclesTable() {
                         <Button 
                           size="sm" 
                           className="bg-green-600 hover:bg-green-700 text-white rounded-none"
-                          onClick={() => window.location.href = '/user/collection'}
+                          onClick={() => {
+                            setSelectedVehicleId(vehicle.vehicle_id);
+                            window.location.href = '/user/collection';
+                          }}
                         >
                           Collect
                         </Button>
@@ -131,7 +150,7 @@ export default function VehiclesTable() {
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          onClick={() => router.push(`/user/report/${vehicle.id}`)}
+                          onClick={() => router.push(`/user/report/${vehicle.vehicle_id}`)}
                           className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-none"
                         >
                           Reports
