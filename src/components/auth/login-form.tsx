@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "next-auth/react"
+import { signIn, getSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -35,9 +35,16 @@ export function LoginForm({
         redirect: false,
       })
 
+      // Log the full sign-in response for debugging in the browser console
+      console.log("Sign-in response:", result)
+
       if (result?.error) {
+        console.error("Sign-in error:", result.error)
         setError("Invalid username or password")
       } else if (result?.ok) {
+        // Fetch and log the session to inspect what the server returned
+        const session = await getSession()
+        console.log("Session after login:", session)
         // Redirect to /user page on successful login
         router.push("/user")
       }

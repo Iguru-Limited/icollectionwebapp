@@ -24,7 +24,7 @@ export const authOptions: NextAuthOptions = {
           };
 
           // Use external API endpoint for authentication
-          const apiUrl = `${API_ENDPOINTS.BASE_URL}/auth/login.php`;
+          const apiUrl = `${API_ENDPOINTS.BASE_URL}/api/auth/login.php`;
           
           const response = await fetch(apiUrl, {
             method: "POST",
@@ -35,6 +35,7 @@ export const authOptions: NextAuthOptions = {
           });
 
           const responseText = await response.text();
+          console.log("Authentication response:", responseText);
 
           if (!response.ok) {
             return null;
