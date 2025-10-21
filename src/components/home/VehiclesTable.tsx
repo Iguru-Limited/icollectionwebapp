@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/store/appStore";
 import { useCompanyTemplateStore } from "@/store/companyTemplateStore";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -45,10 +47,27 @@ const buttonVariants = {
 
 export default function VehiclesTable() {
   const router = useRouter();
+  const { data: session } = useSession();
   const template = useCompanyTemplateStore((s) => s.template);
+  const setTemplate = useCompanyTemplateStore((s) => s.setTemplate);
   const tableSearch = useAppStore((s) => s.viewPreferences.tableSearch);
   const setViewPreferences = useAppStore((s) => s.setViewPreferences);
   const setSelectedVehicleId = useAppStore((s) => s.setSelectedVehicleId);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Wait for client-side hydration
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  // Hydrate store from session if store is empty
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (!template && session?.company_template) {
+      setTemplate(session.company_template);
+    }
+  }, [isHydrated, template, session, setTemplate]);
+
   return (
     <motion.section
       initial="hidden"
@@ -94,9 +113,9 @@ export default function VehiclesTable() {
         transition={{ duration: 0.6, delay: 0.2 }}
       >
         <Card className="rounded-none">
-          {!template && (
-            <div className="p-4 text-sm text-gray-500">Login to load vehicles…</div>
-          )}
+          {!isHydrated || !template ? (
+            <div className="p-4 text-sm text-gray-500">Loading vehicles…</div>
+          ) : null}
           <Table>
             <TableHeader>
               <TableRow className="">

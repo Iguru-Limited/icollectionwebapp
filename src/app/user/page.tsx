@@ -20,8 +20,9 @@ export default function Home() {
         transition={{ duration: 0.6, delay: 0.2 }}
         className="px-6 py-8 space-y-8"
       >
-        <Metrics />
-        <VehiclesTable />
+  <Metrics />
+  {/* Client component reads from session and hydrates store */}
+  <VehiclesTable />
       </motion.main>
     </motion.div>
   );
