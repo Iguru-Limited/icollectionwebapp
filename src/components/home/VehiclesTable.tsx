@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useAppStore } from "@/store/appStore";
 import { useCompanyTemplateStore } from "@/store/companyTemplateStore";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -28,18 +28,6 @@ const containerVariants = {
   }
 };
 
-const rowVariants = {
-  hidden: { opacity: 0, x: -20 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.4,
-      ease: "easeOut" as const
-    }
-  }
-};
-
 const buttonVariants = {
   hover: { scale: 1.05 },
   tap: { scale: 0.95 }
@@ -50,23 +38,32 @@ export default function VehiclesTable() {
   const { data: session } = useSession();
   const template = useCompanyTemplateStore((s) => s.template);
   const setTemplate = useCompanyTemplateStore((s) => s.setTemplate);
+  const hasHydrated = useCompanyTemplateStore((s) => s._hasHydrated);
   const tableSearch = useAppStore((s) => s.viewPreferences.tableSearch);
   const setViewPreferences = useAppStore((s) => s.setViewPreferences);
   const setSelectedVehicleId = useAppStore((s) => s.setSelectedVehicleId);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  // Wait for client-side hydration
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   // Hydrate store from session if store is empty
   useEffect(() => {
-    if (!isHydrated) return;
+    if (!hasHydrated) return;
+    
     if (!template && session?.company_template) {
       setTemplate(session.company_template);
     }
-  }, [isHydrated, template, session, setTemplate]);
+  }, [hasHydrated, template, session, setTemplate]);
+
+  // Additional effect to try hydrating after a short delay if session loads later
+  useEffect(() => {
+    if (!hasHydrated || template) return;
+    
+    const timeout = setTimeout(() => {
+      if (!template && session?.company_template) {
+        setTemplate(session.company_template);
+      }
+    }, 100);
+    
+    return () => clearTimeout(timeout);
+  }, [hasHydrated, template, session, setTemplate]);
 
   return (
     <motion.section
@@ -113,8 +110,10 @@ export default function VehiclesTable() {
         transition={{ duration: 0.6, delay: 0.2 }}
       >
         <Card className="rounded-none">
-          {!isHydrated || !template ? (
-            <div className="p-4 text-sm text-gray-500">Loading vehicles…</div>
+          {!hasHydrated || !template ? (
+            <div className="p-4 text-sm text-gray-500">
+              {!hasHydrated ? "Loading..." : "No vehicles data available"}
+            </div>
           ) : null}
           <Table>
             <TableHeader>
@@ -125,20 +124,17 @@ export default function VehiclesTable() {
               </TableRow>
             </TableHeader>
               <TableBody>
-                {(template?.vehicles ?? [])
+                {((template?.vehicles ?? [])
                   .filter((v) =>
                     tableSearch
                       ? v.number_plate.toLowerCase().includes(tableSearch.toLowerCase())
                       : true
                   )
-                  .map((vehicle) => (
-                  <motion.tr
-                    key={vehicle.vehicle_id}
-                    variants={rowVariants}
-                    whileHover={{ 
-                      backgroundColor: "rgba(249, 250, 251, 0.8)",
-                      transition: { duration: 0.2 }
-                    }}
+                  .map((vehicle, index) => {
+                    console.log(`🚗 Rendering vehicle ${index + 1}:`, vehicle.number_plate);
+                    return (
+                  <TableRow
+                    key={`${vehicle.vehicle_id}-${index}`}
                     className="hover:bg-gray-50"
                   >
                     <TableCell className="font-mono">{vehicle.vehicle_id}</TableCell>
@@ -177,8 +173,9 @@ export default function VehiclesTable() {
                       </motion.div>
                     </div>
                   </TableCell>
-                </motion.tr>
-              ))}
+                </TableRow>
+                    );
+                  }))}
             </TableBody>
           </Table>
         </Card>
