@@ -9,13 +9,6 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { PrintService } from "@/lib/utils/printService";
 import { toast } from "sonner";
@@ -33,7 +26,6 @@ export default function CollectionPage() {
   const template = useCompanyTemplateStore((s) => s.template);
   
   const [additionalCollections, setAdditionalCollections] = useState<AdditionalCollection[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Get the selected vehicle
   const selectedVehicle = template?.vehicles.find(
@@ -51,7 +43,7 @@ export default function CollectionPage() {
   const addCollection = () => {
     const newCollection: AdditionalCollection = {
       id: Date.now().toString(),
-      collectionType: "",
+      collectionType: collectionTypes[0] || "",
       amount: "0.00",
     };
     setAdditionalCollections([...additionalCollections, newCollection]);
@@ -198,33 +190,12 @@ export default function CollectionPage() {
             {/* Additional Collections List */}
             {additionalCollections.length === 0 ? (
               <Card className="bg-white rounded-xl p-8 text-center">
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <button className="inline-block p-4 rounded-full border-2 border-purple-300 hover:border-purple-500 transition-colors mb-4">
-                      <Plus className="w-8 h-8 text-purple-600" />
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-sm">
-                    <DialogHeader>
-                      <DialogTitle>Select Collection Type</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-3 py-4">
-                      {collectionTypes.map((type) => (
-                        <Button
-                          key={type}
-                          variant="outline"
-                          className="w-full justify-start text-left"
-                          onClick={() => {
-                            addCollection();
-                            setIsDialogOpen(false);
-                          }}
-                        >
-                          {type}
-                        </Button>
-                      ))}
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <button 
+                  className="inline-block p-4 rounded-full border-2 border-purple-300 hover:border-purple-500 transition-colors mb-4"
+                  onClick={addCollection}
+                >
+                  <Plus className="w-8 h-8 text-purple-600" />
+                </button>
                 <h3 className="text-base font-medium text-gray-700 mb-1">
                   No additional collections added yet
                 </h3>
@@ -299,34 +270,13 @@ export default function CollectionPage() {
                 </Card>
 
                 {/* Add Collection Button */}
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-12">
-                      <Plus className="w-5 h-5 mr-2" />
-                      ADD COLLECTION
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-sm">
-                    <DialogHeader>
-                      <DialogTitle>Select Collection Type</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-3 py-4">
-                      {collectionTypes.map((type) => (
-                        <Button
-                          key={type}
-                          variant="outline"
-                          className="w-full justify-start text-left"
-                          onClick={() => {
-                            addCollection();
-                            setIsDialogOpen(false);
-                          }}
-                        >
-                          {type}
-                        </Button>
-                      ))}
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <Button 
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-12"
+                  onClick={addCollection}
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  ADD COLLECTION
+                </Button>
 
                 {/* Process Collection Button */}
                 <Button 
