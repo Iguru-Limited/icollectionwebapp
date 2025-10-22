@@ -32,7 +32,7 @@ export default function Reports() {
       transition={{ duration: 0.4 }}
       className="min-h-screen bg-gradient-to-b from-purple-50 to-white"
     >
-      <div className="max-w-md mx-auto px-4 pt-6 pb-24">
+  <div className="mx-auto px-4 pt-6 pb-24 max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-4xl">
         {/* Title */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -51,7 +51,7 @@ export default function Reports() {
         </div>
 
         {/* Select Date */}
-        <Card className="rounded-2xl p-4 shadow-sm mb-8">
+  <Card className="rounded-2xl p-4 md:p-6 shadow-sm mb-8">
           <div className="text-xs font-semibold text-gray-700 flex items-center gap-2 mb-3">
             <CalendarIcon className="w-4 h-4 text-purple-700" />
             SELECT DATE
@@ -66,7 +66,7 @@ export default function Reports() {
               <ChevronLeft className="w-5 h-5" />
             </button>
 
-            <div className="rounded-xl px-4 py-3 min-w-64 flex items-center justify-between gap-4 bg-purple-100 border-2 border-purple-400">
+            <div className="rounded-xl px-4 py-3 min-w-[12rem] md:min-w-[18rem] flex items-center justify-between gap-4 bg-purple-100 border-2 border-purple-400">
               <div>
                 <div className="text-purple-700 text-sm font-semibold">Today</div>
                 <div className="text-gray-700 text-xs leading-tight">{formatLongDate(selectedDate)}</div>
@@ -85,8 +85,8 @@ export default function Reports() {
         </Card>
 
         {/* Empty State */}
-        <div className="flex flex-col items-center text-center mt-16">
-          <div className="w-40 h-40 rounded-full border-2 border-dashed border-purple-300 flex items-center justify-center mb-6">
+        <div className="flex flex-col items-center text-center mt-12 md:mt-16">
+          <div className="w-40 h-40 md:w-48 md:h-48 rounded-full border-2 border-dashed border-purple-300 flex items-center justify-center mb-6">
             {/* car icon substitute */}
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 text-purple-400"><path d="M5 11l1-3a3 3 0 012.83-2h6.34A3 3 0 0118 8l1 3h1a1 1 0 010 2h-1v3a2 2 0 01-2 2h-1a1 1 0 01-1-1v-1H9v1a1 1 0 01-1 1H7a2 2 0 01-2-2v-3H4a1 1 0 010-2h1zm3.17-3a1 1 0 00-.95.68L6.6 11h10.8l-.62-2.32a1 1 0 00-.95-.68H8.17zM7 15a1 1 0 100-2 1 1 0 000 2zm10 0a1 1 0 100-2 1 1 0 000 2z"/></svg>
           </div>

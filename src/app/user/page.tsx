@@ -50,7 +50,7 @@ export default function UserPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="container mx-auto max-w-md px-4 py-6 pb-20 space-y-6">
+      <div className="container mx-auto px-4 py-6 pb-24 space-y-6 max-w-md sm:max-w-lg md:max-w-3xl lg:max-w-5xl">
         
         {/* Modern Header (adapted from HeaderProfileModern) */}
         <Card className="bg-[#6A1B9A] rounded-2xl border-2 border-yellow-500 shadow-md p-5 relative overflow-hidden">
@@ -113,11 +113,11 @@ export default function UserPage() {
           </div>
 
           {/* Vehicle Cards */}
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {!hasHydrated ? (
-              <Card className="p-6 text-center text-gray-500">Loading vehicles...</Card>
+              <Card className="p-6 text-center text-gray-500 sm:col-span-2 lg:col-span-3">Loading vehicles...</Card>
             ) : filteredVehicles.length === 0 ? (
-              <Card className="p-6 text-center text-gray-500">No vehicles found</Card>
+              <Card className="p-6 text-center text-gray-500 sm:col-span-2 lg:col-span-3">No vehicles found</Card>
             ) : (
               filteredVehicles.map((vehicle) => (
                 <Card

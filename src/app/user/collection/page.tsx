@@ -196,7 +196,7 @@ export default function CollectionPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
-      <div className="container mx-auto max-w-md px-4 py-4 pb-20">
+      <div className="container mx-auto px-4 py-4 pb-24 max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl">
         {/* Header */}
         <div className="flex items-center mb-6">
           <Button
@@ -280,7 +280,7 @@ export default function CollectionPage() {
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="text-sm font-medium text-gray-600 mb-2 block">
                           Collection Type
