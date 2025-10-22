@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { PrintService } from "@/lib/utils/printService";
 import { toast } from "sonner";
+import { useSaveReceipt } from "@/hooks/receipt/useSaveReceipt";
 
 interface AdditionalCollection {
   id: string;
@@ -26,6 +27,9 @@ export default function CollectionPage() {
   const template = useCompanyTemplateStore((s) => s.template);
   
   const [additionalCollections, setAdditionalCollections] = useState<AdditionalCollection[]>([]);
+  
+  // Initialize the save receipt hook
+  const { saveReceipt } = useSaveReceipt();
 
   // Get the selected vehicle
   const selectedVehicle = template?.vehicles.find(
@@ -65,6 +69,18 @@ export default function CollectionPage() {
   );
 
   const handleProcessCollection = async () => {
+    // Validate session
+    if (!session?.user) {
+      toast.error("Session expired. Please log in again.");
+      return;
+    }
+
+    // Validate vehicle selection
+    if (!selectedVehicle) {
+      toast.error("No vehicle selected");
+      return;
+    }
+
     // Validate that we have collections
     if (additionalCollections.length === 0) {
       toast.error("Please add at least one collection before processing");
@@ -82,49 +98,90 @@ export default function CollectionPage() {
     }
 
     // Show loading toast and store its ID
-    const toastId = toast.loading("Printing receipt...");
+    const toastId = toast.loading("Processing collection...");
 
     try {
+      // Get current date
+      const now = new Date();
+      const tripDate = now.toISOString().split('T')[0];
+      
+      // Prepare slugs object from collections
+      const slugs: { [key: string]: number } = {};
+      additionalCollections.forEach(collection => {
+        // Convert collection type to snake_case slug
+        const slug = collection.collectionType.toLowerCase().replace(/\s+/g, '_');
+        slugs[slug] = parseFloat(collection.amount);
+      });
+
+      // Prepare payload for API
+      const payload = {
+        meta: {
+          number_plate: selectedVehicle?.number_plate || "",
+          receipt_no: "",
+          trip_date: tripDate,
+        },
+        slugs,
+      };
+
+      // Save receipt to API
+      const result = await saveReceipt(
+        selectedVehicleId || 0,
+        payload
+      );
+
+      if (!result) {
+        toast.dismiss(toastId);
+        toast.error("Failed to save receipt");
+        return;
+      }
+
+      // Update loading message
+      toast.dismiss(toastId);
+      const printToastId = toast.loading("Printing receipt...");
+
+      // Now print the receipt using the receipt_text from API
       const printService = new PrintService();
       
-      // Get current date and time
-      const now = new Date();
-      const date = now.toISOString().split('T')[0];
-      const time = now.toTimeString().split(' ')[0];
-      
-      // Prepare receipt data with the new collection structure
+      // Use the receipt data from API response
       const receiptData = {
-        receiptId: `ICR-${Date.now()}`,
-        date: date,
-        time: time,
-        vehicle: selectedVehicle?.number_plate || "Unknown Vehicle",
-        companyName: session?.user?.company_details?.company_name || "Company Name",
-        servedBy: session?.user?.username || "User",
+        receiptId: result.data.receipt_number,
+        date: tripDate,
+        time: now.toTimeString().split(' ')[0],
+        vehicle: selectedVehicle.number_plate,
+        companyName: session.user.company.company_name,
+        servedBy: session.user.username,
         items: additionalCollections.map(collection => ({
           type: collection.collectionType,
           amount: `KSH ${parseFloat(collection.amount).toFixed(2)}`
         })),
-        total: `KSH ${totalAmount.toFixed(2)}`
+        total: `KSH ${result.data.total_amount.toFixed(2)}`
       };
 
       // Print receipt
       const printResult = await printService.printReceipt(receiptData);
       
-      // Dismiss loading toast
-      toast.dismiss(toastId);
+      // Dismiss printing toast
+      toast.dismiss(printToastId);
       
       if (printResult.success) {
-        toast.success(`Receipt printed successfully on ${printResult.printer}`);
+        toast.success(`Receipt #${result.data.receipt_number} saved and printed successfully!`);
         
         // Clear collections after successful print
         setAdditionalCollections([]);
         
-        // Optionally navigate back to user page
+        // Navigate back to user page
         setTimeout(() => {
           router.push("/user");
         }, 1500);
       } else {
-        toast.error(`Print failed: ${printResult.error}`);
+        // Receipt saved but print failed
+        toast.warning(`Receipt saved as #${result.data.receipt_number} but print failed: ${printResult.error}`);
+        
+        // Still clear and navigate since receipt was saved
+        setAdditionalCollections([]);
+        setTimeout(() => {
+          router.push("/user");
+        }, 2000);
       }
     } catch (error) {
       // Dismiss loading toast on error

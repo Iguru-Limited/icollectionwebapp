@@ -55,19 +55,21 @@ export const authOptions: NextAuthOptions = {
           }
           
           // Validate the response structure
-          if (!data.access_token || !data.user || !data.user.username) {
+          if (!data.access_token || !data.user || !data.user.username || !data.user.user_id) {
             return null;
           }
 
           return {
-            id: data.user.username,
+            id: data.user.user_id,
+            user_id: data.user.user_id,
             username: data.user.username,
             role: data.role,
             token: data.access_token,
             refresh_token: data.refresh_token,
-            company_details: data.user.company,
+            company: data.user.company,
+            stage: data.user.stage,
+            printer: data.user.printer,
             company_template: data.company_template,
-            printer: data.user?.printer ?? null,
           };
         } catch (error) {
           console.error("Authentication error:", error);
@@ -106,18 +108,15 @@ export const authOptions: NextAuthOptions = {
       }
 
       if (user) {
+        token.user_id = user.user_id;
         token.role = user.role;
         token.token = user.token;
         token.refresh_token = user.refresh_token;
-        token.company_details = user.company_details;
+        token.company = user.company;
+        token.stage = user.stage;
+        token.printer = user.printer;
         token.username = user.username;
-        // attach large payload and device-specific settings
-        const u = user as unknown as import("next-auth").User & {
-          company_template?: CompanyTemplateResponse;
-          printer?: { id: string; name: string } | null;
-        };
-        token.company_template = u.company_template;
-        token.printer = u.printer ?? null;
+        token.company_template = user.company_template;
         // Set token expiry to 1 hour from now (shorter for security)
         token.expiresAt = Date.now() + (60 * 60 * 1000);
         // Set refresh token expiry to 7 days
@@ -151,14 +150,14 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.sub!;
+        session.user.user_id = token.user_id;
         session.user.role = token.role;
         session.user.token = token.token;
         session.user.refresh_token = token.refresh_token;
-        session.user.company_details = token.company_details;
+        session.user.company = token.company;
+        session.user.stage = token.stage;
+        session.user.printer = token.printer;
         session.user.username = token.username || '';
-        // expose device printer on user for convenience
-        (session.user as unknown as { printer?: { id: string; name: string } | null }).printer =
-          token.printer ?? null;
         // expose company template at the top-level session (not in user)
         if (token.company_template) {
           (session as unknown as { company_template?: CompanyTemplateResponse }).company_template =

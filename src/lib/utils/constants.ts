@@ -3,6 +3,7 @@ export const API_ENDPOINTS = {
   BASE_URL: process.env.API_BASE_URL ?? 'https://iguru.co.ke/iCollections/endpoints',
   TOKEN_REFRESH:"/auth/refresh.php",  
   LOGIN:"/api/auth/login.php",
+  RECEIPT_URL:"https://iguru.co.ke/iCollections/endpoints/api/routing/",
 } as const;
 
 export const APP_CONFIG = {

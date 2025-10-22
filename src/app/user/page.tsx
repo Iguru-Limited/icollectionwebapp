@@ -67,20 +67,18 @@ export default function UserPage() {
               <div className="flex flex-col">
                 <p className="text-sm text-white/80 mb-1 tracking-wide">
                   Welcome back,
+              </p>
+              <h1 className="text-2xl font-bold text-white leading-tight capitalize">
+                {session?.user?.username}
+              </h1>
+              <div className="flex items-center mt-1 space-x-2">
+                <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
+                <p className="text-sm text-yellow-400 truncate">
+                  {session?.user?.company?.company_name}
                 </p>
-                <h1 className="text-2xl font-bold text-white leading-tight capitalize">
-                  {session?.user?.username || "John Doe"}
-                </h1>
-                <div className="flex items-center mt-1 space-x-2">
-                  <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
-                  <p className="text-sm text-yellow-400 truncate">
-                    {session?.user?.company_details?.company_name || "TKT Transport Co."}
-                  </p>
-                </div>
               </div>
             </div>
-
-            {/* Logout Button */}
+          </div>            {/* Logout Button */}
             <Button
               onClick={handleLogout}
               variant="ghost"
