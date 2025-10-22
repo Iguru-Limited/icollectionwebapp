@@ -1,6 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { AuthResponse } from "@/types/auth/userauthentication";
+import type { CompanyTemplateResponse } from "@/types/company-template";
 import { API_ENDPOINTS } from "@/lib/utils/constants";
 
 export const authOptions: NextAuthOptions = {
@@ -24,7 +25,7 @@ export const authOptions: NextAuthOptions = {
           };
 
           // Use external API endpoint for authentication
-          const apiUrl = `${API_ENDPOINTS.BASE_URL}/auth/login.php`;
+          const apiUrl = `${API_ENDPOINTS.BASE_URL}/api/auth/login.php`;
           
           const response = await fetch(apiUrl, {
             method: "POST",
@@ -35,13 +36,17 @@ export const authOptions: NextAuthOptions = {
           });
 
           const responseText = await response.text();
+          console.log("Authentication response:", responseText);
 
           if (!response.ok) {
             return null;
           }
 
           // Parse the response text as JSON
-          let data: AuthResponse;
+          let data: AuthResponse & {
+            company_template?: CompanyTemplateResponse;
+            user?: (AuthResponse["user"] & { printer?: { id: string; name: string } | null });
+          };
           try {
             data = JSON.parse(responseText);
           } catch {
@@ -50,17 +55,21 @@ export const authOptions: NextAuthOptions = {
           }
           
           // Validate the response structure
-          if (!data.access_token || !data.user || !data.user.username) {
+          if (!data.access_token || !data.user || !data.user.username || !data.user.user_id) {
             return null;
           }
 
           return {
-            id: data.user.username,
+            id: data.user.user_id,
+            user_id: data.user.user_id,
             username: data.user.username,
             role: data.role,
             token: data.access_token,
             refresh_token: data.refresh_token,
-            company_details: data.user.company,
+            company: data.user.company,
+            stage: data.user.stage,
+            printer: data.user.printer,
+            company_template: data.company_template,
           };
         } catch (error) {
           console.error("Authentication error:", error);
@@ -99,11 +108,15 @@ export const authOptions: NextAuthOptions = {
       }
 
       if (user) {
+        token.user_id = user.user_id;
         token.role = user.role;
         token.token = user.token;
         token.refresh_token = user.refresh_token;
-        token.company_details = user.company_details;
+        token.company = user.company;
+        token.stage = user.stage;
+        token.printer = user.printer;
         token.username = user.username;
+        token.company_template = user.company_template;
         // Set token expiry to 1 hour from now (shorter for security)
         token.expiresAt = Date.now() + (60 * 60 * 1000);
         // Set refresh token expiry to 7 days
@@ -137,11 +150,19 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.sub!;
+        session.user.user_id = token.user_id;
         session.user.role = token.role;
         session.user.token = token.token;
         session.user.refresh_token = token.refresh_token;
-        session.user.company_details = token.company_details;
+        session.user.company = token.company;
+        session.user.stage = token.stage;
+        session.user.printer = token.printer;
         session.user.username = token.username || '';
+        // expose company template at the top-level session (not in user)
+        if (token.company_template) {
+          (session as unknown as { company_template?: CompanyTemplateResponse }).company_template =
+            token.company_template as CompanyTemplateResponse;
+        }
       }
       return session;
     },

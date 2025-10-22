@@ -242,21 +242,35 @@ export default function CollectionForm() {
     try {
       const printService = new PrintService();
       
-      // Prepare receipt data
-      const receiptData = {
-        receiptId: `ICR-${Date.now()}`,
-        date: new Date().toISOString().split('T')[0],
-        time: new Date().toTimeString().split(' ')[0],
-        vehicle: data.currentVehicle.plateNumber,
-        items: entries.map(entry => ({
-          type: entry.type,
-          amount: `KSH ${entry.amount}`
-        })),
-        total: `KSH ${entries.reduce((sum, entry) => sum + parseFloat(entry.amount || '0'), 0)}`
-      };
+      // Build a minimal pre-formatted receipt text for preview/printing
+      const id = `ICR-${Date.now()}`;
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const HH = String(now.getHours()).padStart(2, '0');
+      const MM = String(now.getMinutes()).padStart(2, '0');
+      const SS = String(now.getSeconds()).padStart(2, '0');
+      const localDateTime = `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
 
-      // Print receipt (works in both Electron and web)
-      const printResult = await printService.printReceipt(receiptData);
+      const itemsText = entries
+        .map(entry => `${entry.type}                 ${parseFloat(entry.amount || '0').toFixed(2)}`)
+        .join('\n');
+      const totalValue = entries.reduce((sum, e) => sum + (parseFloat(e.amount || '0') || 0), 0);
+
+      const receiptText = [
+        `Receipt #${id}`,
+        data.currentVehicle?.plateNumber ? `Vehicle: ${data.currentVehicle.plateNumber}` : undefined,
+        itemsText,
+        '------------------------------',
+        `TOTAL ${totalValue.toFixed(2)}`,
+        '------------------------------',
+        '**Terms and Conditions Apply**',
+        localDateTime
+      ].filter(Boolean).join('\n');
+
+      // Print using the unified text-based method
+      const printResult = await printService.printReceiptText(receiptText, { overrideDateTime: localDateTime });
       
       if (printResult.success) {
         alert(`Receipt printed successfully on ${printResult.printer}`);

@@ -12,6 +12,10 @@ export interface ReceiptData {
   date: string;
   time: string;
   vehicle: string;
+  companyName: string;
+  companyPhone?: string;
+  servedBy: string;
+  stage: string;
   items: Array<{
     type: string;
     amount: string;

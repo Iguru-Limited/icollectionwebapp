@@ -1,24 +1,29 @@
-export interface ReceiptData {
-  receiptId: string;
-  date: string;
-  time: string;
-  vehicle: string;
-  items: Array<{
-    type: string;
-    amount: string;
-  }>;
-  total: string;
-}
-
+/**
+ * Print Result Interface
+ * 
+ * Returned by all print methods to indicate success or failure.
+ */
 export interface PrintResult {
-  success: boolean;
-  printer?: string;
-  error?: string;
+  success: boolean;   // Whether the print operation was successful
+  printer?: string;   // Name of the printer used (if available)
+  error?: string;     // Error message (if operation failed)
 }
 
+/**
+ * Print Service Class
+ * 
+ * Handles receipt printing for both web browsers and Electron desktop app.
+ * Provides one main method:
+ * - printReceiptText() - Prints pre-formatted text from API (RECOMMENDED)
+ */
 export class PrintService {
   private isElectron: boolean;
 
+  /**
+   * Constructor
+   * 
+   * Detects if the app is running in Electron or web browser.
+   */
   constructor() {
     this.isElectron =
       typeof window !== "undefined" &&
@@ -26,55 +31,51 @@ export class PrintService {
       window.electronAPI?.isElectron;
   }
 
-  async printReceipt(receiptData: ReceiptData): Promise<PrintResult> {
-    if (this.isElectron) {
-      // Use native printing
-      return await window.electronAPI.printReceipt(receiptData);
-    } else {
-      // Use web printing fallback
-      return await this.webPrint(receiptData);
-    }
-  }
-
-  async getPrinters(): Promise<{
-    success: boolean;
-    printers?: Array<{ name: string; displayName: string; isDefault: boolean }>;
-    error?: string;
-  }> {
-    if (this.isElectron) {
-      return await window.electronAPI.getPrinters();
-    } else {
-      // Web browsers don't have direct printer access
-      return {
-        success: true,
-        printers: [
-          {
-            name: "browser",
-            displayName: "Browser Print Dialog",
-            isDefault: true,
-          },
-        ],
-      };
-    }
-  }
-
-  private async webPrint(receiptData: ReceiptData): Promise<PrintResult> {
+  /**
+   * Print Receipt Text (RECOMMENDED)
+   * 
+   * Prints a pre-formatted receipt text string from the API.
+   * The API returns a fully formatted receipt with all data including:
+   * - Company name and phone
+   * - Receipt number
+   * - Collection items with amounts
+   * - Total amount
+   * - Terms and conditions
+   * - User, stage, date/time
+   * - Footer
+   * 
+   * @param receiptText - Pre-formatted receipt text from API response
+   * @returns Promise<PrintResult> - Result of the print operation
+   * 
+   * @example
+   * const result = await printService.printReceiptText(apiResponse.data.receipt_text);
+   */
+  async printReceiptText(
+    receiptText: string,
+    options?: { overrideDateTime?: string | Date }
+  ): Promise<PrintResult> {
     try {
-      // Create a new window for printing
+      // Open a new browser window for printing
       const printWindow = window.open("", "_blank");
       if (!printWindow) {
         throw new Error("Could not open print window");
       }
 
-      const printContent = this.generateReceiptHTML(receiptData);
+      // Apply optional overrides (e.g., replace server time with local time)
+      const adjustedText = this.applyOverrides(receiptText, options);
+
+      // Generate HTML with the pre-formatted text
+      const printContent = this.generateReceiptTextHTML(adjustedText);
       printWindow.document.write(printContent);
       printWindow.document.close();
 
-      // Wait for content to load, then print
+      // Wait for content to load, then trigger browser print dialog
       return new Promise((resolve) => {
         printWindow.onload = () => {
           printWindow.print();
-          // Close window after a short delay
+          
+          // Close the print window after a short delay
+          // This gives time for the print dialog to appear
           setTimeout(() => {
             printWindow.close();
             resolve({ success: true, printer: "Browser Print Dialog" });
@@ -82,11 +83,34 @@ export class PrintService {
         };
       });
     } catch (error) {
-      return { success: false, error: (error as Error).message };
+      return { 
+        success: false, 
+        error: (error as Error).message 
+      };
     }
   }
 
-  private generateReceiptHTML(receiptData: ReceiptData): string {
+  /**
+   * Generate Receipt Text HTML (Private Method - RECOMMENDED)
+   * 
+   * Generates HTML markup to display pre-formatted receipt text from the API.
+   * This is the preferred method because:
+   * 1. The API formats the receipt with all correct data
+   * 2. Ensures consistency with backend formatting
+   * 3. Includes phone number and all other details from the API
+   * 4. Less maintenance - formatting is handled by API
+   * 
+   * The receipt text comes formatted with line breaks (\n) and spacing,
+   * so we use 'pre-wrap' to preserve the formatting.
+   * 
+   * @param receiptText - Pre-formatted receipt text from API (from receipt_text field)
+   * @returns HTML string ready for printing
+   * 
+   * @example
+   * API returns receipt_text like:
+   * "TYST COMPANY NAME\n0712345678\n----\nKAS-26\nInsurance 200.00\n..."
+   */
+  private generateReceiptTextHTML(receiptText: string): string {
     return `
       <!DOCTYPE html>
       <html>
@@ -94,70 +118,32 @@ export class PrintService {
         <meta charset="UTF-8">
         <title>Receipt</title>
         <style>
+          /* Print-specific styles - hide controls when printing */
           @media print {
             body { margin: 0; }
             .no-print { display: none; }
           }
+          
+          /* Main body styles */
           body {
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            /* Make printed text bolder for better readability on receipt printers */
-            font-weight: 900;
+            font-family: 'Courier New', monospace; /* Monospace font matches receipt format */
+            font-size: 14px;
+            font-weight: 900; /* Maximum boldness for better receipt printer visibility */
             line-height: 1.4;
             margin: 0;
-            padding: 2px;
-            width: 300px;
+            padding: 10px;
+            width: 300px;  /* Approximate receipt paper width */
             background: white;
           }
-          .header {
-            text-align: start;
-            border-bottom: 1px dashed #000;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
+          
+          /* Receipt content - preserves formatting from API */
+          .receipt {
+            white-space: pre-wrap;  /* Preserves line breaks and spaces from API text */
+            word-wrap: break-word;  /* Prevents overflow on long words */
+            font-weight: 900; /* Maximum boldness for receipt text */
           }
-          .header h1,
-          .header h2,
-          .header h3,
-          .header h4 {
-            margin: 0;
-            font-weight: 700; /* emphasize title */
-          }
-
-          .pay-total {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin: 5px 0;
-          }
-
-
-          .item {
-            display: flex;
-            justify-content: space-between;
-            margin: 5px 0;
-          }
-          .item span {
-            /* slightly bolder for each line item */
-            font-weight: medium;
-          }
-          .total {
-            border-top: 1px dashed #000;
-            padding-top: 10px;
-            margin-top: 12px;
-            font-weight: bolder;
-            font-size: 24px;
-          }
-          .footer {
-            text-align: start;
-            margin-top: 20px;
-            font-size: 15px;
-            line-height: 0.5;
-            font-weight: bold;
-          }
-          .footer p {
-          margin:6px;
-          }
+          
+          /* Print/Close buttons - hidden when printing */
           .no-print {
             position: fixed;
             top: 10px;
@@ -170,45 +156,61 @@ export class PrintService {
         </style>
       </head>
       <body>
+        <!-- Control buttons (not visible when printing) -->
         <div class="no-print">
           <button onclick="window.print()">Print Receipt</button>
           <button onclick="window.close()">Close</button>
         </div>
         
-        <div class="header">
-          <h1>ABARDARELINE LIMITED</h1>
-          <h2>Vehicle: ${receiptData.vehicle}</h2>
-          <h3>Receipt #${receiptData.receiptId}</h3>
-          <h4>${receiptData.date} ${receiptData.time}</h4>
-
-        </div>
-        
-        <div class="items">
-          ${receiptData.items
-            .map(
-              (item) => `
-            <div class="item">
-              <span>${item.type}</span>
-              <span>${item.amount}</span>
-            </div>
-          `
-            )
-            .join("")}
-        </div>
-        
-        <div class="total">
-          <div class="pay-total">
-            <span>TOTAL:</span>
-            <span>${receiptData.total}</span>
-          </div>
-        </div>
-        
-        <div class="footer">
-          <p>Served by: Stanoo</p>
-          <p>Powered by: www.Iguru.co.ke</p>
-        </div>
+        <!-- Pre-formatted receipt text from API -->
+        <div class="receipt">${receiptText}</div>
       </body>
       </html>
     `;
+  }
+
+  /**
+   * Apply Overrides (Private Helper)
+   *
+   * Allows small, controlled modifications to the API-provided receipt text
+   * without rebuilding the layout. Currently supports overriding the date/time
+   * line to use the client's local time.
+   *
+   * Implementation details:
+   * - Finds the last line in the receipt that matches YYYY-MM-DD HH:MM:SS
+   * - Replaces just that line with the provided local datetime string
+   */
+  private applyOverrides(
+    receiptText: string,
+    options?: { overrideDateTime?: string | Date }
+  ): string {
+    if (!options?.overrideDateTime) return receiptText;
+
+    // Normalize override to "YYYY-MM-DD HH:MM:SS"
+    let overrideStr: string;
+    if (options.overrideDateTime instanceof Date) {
+      const d = options.overrideDateTime;
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const h = String(d.getHours()).padStart(2, "0");
+      const min = String(d.getMinutes()).padStart(2, "0");
+      const s = String(d.getSeconds()).padStart(2, "0");
+      overrideStr = `${y}-${m}-${day} ${h}:${min}:${s}`;
+    } else {
+      overrideStr = options.overrideDateTime;
+    }
+
+    const lines = receiptText.split(/\r?\n/);
+    const dtRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+
+    for (let i = lines.length - 1; i >= 0; i--) {
+      if (dtRegex.test(lines[i].trim())) {
+        lines[i] = overrideStr;
+        break;
+      }
+    }
+
+    return lines.join("\n");
   }
 }

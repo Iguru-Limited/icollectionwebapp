@@ -1,43 +1,56 @@
 "use client";
+import { useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, Download, Filter } from "lucide-react";
-import Header from "@/components/home/Header";
+import {
+  ArrowLeft,
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  FileText
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useIsMobile } from "@/hooks/useMediaQuery";
+import { Separator } from "@/components/ui/separator";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { data } from "@/data";
-import { useParams, useRouter } from "next/navigation";
-import { useMemo } from "react";
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2
-    }
-  }
-};
+// Utilities
+function formatLongDate(date: Date) {
+  return date.toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
-const rowVariants = {
-  hidden: { opacity: 0, x: -20 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.4,
-      ease: "easeOut" as const
-    }
-  }
-};
+function isSameYMD(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function isToday(date: Date) {
+  return isSameYMD(date, new Date());
+}
+
+function parseDDMMYYYY(value: string): Date | null {
+  // expected format: 13-08-2025
+  const m = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (!m) return null;
+  const [, dd, mm, yyyy] = m;
+  const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+  return isNaN(d.getTime()) ? null : d;
+}
 
 export default function VehicleReportPage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
-  const isMobile = useIsMobile();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const vehicleId = Number(params?.slug);
 
@@ -50,194 +63,127 @@ export default function VehicleReportPage() {
     return { vehicle, vehicleReports };
   }, [vehicleId]);
 
-  const totalAmount = vehicleReports.reduce((sum, report) => {
+  // Filter reports for the selected date (mock data uses DD-MM-YYYY)
+  const reportsForDay = useMemo(() => {
+    return vehicleReports.filter((r) => {
+      const d = parseDDMMYYYY(r.date);
+      return d ? isSameYMD(d, selectedDate) : false;
+    });
+  }, [vehicleReports, selectedDate]);
+
+  const totalAmount = reportsForDay.reduce((sum, report) => {
     const amount = parseInt(report.amount.replace(/[^\d]/g, ""));
     return sum + (isNaN(amount) ? 0 : amount);
   }, 0);
 
-  if (!vehicle) {
-    return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
-        className="min-h-screen bg-white"
-      >
-        <div className="sticky top-0 z-50 bg-white">
-          <div className="container mx-auto max-w-6xl">
-            <Header />
-          </div>
-        </div>
-        <div className="container mx-auto max-w-6xl px-6 py-12">
-          <Card className="p-8 rounded-none text-center">
-            <h2 className="text-xl font-bold mb-2">Vehicle not found</h2>
-            <p className="text-gray-600 mb-6">We couldn’t find a vehicle for id {params?.slug}.</p>
-            <Button variant="outline" className="rounded-none" onClick={() => router.back()}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Go Back
-            </Button>
-          </Card>
-        </div>
-      </motion.div>
-    );
-  }
+  const totalReceipts = reportsForDay.length;
+
+  // Title shown in app bar (use plate if available, otherwise generic label)
+  const appBarTitle = vehicle?.plateNumber ? `${vehicle.plateNumber} REPORT` : "REPORT";
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-white"
+      className="min-h-screen bg-[#F5F5F7]"
     >
-      <div className="sticky top-0 z-50 bg-white">
-        <div className="container mx-auto max-w-6xl">
-          <Header />
+      {/* Top app bar */}
+      <div className="sticky top-0 z-50 bg-purple-700 text-white">
+        <div className="mx-auto px-4 py-3 max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-4xl">
+          <div className="grid grid-cols-3 items-center">
+            <div className="justify-self-start">
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-white/10 rounded-full p-2 h-auto"
+                onClick={() => router.back()}
+                aria-label="Back"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            </div>
+            <div className="justify-self-center">
+              <h1 className="text-sm font-semibold truncate">{appBarTitle}</h1>
+            </div>
+            <div />
+          </div>
         </div>
       </div>
 
-      <div className="container mx-auto max-w-6xl">
-        <motion.main 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="px-6 py-8 space-y-8"
-        >
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-          >
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="flex flex-col md:flex-row md:items-center justify-between mb-6"
+      {/* Content */}
+  <div className="mx-auto px-4 py-4 space-y-4 max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-4xl">
+        {/* Select Date */}
+        <Card className="rounded-2xl p-4 shadow-sm">
+          <div className="text-xs font-semibold text-gray-600 flex items-center gap-2 mb-3">
+            <CalendarIcon className="w-4 h-4 text-purple-700" />
+            SELECT DATE
+          </div>
+
+          <div className="flex items-center justify-between">
+            <button
+              className="rounded-full p-2 bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors"
+              onClick={() => setSelectedDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1))}
+              aria-label="Previous day"
             >
-              <h2 className="text-xl font-bold font-mono pb-3">
-                COLLECTION REPORT: {vehicle.plateNumber}
-              </h2>
-              <div className="flex flex-col items-end gap-3 w-full md:w-auto">
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  className="flex items-center space-x-3"
-                >
-                  <Input
-                    type="date"
-                    defaultValue="2025-10-07"
-                    className="w-40 rounded-none"
-                  />
-                  <Input
-                    type="date"
-                    defaultValue="2025-10-07"
-                    className="w-40 rounded-none"
-                  />
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Button className="text-white rounded-none">
-                      <Filter className="w-4 h-4 mr-2" />
-                      Filter
-                    </Button>
-                  </motion.div>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button className="text-white rounded-none">
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Button>
-                </motion.div>
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            <div className="border-2 border-purple-600 rounded-xl px-4 py-3 min-w-[12rem] md:min-w-[18rem] flex items-center justify-between gap-4">
+              <div>
+                <div className="text-purple-700 text-sm font-semibold">
+                  {isToday(selectedDate) ? "Today" : "Selected Date"}
+                </div>
+                <div className="text-gray-700 text-xs leading-tight">
+                  {formatLongDate(selectedDate)}
+                </div>
               </div>
-            </motion.div>
-          </motion.div>
+              <CalendarIcon className="w-5 h-5 text-purple-700" />
+            </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <Card className="rounded-none">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-green-700 hover:bg-green-700">
-                      <TableHead className={`text-white font-bold uppercase text-center ${isMobile ? 'text-xs' : 'text-sm'}`}>#</TableHead>
-                      <TableHead className={`text-white font-bold uppercase ${isMobile ? 'text-xs' : 'text-sm'}`}>Receipt</TableHead>
-                      <TableHead className={`text-white font-bold uppercase ${isMobile ? 'text-xs' : 'text-sm'}`}>Amount</TableHead>
-                      <TableHead className={`text-white font-bold uppercase ${isMobile ? 'text-xs' : 'text-sm'}`}>Collection</TableHead>
-                      <TableHead className={`text-white font-bold uppercase ${isMobile ? 'text-xs' : 'text-sm'}`}>Date</TableHead>
-                      <TableHead className={`text-white font-bold uppercase ${isMobile ? 'text-xs' : 'text-sm'}`}>Time</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {vehicleReports.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-gray-600">
-                          No receipts found for this vehicle.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      vehicleReports.map((report, index) => (
-                        <motion.tr
-                          key={`${report.receipt}-${index}`}
-                          variants={rowVariants}
-                          whileHover={{ 
-                            backgroundColor: "rgba(249, 250, 251, 0.8)",
-                            transition: { duration: 0.2 }
-                          }}
-                          className="hover:bg-gray-50"
-                        >
-                          <TableCell className={`text-center font-mono ${isMobile ? 'text-xs py-2' : 'text-sm'}`}>{index + 1}</TableCell>
-                          <TableCell className={`font-mono ${isMobile ? 'text-xs py-2' : 'text-sm'}`}>{report.receipt}</TableCell>
-                          <TableCell className={`font-mono ${isMobile ? 'text-xs py-2' : 'text-sm'}`}>{report.amount}</TableCell>
-                          <TableCell className={`font-mono uppercase ${isMobile ? 'text-xs py-2' : 'text-sm'}`}>{report.collection}</TableCell>
-                          <TableCell className={`font-mono ${isMobile ? 'text-xs py-2' : 'text-sm'}`}>{report.date}</TableCell>
-                          <TableCell className={`font-mono ${isMobile ? 'text-xs py-2' : 'text-sm'}`}>{report.time}</TableCell>
-                        </motion.tr>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </Card>
-
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="flex justify-between items-center py-4 px-6 border-t border-gray-200 bg-gray-50"
+            <button
+              className="rounded-full p-2 bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors"
+              onClick={() => setSelectedDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1))}
+              aria-label="Next day"
             >
-              <span className={`font-bold font-mono ${isMobile ? 'text-sm' : 'text-lg'}`}>TOTAL</span>
-              <span className={`font-bold font-mono ${isMobile ? 'text-sm' : 'text-lg'}`}>KES {totalAmount.toLocaleString()}</span>
-            </motion.div>
-          </motion.div>
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </Card>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="flex justify-start"
-          >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button 
-                variant="outline" 
-                className="rounded-none border-gray-300"
-                onClick={() => router.back()}
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
-              </Button>
-            </motion.div>
-          </motion.div>
-        </motion.main>
+        {/* Collections Summary */}
+        <Card className="rounded-2xl p-4 shadow-sm">
+          <div className="flex items-center gap-2 text-gray-800 font-semibold text-sm mb-3">
+            <FileText className="w-4 h-4 text-purple-700" />
+            Collections Summary
+          </div>
+          <Separator className="my-2" />
+          <div className="grid grid-cols-2">
+            <div className="px-2 py-4 text-center">
+              <div className="text-[11px] tracking-wide text-gray-600">TOTAL RECEIPTS</div>
+              <div className="text-2xl font-extrabold text-gray-900">{totalReceipts}</div>
+            </div>
+            <div className="px-2 py-4 text-center border-l">
+              <div className="text-[11px] tracking-wide text-gray-600">TOTAL AMOUNT</div>
+              <div className="text-2xl font-extrabold text-gray-900"><span className="font-semibold">Ksh</span> {totalAmount.toLocaleString()}</div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Search */}
+        <InputGroup className="rounded-full border-purple-400 shadow-sm">
+          <InputGroupAddon>
+            <Search className="text-purple-700" />
+          </InputGroupAddon>
+          <InputGroupInput placeholder="Search by receipt number or type..." />
+        </InputGroup>
+
+        {/* Placeholder icon circle */}
+        <div className="py-10 flex items-center justify-center">
+          <div className="w-40 h-40 rounded-full border-2 border-dashed border-purple-300 flex items-center justify-center">
+            <FileText className="w-10 h-10 text-purple-500" />
+          </div>
+        </div>
+
       </div>
     </motion.div>
   );
