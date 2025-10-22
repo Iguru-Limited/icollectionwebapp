@@ -17,6 +17,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
+import { PrintService } from "@/lib/utils/printService";
+import { toast } from "sonner";
 
 interface AdditionalCollection {
   id: string;
@@ -26,7 +28,7 @@ interface AdditionalCollection {
 
 export default function CollectionPage() {
   const router = useRouter();
-  useSession(); // Keep session active
+  const { data: session } = useSession();
   const selectedVehicleId = useAppStore((s) => s.selectedVehicleId);
   const template = useCompanyTemplateStore((s) => s.template);
   
@@ -69,6 +71,76 @@ export default function CollectionPage() {
     (sum, c) => sum + (parseFloat(c.amount) || 0),
     0
   );
+
+  const handleProcessCollection = async () => {
+    // Validate that we have collections
+    if (additionalCollections.length === 0) {
+      toast.error("Please add at least one collection before processing");
+      return;
+    }
+
+    // Validate that all collections have a type and amount
+    const invalidCollections = additionalCollections.filter(
+      (c) => !c.collectionType || parseFloat(c.amount) <= 0
+    );
+
+    if (invalidCollections.length > 0) {
+      toast.error("Please fill in all collection types and amounts");
+      return;
+    }
+
+    // Show loading toast and store its ID
+    const toastId = toast.loading("Printing receipt...");
+
+    try {
+      const printService = new PrintService();
+      
+      // Get current date and time
+      const now = new Date();
+      const date = now.toISOString().split('T')[0];
+      const time = now.toTimeString().split(' ')[0];
+      
+      // Prepare receipt data with the new collection structure
+      const receiptData = {
+        receiptId: `ICR-${Date.now()}`,
+        date: date,
+        time: time,
+        vehicle: selectedVehicle?.number_plate || "Unknown Vehicle",
+        companyName: session?.user?.company_details?.company_name || "Company Name",
+        servedBy: session?.user?.username || "User",
+        items: additionalCollections.map(collection => ({
+          type: collection.collectionType,
+          amount: `KSH ${parseFloat(collection.amount).toFixed(2)}`
+        })),
+        total: `KSH ${totalAmount.toFixed(2)}`
+      };
+
+      // Print receipt
+      const printResult = await printService.printReceipt(receiptData);
+      
+      // Dismiss loading toast
+      toast.dismiss(toastId);
+      
+      if (printResult.success) {
+        toast.success(`Receipt printed successfully on ${printResult.printer}`);
+        
+        // Clear collections after successful print
+        setAdditionalCollections([]);
+        
+        // Optionally navigate back to user page
+        setTimeout(() => {
+          router.push("/user");
+        }, 1500);
+      } else {
+        toast.error(`Print failed: ${printResult.error}`);
+      }
+    } catch (error) {
+      // Dismiss loading toast on error
+      toast.dismiss(toastId);
+      console.error('Process collection error:', error);
+      toast.error('An error occurred while processing the collection');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
@@ -257,7 +329,10 @@ export default function CollectionPage() {
                 </Dialog>
 
                 {/* Process Collection Button */}
-                <Button className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12">
+                <Button 
+                  className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12"
+                  onClick={handleProcessCollection}
+                >
                   <Receipt className="w-5 h-5 mr-2" />
                   PROCESS COLLECTION
                 </Button>

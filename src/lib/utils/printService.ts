@@ -3,6 +3,8 @@ export interface ReceiptData {
   date: string;
   time: string;
   vehicle: string;
+  companyName?: string;
+  servedBy?: string;
   items: Array<{
     type: string;
     amount: string;
@@ -176,7 +178,7 @@ export class PrintService {
         </div>
         
         <div class="header">
-          <h1>ABARDARELINE LIMITED</h1>
+          <h1>${receiptData.companyName || 'ABARDARELINE LIMITED'}</h1>
           <h2>Vehicle: ${receiptData.vehicle}</h2>
           <h3>Receipt #${receiptData.receiptId}</h3>
           <h4>${receiptData.date} ${receiptData.time}</h4>
@@ -204,7 +206,7 @@ export class PrintService {
         </div>
         
         <div class="footer">
-          <p>Served by: Stanoo</p>
+          <p>Served by: ${receiptData.servedBy || 'User'}</p>
           <p>Powered by: www.Iguru.co.ke</p>
         </div>
       </body>
