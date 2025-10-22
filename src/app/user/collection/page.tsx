@@ -101,9 +101,14 @@ export default function CollectionPage() {
     const toastId = toast.loading("Processing collection...");
 
     try {
-      // Get current date
+      // Get current date and time in local timezone
       const now = new Date();
-      const tripDate = now.toISOString().split('T')[0];
+      
+      // Format date as YYYY-MM-DD using local time (not UTC)
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const tripDate = `${year}-${month}-${day}`;
       
       // Prepare slugs object from collections
       const slugs: { [key: string]: number } = {};
@@ -141,9 +146,22 @@ export default function CollectionPage() {
 
       // Now print the receipt using the receipt_text from API
       const printService = new PrintService();
+
+      // Compute local datetime in format YYYY-MM-DD HH:MM:SS
+      const nowLocal = new Date();
+      const yyyy = nowLocal.getFullYear();
+      const mm = String(nowLocal.getMonth() + 1).padStart(2, '0');
+      const dd = String(nowLocal.getDate()).padStart(2, '0');
+      const HH = String(nowLocal.getHours()).padStart(2, '0');
+      const MM = String(nowLocal.getMinutes()).padStart(2, '0');
+      const SS = String(nowLocal.getSeconds()).padStart(2, '0');
+      const localDateTime = `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
       
-      // Use the pre-formatted receipt text from API
-      const printResult = await printService.printReceiptText(result.data.receipt_text);
+      // Use the pre-formatted receipt text from API but override date/time to local
+      const printResult = await printService.printReceiptText(
+        result.data.receipt_text,
+        { overrideDateTime: localDateTime }
+      );
       
       // Dismiss printing toast
       toast.dismiss(printToastId);
