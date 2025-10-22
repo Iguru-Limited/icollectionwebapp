@@ -3,8 +3,10 @@ export interface ReceiptData {
   date: string;
   time: string;
   vehicle: string;
-  companyName?: string;
-  servedBy?: string;
+  companyName: string;
+  companyPhone?: string;
+  servedBy: string;
+  stage: string;
   items: Array<{
     type: string;
     amount: string;
@@ -102,63 +104,62 @@ export class PrintService {
           }
           body {
             font-family: 'Courier New', monospace;
-            font-size: 12px;
-            /* Make printed text bolder for better readability on receipt printers */
-            font-weight: 900;
-            line-height: 1.4;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.6;
             margin: 0;
-            padding: 2px;
+            padding: 10px;
             width: 300px;
             background: white;
           }
-          .header {
-            text-align: start;
+          .receipt {
             border-bottom: 1px dashed #000;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
+            padding-bottom: 5px;
           }
-          .header h1,
-          .header h2,
-          .header h3,
-          .header h4 {
+          .company-name {
             margin: 0;
-            font-weight: 700; /* emphasize title */
+            font-size: 14px;
+            font-weight: bold;
           }
-
-          .pay-total {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+          .company-phone {
+            margin: 0;
+            font-size: 14px;
+          }
+          .divider {
+            border-bottom: 1px dashed #000;
             margin: 5px 0;
           }
-
-
+          .vehicle {
+            margin: 10px 0 5px 0;
+            font-size: 14px;
+          }
           .item {
             display: flex;
             justify-content: space-between;
-            margin: 5px 0;
-          }
-          .item span {
-            /* slightly bolder for each line item */
-            font-weight: medium;
+            margin: 3px 0;
+            font-size: 14px;
           }
           .total {
-            border-top: 1px dashed #000;
-            padding-top: 10px;
-            margin-top: 12px;
-            font-weight: bolder;
-            font-size: 24px;
-          }
-          .footer {
-            text-align: start;
-            margin-top: 20px;
-            font-size: 15px;
-            line-height: 0.5;
+            margin: 10px 0;
+            font-size: 14px;
             font-weight: bold;
           }
-          .footer p {
-          margin:6px;
+          .divider-line {
+            border-bottom: 1px dashed #000;
+            margin: 5px 0;
+          }
+          .terms {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 12px;
+          }
+          .footer-info {
+            margin: 3px 0;
+            font-size: 14px;
+          }
+          .company-footer {
+            margin-top: 5px;
+            font-size: 14px;
           }
           .no-print {
             position: fixed;
@@ -177,37 +178,35 @@ export class PrintService {
           <button onclick="window.close()">Close</button>
         </div>
         
-        <div class="header">
-          <h1>${receiptData.companyName || 'ABARDARELINE LIMITED'}</h1>
-          <h2>Vehicle: ${receiptData.vehicle}</h2>
-          <h3>Receipt #${receiptData.receiptId}</h3>
-          <h4>${receiptData.date} ${receiptData.time}</h4>
-
-        </div>
-        
-        <div class="items">
+        <div class="receipt">
+          <p class="company-name">${receiptData.companyName}</p>
+          ${receiptData.companyPhone ? `<p class="company-phone">${receiptData.companyPhone}</p>` : ''}
+          <div class="divider"></div>
+          
+          <p class="vehicle">${receiptData.receiptId}</p>
+          
           ${receiptData.items
             .map(
               (item) => `
-            <div class="item">
-              <span>${item.type}</span>
-              <span>${item.amount}</span>
-            </div>
-          `
+          <div class="item">
+            <span>${item.type}</span>
+            <span>${item.amount}</span>
+          </div>`
             )
             .join("")}
-        </div>
-        
-        <div class="total">
-          <div class="pay-total">
-            <span>TOTAL:</span>
-            <span>${receiptData.total}</span>
-          </div>
-        </div>
-        
-        <div class="footer">
-          <p>Served by: ${receiptData.servedBy || 'User'}</p>
-          <p>Powered by: www.Iguru.co.ke</p>
+          <div class="divider-line"></div>
+
+          
+          <p class="total">TOTAL ${receiptData.total}</p>
+          
+          <div class="divider-line"></div>
+          
+          <p class="terms">**Terms and Conditions Apply**</p>
+          
+          <p class="footer-info">By: ${receiptData.servedBy}</p>
+          <p class="footer-info">Stage: ${receiptData.stage}</p>
+          <p class="footer-info">${receiptData.date} ${receiptData.time}</p>
+          <p class="company-footer">iGuru Limited|www.iguru.co.ke</p>
         </div>
       </body>
       </html>

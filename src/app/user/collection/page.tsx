@@ -142,19 +142,32 @@ export default function CollectionPage() {
       // Now print the receipt using the receipt_text from API
       const printService = new PrintService();
       
+      // Format date and time to match receipt format: 2025-10-21 07:50:13 (local time)
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      
+      const formattedDate = `${year}-${month}-${day}`;
+      const formattedTime = `${hours}:${minutes}:${seconds}`;
+      
       // Use the receipt data from API response
       const receiptData = {
-        receiptId: result.data.receipt_number,
-        date: tripDate,
-        time: now.toTimeString().split(' ')[0],
+        receiptId: result.data.receipt_number, // Receipt number from API (e.g., "KAS-29")
+        date: formattedDate,
+        time: formattedTime,
         vehicle: selectedVehicle.number_plate,
         companyName: session.user.company.company_name,
+        companyPhone: result.data.phone || '', // Phone number from API response
         servedBy: session.user.username,
+        stage: session.user.stage.stage_name,
         items: additionalCollections.map(collection => ({
           type: collection.collectionType,
-          amount: `KSH ${parseFloat(collection.amount).toFixed(2)}`
+          amount: parseFloat(collection.amount).toFixed(2)
         })),
-        total: `KSH ${result.data.total_amount.toFixed(2)}`
+        total: result.data.total_amount.toFixed(2)
       };
 
       // Print receipt

@@ -29,6 +29,7 @@ export interface SaveReceiptResponseData {
   receipt_number: string;
   receipt_text: string;
   escpos_base64: string;
+  phone?: string;
 }
 
 export interface SaveReceiptResponse {
