@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { PrintService } from "@/lib/utils/printService";
 import { toast } from "sonner";
 import { useSaveReceipt } from "@/hooks/receipt/useSaveReceipt";
+import { TopNavigation } from "@/components/ui/top-navigation";
 import { RiSendPlaneFill } from "react-icons/ri";
 import { IoWalletOutline } from "react-icons/io5";
 
@@ -199,6 +200,7 @@ export default function CollectionPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+      <TopNavigation />
       <div className="container mx-auto px-4 py-4 pb-24 max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl">
         {/* Header */}
         <div className="flex items-center mb-6">

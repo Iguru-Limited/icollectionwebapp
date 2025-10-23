@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Users, FileText, SquarePen, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
+import { TopNavigation } from "@/components/ui/top-navigation";
 import { IoCar } from "react-icons/io5";
 
 export default function UserPage() {
@@ -51,6 +52,8 @@ export default function UserPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Top navigation mirrors bottom nav (visible on all routes) */}
+      <TopNavigation />
       <div className="container mx-auto px-4 py-6 pb-24 space-y-6 max-w-md sm:max-w-lg md:max-w-3xl lg:max-w-5xl">
         
         {/* Modern Header (adapted from HeaderProfileModern) */}

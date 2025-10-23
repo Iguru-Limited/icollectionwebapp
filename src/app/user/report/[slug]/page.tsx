@@ -19,6 +19,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { data } from "@/data";
+import { TopNavigation } from "@/components/ui/top-navigation";
 
 // Utilities
 function formatLongDate(date: Date) {
@@ -88,7 +89,8 @@ export default function VehicleReportPage() {
       transition={{ duration: 0.5 }}
       className="min-h-screen bg-[#F5F5F7]"
     >
-      {/* Top app bar */}
+  {/* Top app bar */}
+  <TopNavigation />
       <div className="sticky top-0 z-50 bg-purple-700 text-white">
         <div className="mx-auto px-4 py-3 max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-4xl">
           <div className="grid grid-cols-3 items-center">

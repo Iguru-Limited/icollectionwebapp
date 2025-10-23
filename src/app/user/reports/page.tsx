@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { BarChart2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Circle } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { TopNavigation } from "@/components/ui/top-navigation";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 
 function formatShortDate(date: Date) {
@@ -32,6 +33,8 @@ export default function Reports() {
       transition={{ duration: 0.4 }}
       className="min-h-screen bg-gradient-to-b from-purple-50 to-white"
     >
+      {/* Top navigation for md+ screens (since bottom nav hides) */}
+      <TopNavigation />
   <div className="mx-auto px-4 pt-6 pb-24 max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-4xl">
         {/* Title */}
         <div className="flex items-center justify-between mb-4">
