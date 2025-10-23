@@ -7,9 +7,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Car, Users, FileText, SquarePen, LogOut } from "lucide-react";
+import { Search, Users, FileText, SquarePen, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
+import { IoCar } from "react-icons/io5";
 
 export default function UserPage() {
   const { data: session } = useSession();
@@ -83,10 +84,11 @@ export default function UserPage() {
               onClick={handleLogout}
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/20 rounded-full"
+              className="text-white hover:bg-white/20 rounded-full h-10 w-10 md:h-12 md:w-12 lg:h-14 lg:w-14"
               title="Logout"
+              aria-label="Logout"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />
             </Button>
           </div>
 
@@ -97,7 +99,7 @@ export default function UserPage() {
         {/* Vehicle Fleet Section */}
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
-            <Car className="w-5 h-5 text-purple-700" />
+            <IoCar className="w-5 h-5 text-purple-700" />
             <h2 className="font-semibold text-gray-800 text-lg">Vehicle Fleet</h2>
           </div>
 
@@ -125,7 +127,7 @@ export default function UserPage() {
                   className="rounded-xl border-2 border-red-400 p-4 shadow-sm"
                 >
                   <div className="flex items-center space-x-3">
-                    <Car className="text-red-600 w-5 h-5" />
+                    <IoCar className="text-red-600 w-5 h-5" />
                     <h3 className="text-lg font-semibold text-red-600 uppercase">
                       {vehicle.number_plate}
                     </h3>
