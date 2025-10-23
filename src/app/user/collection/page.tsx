@@ -3,7 +3,8 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useAppStore } from "@/store/appStore";
 import { useCompanyTemplateStore } from "@/store/companyTemplateStore";
-import { ArrowLeft, Receipt, FolderPlus, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft,  Plus, Trash2 } from "lucide-react";
+import { IoReceiptOutline } from "react-icons/io5";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,9 @@ import { useRouter } from "next/navigation";
 import { PrintService } from "@/lib/utils/printService";
 import { toast } from "sonner";
 import { useSaveReceipt } from "@/hooks/receipt/useSaveReceipt";
+import { TopNavigation } from "@/components/ui/top-navigation";
+import { RiSendPlaneFill } from "react-icons/ri";
+import { IoWalletOutline } from "react-icons/io5";
 
 interface AdditionalCollection {
   id: string;
@@ -196,6 +200,7 @@ export default function CollectionPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+      <TopNavigation />
       <div className="container mx-auto px-4 py-4 pb-24 max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl">
         {/* Header */}
         <div className="flex items-center mb-6">
@@ -216,13 +221,13 @@ export default function CollectionPage() {
           {/* Today's Collections Section */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <Receipt className="w-5 h-5 text-purple-600" />
+              <IoReceiptOutline className="w-5 h-5 text-purple-600" />
               <h2 className="text-lg font-semibold text-gray-800">Today&apos;s Collections</h2>
             </div>
 
             <Card className="bg-white rounded-xl p-8 text-center">
               <div className="inline-block p-6 rounded-full border-2 border-dashed border-purple-300 mb-4">
-                <Receipt className="w-12 h-12 text-purple-300" />
+                <IoReceiptOutline className="w-12 h-12 text-purple-300" />
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
                 No Collections Today
@@ -237,7 +242,7 @@ export default function CollectionPage() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
-                <FolderPlus className="w-5 h-5 text-purple-600" />
+                <IoWalletOutline className="w-5 h-5 text-purple-600" />
                 <h2 className="text-lg font-semibold text-gray-800">Additional Collections</h2>
               </div>
               {additionalCollections.length > 0 && (
@@ -343,7 +348,7 @@ export default function CollectionPage() {
                   className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12"
                   onClick={handleProcessCollection}
                 >
-                  <Receipt className="w-5 h-5 mr-2" />
+                  <RiSendPlaneFill className="w-5 h-5 mr-2" />
                   PROCESS COLLECTION
                 </Button>
               </div>

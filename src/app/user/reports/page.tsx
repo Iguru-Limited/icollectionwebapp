@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { BarChart2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Circle } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { TopNavigation } from "@/components/ui/top-navigation";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 
 function formatShortDate(date: Date) {
@@ -32,6 +33,8 @@ export default function Reports() {
       transition={{ duration: 0.4 }}
       className="min-h-screen bg-gradient-to-b from-purple-50 to-white"
     >
+      {/* Top navigation for md+ screens (since bottom nav hides) */}
+      <TopNavigation />
   <div className="mx-auto px-4 pt-6 pb-24 max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-4xl">
         {/* Title */}
         <div className="flex items-center justify-between mb-4">
@@ -44,10 +47,10 @@ export default function Reports() {
               <p className="text-xs text-gray-500">Collection summary by vehicle</p>
             </div>
           </div>
-          <div className="flex items-center gap-1 px-3 py-1 rounded-full border border-blue-400 text-blue-500 text-xs font-semibold bg-white">
+          {/* <div className="flex items-center gap-1 px-3 py-1 rounded-full border border-blue-400 text-blue-500 text-xs font-semibold bg-white">
             <Circle className="w-3 h-3 fill-blue-400 text-blue-400" />
             Live
-          </div>
+          </div> */}
         </div>
 
         {/* Select Date */}
