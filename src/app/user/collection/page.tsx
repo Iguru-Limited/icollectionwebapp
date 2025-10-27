@@ -271,7 +271,7 @@ export default function CollectionPage() {
             ) : (
               <Card className="bg-white rounded-xl p-4">
                 <div className="space-y-4">
-                  {additionalCollections.map((collection, index) => (
+                  {additionalCollections.map((collection) => (
                     <div key={collection.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-4">
                         <Select
