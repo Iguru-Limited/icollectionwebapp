@@ -52,7 +52,7 @@ export default function CollectionPage() {
     const newCollection: AdditionalCollection = {
       id: Date.now().toString(),
       collectionType: collectionTypes[0] || "",
-      amount: "0.00",
+      amount: "",
     };
     setAdditionalCollections([...additionalCollections, newCollection]);
   };
@@ -225,15 +225,15 @@ export default function CollectionPage() {
               <h2 className="text-lg font-semibold text-gray-800">Today&apos;s Collections</h2>
             </div>
 
-            <Card className="bg-white rounded-xl p-8 text-center">
-              <div className="inline-block p-6 rounded-full border-2 border-dashed border-purple-300 mb-4">
-                <IoReceiptOutline className="w-12 h-12 text-purple-300" />
+            <Card className="bg-white rounded-xl p-6 text-center">
+              <div className="inline-block p-4 rounded-full border-2 border-dashed border-purple-300 mb-3">
+                <IoReceiptOutline className="w-8 h-8 text-purple-300" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              <h3 className="text-md font-semibold text-gray-800 mb-1">
                 No Collections Today
               </h3>
-              <p className="text-sm text-gray-500">
-                No receipt reports have been recorded for this vehicle today. Start by creating a new collection.
+              <p className="text-xs text-gray-500">
+                No receipts recorded for this vehicle today.
               </p>
             </Card>
           </div>
@@ -254,46 +254,34 @@ export default function CollectionPage() {
 
             {/* Additional Collections List */}
             {additionalCollections.length === 0 ? (
-              <Card className="bg-white rounded-xl p-8 text-center">
+              <Card className="bg-white rounded-xl p-6 text-center">
                 <button 
-                  className="inline-block p-4 rounded-full border-2 border-purple-300 hover:border-purple-500 transition-colors mb-4"
+                  className="inline-block p-3 rounded-full border-2 border-purple-300 hover:border-purple-500 transition-colors mb-3"
                   onClick={addCollection}
                 >
-                  <Plus className="w-8 h-8 text-purple-600" />
+                  <Plus className="w-6 h-6 text-purple-600" />
                 </button>
-                <h3 className="text-base font-medium text-gray-700 mb-1">
-                  No additional collections added yet
+                <h3 className="text-md font-medium text-gray-700 mb-1">
+                  No collections added
                 </h3>
-                <p className="text-sm text-gray-500">
-                  Tap the button below to add extra collections
+                <p className="text-xs text-gray-500">
+                  Tap the button to add a collection.
                 </p>
               </Card>
             ) : (
-              <div className="space-y-4">
-                {additionalCollections.map((collection, index) => (
-                  <Card key={collection.id} className="bg-white rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-medium text-gray-800">
-                        Collection #{index + 1}
-                      </h3>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeCollection(collection.id)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-sm font-medium text-gray-600 mb-2 block">
-                          Collection Type
-                        </label>
+              <Card className="bg-white rounded-xl p-4">
+                <div className="space-y-4">
+                  {additionalCollections.map((collection) => (
+                    <div key={collection.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center space-x-4">
                         <Select
                           value={collection.collectionType}
                           onValueChange={(value) =>
-                            updateCollection(collection.id, "collectionType", value)
+                            updateCollection(
+                              collection.id,
+                              "collectionType",
+                              value
+                            )
                           }
                         >
                           <SelectTrigger className="w-full">
@@ -308,50 +296,63 @@ export default function CollectionPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-600 mb-2 block">
-                          Amount (KES)
-                        </label>
+                      <div className="flex items-center space-x-2">
                         <Input
                           type="number"
                           step="0.01"
                           value={collection.amount}
                           onChange={(e) =>
-                            updateCollection(collection.id, "amount", e.target.value)
+                            updateCollection(
+                              collection.id,
+                              "amount",
+                              e.target.value
+                            )
                           }
-                          className="w-full"
+                          className="w-32"
                         />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeCollection(collection.id)}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
-                  </Card>
-                ))}
+                  ))}
 
-                {/* Total Card */}
-                <Card className="bg-purple-600 rounded-xl p-4 text-white">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">Additional Collections Total</span>
-                    <span className="text-xl font-bold">Ksh {totalAmount.toFixed(2)}</span>
+                  {/* Total Card */}
+                  <div className="bg-purple-600 rounded-xl p-4 text-white mt-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">
+                        Additional Collections Total
+                      </span>
+                      <span className="text-xl font-bold">
+                        Ksh {totalAmount.toFixed(2)}
+                      </span>
+                    </div>
                   </div>
-                </Card>
 
-                {/* Add Collection Button */}
-                <Button 
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-12"
-                  onClick={addCollection}
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  ADD COLLECTION
-                </Button>
+                  {/* Add Collection Button */}
+                  <Button
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-12 mt-4"
+                    onClick={addCollection}
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
+                    ADD COLLECTION
+                  </Button>
 
-                {/* Process Collection Button */}
-                <Button 
-                  className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12"
-                  onClick={handleProcessCollection}
-                >
-                  <RiSendPlaneFill className="w-5 h-5 mr-2" />
-                  PROCESS COLLECTION
-                </Button>
-              </div>
+                  {/* Process Collection Button */}
+                  <Button
+                    className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12 mt-2"
+                    onClick={handleProcessCollection}
+                  >
+                    <RiSendPlaneFill className="w-5 h-5 mr-2" />
+                    PROCESS COLLECTION
+                  </Button>
+                </div>
+              </Card>
             )}
           </div>
         </div>

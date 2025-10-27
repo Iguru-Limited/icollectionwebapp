@@ -3,7 +3,6 @@ import { useSession, signOut } from "next-auth/react";
 import { useAppStore } from "@/store/appStore";
 import { useCompanyTemplateStore } from "@/store/companyTemplateStore";
 import { useEffect, useState } from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,16 +28,7 @@ export default function UserPage() {
       setTemplate(session.company_template);
     }
   }, [hasHydrated, template, session, setTemplate]);
-
-  const getUserInitials = (username?: string) => {
-    if (!username) return "U";
-    return username
-      .split(" ")
-      .map((name) => name[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
+ 
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: "/login" });
@@ -60,25 +50,13 @@ export default function UserPage() {
         <Card className="bg-[#6A1B9A] rounded-2xl border-2 border-yellow-500 shadow-md p-5 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              {/* Avatar */}
-              <Avatar className="w-14 h-14 border-2 border-yellow-500 bg-white/15 text-yellow-300 font-bold text-lg">
-                <AvatarFallback>
-                  {getUserInitials(session?.user?.username)}
-                </AvatarFallback>
-              </Avatar>
-
+              {/* Avatar */}  
               {/* User Info */}
-              <div className="flex flex-col">
-                <p className="text-sm text-white/80 mb-1 tracking-wide">
-                  Welcome back,
-              </p>
-              <h1 className="text-2xl font-bold text-white leading-tight capitalize">
-                {session?.user?.username}
-              </h1>
+              <div className="flex flex-col">                
               <div className="flex items-center mt-1 space-x-2">
                 <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
                 <p className="text-sm text-yellow-400 truncate">
-                  {session?.user?.company?.company_name}
+                  {session?.user?.stage?.stage_name}
                 </p>
               </div>
             </div>
