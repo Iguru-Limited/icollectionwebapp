@@ -255,17 +255,21 @@ export default function CollectionPage() {
             {/* Additional Collections List */}
             {additionalCollections.length === 0 ? (
               <Card className="bg-white rounded-xl p-6 text-center">
-                <button 
-                  className="inline-block p-3 rounded-full border-2 border-purple-300 hover:border-purple-500 transition-colors mb-3"
-                  onClick={addCollection}
-                >
-                  <Plus className="w-6 h-6 text-purple-600" />
-                </button>
+                <div className="flex justify-center my-4">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full w-12 h-12 bg-purple-600 text-white hover:bg-purple-700"
+                    onClick={addCollection}
+                  >
+                    <Plus className="w-6 h-6" />
+                  </Button>
+                </div>
                 <h3 className="text-md font-medium text-gray-700 mb-1">
                   No collections added
                 </h3>
                 <p className="text-xs text-gray-500">
-                  Tap the button to add a collection.
+                  Tap the button above to add a collection.
                 </p>
               </Card>
             ) : (
@@ -322,6 +326,17 @@ export default function CollectionPage() {
                     </div>
                   ))}
 
+                  <div className="flex justify-center pt-4">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full w-12 h-12 bg-purple-600 text-white hover:bg-purple-700"
+                      onClick={addCollection}
+                    >
+                      <Plus className="w-6 h-6" />
+                    </Button>
+                  </div>
+
                   {/* Total Card */}
                   <div className="bg-purple-600 rounded-xl p-4 text-white mt-4">
                     <div className="flex items-center justify-between">
@@ -333,15 +348,6 @@ export default function CollectionPage() {
                       </span>
                     </div>
                   </div>
-
-                  {/* Add Collection Button */}
-                  <Button
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-12 mt-4"
-                    onClick={addCollection}
-                  >
-                    <Plus className="w-5 h-5 mr-2" />
-                    ADD COLLECTION
-                  </Button>
 
                   {/* Process Collection Button */}
                   <Button
