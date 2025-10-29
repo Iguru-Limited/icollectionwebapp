@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -79,15 +80,21 @@ export default function VehicleReportPage() {
 
   const vehicleId = Number(params?.slug);
 
-  const { fetchReport, data, isLoading, error } = useReportByVehicleDate();
+  const { data: session, status } = useSession();
+  const { fetchReport, data, isLoading, error, reset } = useReportByVehicleDate();
 
   // Fetch when vehicle/date changes
   useEffect(() => {
     if (!Number.isFinite(vehicleId)) return;
+    if (status !== "authenticated") return; // wait for session
+    const companyId = session?.user?.company?.company_id;
+    if (!companyId) return; // still not ready
+
+    // clear any prior errors then fetch
+    reset();
     fetchReport(vehicleId, toYMD(selectedDate));
-    // reset previous data state between date changes to avoid flicker if desired
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vehicleId, selectedDate]);
+  }, [vehicleId, selectedDate, status, session?.user?.company?.company_id]);
 
   const rows = useMemo(() => data?.data?.rows ?? [], [data]);
   const appBarTitle = rows[0]?.number_plate
@@ -216,19 +223,25 @@ export default function VehicleReportPage() {
         </div>
 
         {/* Loading / Error / List */}
-        {isLoading && (
+        {(status === "loading") && (
           <div className="py-10 flex items-center justify-center">
             <Spinner className="size-6 text-purple-700" />
           </div>
         )}
 
-        {(!isLoading && error) && (
+        {isLoading && status === "authenticated" && (
+          <div className="py-10 flex items-center justify-center">
+            <Spinner className="size-6 text-purple-700" />
+          </div>
+        )}
+
+        {(!isLoading && error && status === "authenticated") && (
           <Card className="rounded-xl p-4 text-center text-sm text-red-600">
             {error}
           </Card>
         )}
 
-        {!isLoading && !error && filteredRows.map((row) => {
+        {!isLoading && !error && status === "authenticated" && filteredRows.map((row) => {
           const slugCount = Object.keys(row.payload?.slugs ?? {}).length;
           const isOpen = !!expanded[row.id];
           return (
