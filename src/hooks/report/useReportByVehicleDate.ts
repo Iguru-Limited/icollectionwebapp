@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import type {
   ReportByVehicleDateResponse,
@@ -15,15 +15,31 @@ export function useReportByVehicleDate(options?: UseReportByVehicleDateOptions) 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<ReportByVehicleDateResponse | null>(null);
+  const inFlightKeyRef = useRef<string | null>(null);
+  const dataRef = useRef<ReportByVehicleDateResponse | null>(null);
+  const onSuccessRef = useRef<UseReportByVehicleDateOptions["onSuccess"] | undefined>(options?.onSuccess);
+  const onErrorRef = useRef<UseReportByVehicleDateOptions["onError"] | undefined>(options?.onError);
 
-  const fetchReport = async (vehicleId: number, date: string) => {
+  useEffect(() => {
+    onSuccessRef.current = options?.onSuccess;
+    onErrorRef.current = options?.onError;
+  }, [options?.onSuccess, options?.onError]);
+
+  const fetchReport = useCallback(async (vehicleId: number, date: string) => {
     // Validate required session data
     if (!session?.user?.company?.company_id) {
       const errorMsg = "Company ID not found in session";
       setError(errorMsg);
-      options?.onError?.(errorMsg);
+      onErrorRef.current?.(errorMsg);
       return null;
     }
+
+    // Simple de-duplication by key to avoid repeated calls with the same args
+    const key = `${session.user.company.company_id}-${vehicleId}-${date}`;
+    if (inFlightKeyRef.current === key) {
+      return dataRef.current; // return existing data to avoid duplicate call
+    }
+    inFlightKeyRef.current = key;
 
     setIsLoading(true);
     setError(null);
@@ -61,17 +77,21 @@ export function useReportByVehicleDate(options?: UseReportByVehicleDateOptions) 
       }
 
       setData(result);
-      options?.onSuccess?.(result);
+      dataRef.current = result;
+      onSuccessRef.current?.(result);
+      inFlightKeyRef.current = null;
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       setError(errorMessage);
-      options?.onError?.(errorMessage);
+      onErrorRef.current?.(errorMessage);
+      inFlightKeyRef.current = null;
       return null;
     } finally {
       setIsLoading(false);
     }
-  };
+  // Only re-create if company_id changes
+  }, [session?.user?.company?.company_id]);
 
   return {
     fetchReport,
@@ -81,6 +101,7 @@ export function useReportByVehicleDate(options?: UseReportByVehicleDateOptions) 
     reset: () => {
       setError(null);
       setData(null);
+      dataRef.current = null;
     },
   };
 }
