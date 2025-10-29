@@ -1,6 +1,7 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -18,8 +19,9 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { data } from "@/data";
 import { TopNavigation } from "@/components/ui/top-navigation";
+import { Spinner } from "@/components/ui/spinner";
+import { useReportByVehicleDate } from "@/hooks/report/useReportByVehicleDate";
 
 // Utilities
 function formatLongDate(date: Date) {
@@ -39,48 +41,80 @@ function isToday(date: Date) {
   return isSameYMD(date, new Date());
 }
 
-function parseDDMMYYYY(value: string): Date | null {
-  // expected format: 13-08-2025
-  const m = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-  if (!m) return null;
-  const [, dd, mm, yyyy] = m;
-  const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
-  return isNaN(d.getTime()) ? null : d;
+function toYMD(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function formatDateTime(dt: string): string {
+  // expects "YYYY-MM-DD HH:mm:ss"
+  const [datePart, timePart] = dt.split(" ");
+  if (!datePart) return dt;
+  const [y, m, d] = datePart.split("-").map(Number);
+  let hours = 0, minutes = 0, seconds = 0;
+  if (timePart) {
+    const [hh, mm, ss] = timePart.split(":").map(Number);
+    hours = hh ?? 0;
+    minutes = mm ?? 0;
+    seconds = ss ?? 0;
+  }
+  const date = new Date(y, (m || 1) - 1, d || 1, hours, minutes, seconds);
+  if (isNaN(date.getTime())) return dt;
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 export default function VehicleReportPage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [search, setSearch] = useState("");
+  const [expanded, setExpanded] = useState<Record<number, boolean>>({});
 
   const vehicleId = Number(params?.slug);
 
-  const { vehicle, vehicleReports } = useMemo(() => {
-    const vehicle = data.vehicles.find(v => v.id === vehicleId);
-    const vehiclePlate = vehicle?.plateNumber;
-    const vehicleReports = vehiclePlate
-      ? data.reports.filter(r => r.vehicle === vehiclePlate)
-      : [];
-    return { vehicle, vehicleReports };
-  }, [vehicleId]);
+  const { data: session, status } = useSession();
+  const { fetchReport, data, isLoading, error, reset } = useReportByVehicleDate();
 
-  // Filter reports for the selected date (mock data uses DD-MM-YYYY)
-  const reportsForDay = useMemo(() => {
-    return vehicleReports.filter((r) => {
-      const d = parseDDMMYYYY(r.date);
-      return d ? isSameYMD(d, selectedDate) : false;
+  // Fetch when vehicle/date changes
+  useEffect(() => {
+    if (!Number.isFinite(vehicleId)) return;
+    if (status !== "authenticated") return; // wait for session
+    const companyId = session?.user?.company?.company_id;
+    if (!companyId) return; // still not ready
+
+    // clear any prior errors then fetch
+    reset();
+    fetchReport(vehicleId, toYMD(selectedDate));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vehicleId, selectedDate, status, session?.user?.company?.company_id]);
+
+  const rows = useMemo(() => data?.data?.rows ?? [], [data]);
+  const appBarTitle = rows[0]?.number_plate
+    ? `${rows[0].number_plate} REPORT`
+    : "REPORT";
+
+  const filteredRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((row) => {
+      const inReceipt = row.receipt_number?.toLowerCase().includes(q);
+      const inSlugs = Object.keys(row.payload?.slugs ?? {}).some((k) =>
+        k.toLowerCase().includes(q)
+      );
+      return inReceipt || inSlugs;
     });
-  }, [vehicleReports, selectedDate]);
+  }, [rows, search]);
 
-  const totalAmount = reportsForDay.reduce((sum, report) => {
-    const amount = parseInt(report.amount.replace(/[^\d]/g, ""));
-    return sum + (isNaN(amount) ? 0 : amount);
-  }, 0);
-
-  const totalReceipts = reportsForDay.length;
-
-  // Title shown in app bar (use plate if available, otherwise generic label)
-  const appBarTitle = vehicle?.plateNumber ? `${vehicle.plateNumber} REPORT` : "REPORT";
+  const totalAmount = filteredRows.reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0);
+  const totalReceipts = filteredRows.length;
 
   return (
     <motion.div
@@ -176,15 +210,92 @@ export default function VehicleReportPage() {
           <InputGroupAddon>
             <Search className="text-purple-700" />
           </InputGroupAddon>
-          <InputGroupInput placeholder="Search by receipt number or type..." />
+          <InputGroupInput
+            placeholder="Search by receipt number or type..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </InputGroup>
 
-        {/* Placeholder icon circle */}
-        <div className="py-10 flex items-center justify-center">
-          <div className="w-40 h-40 rounded-full border-2 border-dashed border-purple-300 flex items-center justify-center">
-            <FileText className="w-10 h-10 text-purple-500" />
-          </div>
+        {/* Count */}
+        <div className="text-xs text-gray-600 font-medium px-1">
+          {filteredRows.length} Receipts
         </div>
+
+        {/* Loading / Error / List */}
+        {(status === "loading") && (
+          <div className="py-10 flex items-center justify-center">
+            <Spinner className="size-6 text-purple-700" />
+          </div>
+        )}
+
+        {isLoading && status === "authenticated" && (
+          <div className="py-10 flex items-center justify-center">
+            <Spinner className="size-6 text-purple-700" />
+          </div>
+        )}
+
+        {(!isLoading && error && status === "authenticated") && (
+          <Card className="rounded-xl p-4 text-center text-sm text-red-600">
+            {error}
+          </Card>
+        )}
+
+        {!isLoading && !error && status === "authenticated" && filteredRows.map((row) => {
+          const slugCount = Object.keys(row.payload?.slugs ?? {}).length;
+          const isOpen = !!expanded[row.id];
+          return (
+            <Card key={row.id} className="rounded-2xl p-4 shadow-sm">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-semibold text-gray-900">#{row.receipt_number}</div>
+                <div className="text-[11px] px-2 py-1 rounded-full bg-purple-100 text-purple-700">
+                  {row.number_plate}
+                </div>
+              </div>
+
+              {/* Amount and collection count */}
+              <div className="mt-3 rounded-xl border bg-gray-50 p-4 text-center">
+                <div className="text-[11px] tracking-wide text-gray-600">TOTAL AMOUNT</div>
+                <div className="text-2xl font-extrabold text-gray-900">Ksh {Number(row.total_amount).toLocaleString()}</div>
+                <div className="mt-1 text-[11px] text-gray-600">{slugCount} {slugCount === 1 ? "collection" : "collections"}</div>
+              </div>
+
+              {/* Toggle breakdown */}
+              <div className="mt-2">
+                <button
+                  className="text-sm text-purple-700 font-medium"
+                  onClick={() => setExpanded((prev) => ({ ...prev, [row.id]: !isOpen }))}
+                > 
+                  {isOpen ? "Hide Breakdown" : "Show Breakdown"}
+                </button>
+              </div>
+
+              {/* Breakdown */}
+              {isOpen && (
+                <div className="mt-3 space-y-2">
+                  {Object.entries(row.payload?.slugs ?? {}).map(([label, amount]) => (
+                    <div key={label} className="flex items-center justify-between rounded-lg bg-purple-50 text-purple-800 px-3 py-2">
+                      <span className="text-sm font-medium">{label}</span>
+                      <span className="text-sm font-semibold">Ksh {Number(amount).toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Created at */}
+              <div className="mt-4 flex items-center gap-2 text-xs text-gray-600">
+                <span>Created:</span>
+                <span>{formatDateTime(row.created_at)}</span>
+              </div>
+
+              {/* Reprint button placeholder */}
+              <div className="mt-3">
+                <Button className="w-full bg-purple-700 hover:bg-purple-800">Reprint Receipt</Button>
+              </div>
+            </Card>
+          );
+        })}
 
       </div>
     </motion.div>

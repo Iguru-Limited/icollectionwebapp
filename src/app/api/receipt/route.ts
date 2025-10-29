@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Make request to the external API
-    const apiUrl = API_ENDPOINTS.RECEIPT_URL;
+    const apiUrl = API_ENDPOINTS.URL_1;
 
     // Log the data being sent to the receipt API
     console.log("=== RECEIPT API REQUEST ===");

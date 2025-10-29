@@ -1,11 +1,12 @@
 "use client";
 import { motion } from "framer-motion";
-import { Home, PieChart } from "lucide-react";
+import { IoMdHome } from "react-icons/io";
 import { useRouter, usePathname } from "next/navigation";
+import { FaChartPie } from "react-icons/fa";
 
 const navItems = [
-  { icon: Home, label: "Home", href: "/user" },
-  { icon: PieChart, label: "Reports", href: "/user/reports" },
+  { icon: IoMdHome, label: "Home", href: "/user" },
+  { icon: FaChartPie, label: "Reports", href: "/user/reports" },
 ];
 
 export function BottomNavigation() {
@@ -25,7 +26,7 @@ export function BottomNavigation() {
                 key={item.href}
                 onClick={() => router.push(item.href)}
                 className={`p-3 rounded-full transition-colors ${
-                  isActive ? "text-orange-500 bg-orange-50" : "text-gray-400"
+                  isActive ? "text-orange-500 bg-orange-50" : "text-purple-500"
                 }`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

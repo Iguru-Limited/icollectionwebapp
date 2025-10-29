@@ -46,21 +46,18 @@ export default function UserPage() {
       <TopNavigation />
       <div className="container mx-auto px-4 py-6 pb-24 space-y-6 max-w-md sm:max-w-lg md:max-w-3xl lg:max-w-5xl">
         
-        {/* Modern Header (adapted from HeaderProfileModern) */}
-        <Card className="bg-[#6A1B9A] rounded-2xl border-2 border-yellow-500 shadow-md p-5 relative overflow-hidden">
+        {/* Header bar styled like the screenshot (company • stage) */}
+        <Card className="bg-purple-700 rounded-2xl border-2 border-purple-800 shadow-md p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              {/* Avatar */}  
-              {/* User Info */}
-              <div className="flex flex-col">                
-              <div className="flex items-center mt-1 space-x-2">
-                <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
-                <p className="text-sm text-yellow-400 truncate">
-                  {session?.user?.stage?.stage_name}
-                </p>
-              </div>
+            <div className="flex items-center gap-2 text-white">
+              <span className="text-lg font-semibold truncate">
+                {session?.user?.username ?? "Company"}
+              </span>
+              <span className="mx-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />
+              <span className="text-sm opacity-90 truncate">
+                {session?.user?.stage?.stage_name ?? "Stage"}
+              </span>
             </div>
-          </div>            {/* Logout Button */}
             <Button
               onClick={handleLogout}
               variant="ghost"
@@ -72,9 +69,6 @@ export default function UserPage() {
               <LogOut className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />
             </Button>
           </div>
-
-          {/* Accent line */}
-          <div className="w-1/3 h-1.5 bg-yellow-400 rounded-full mt-4"></div>
         </Card>
 
         {/* Vehicle Fleet Section */}
@@ -132,7 +126,6 @@ export default function UserPage() {
                         router.push("/user/collection");
                       }}
                     >
-                      
                       <SquarePen className="w-4 h-4" /> Manage
                     </Button>
                     <Button

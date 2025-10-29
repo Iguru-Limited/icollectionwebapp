@@ -1,9 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useAppStore } from "@/store/appStore";
 import { useCompanyTemplateStore } from "@/store/companyTemplateStore";
-import { ArrowLeft,  Plus, Trash2 } from "lucide-react";
+import { ArrowLeft,  Plus, X } from "lucide-react";
 import { IoReceiptOutline } from "react-icons/io5";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,6 +17,16 @@ import { useSaveReceipt } from "@/hooks/receipt/useSaveReceipt";
 import { TopNavigation } from "@/components/ui/top-navigation";
 import { RiSendPlaneFill } from "react-icons/ri";
 import { IoWalletOutline } from "react-icons/io5";
+import { useReportByVehicleDate } from "@/hooks/report/useReportByVehicleDate";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface AdditionalCollection {
   id: string;
@@ -31,9 +41,12 @@ export default function CollectionPage() {
   const template = useCompanyTemplateStore((s) => s.template);
   
   const [additionalCollections, setAdditionalCollections] = useState<AdditionalCollection[]>([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  // UI local state
   
   // Initialize the save receipt hook
   const { saveReceipt } = useSaveReceipt();
+  const { fetchReport, data: reportData } = useReportByVehicleDate();
 
   // Get the selected vehicle
   const selectedVehicle = template?.vehicles.find(
@@ -72,6 +85,27 @@ export default function CollectionPage() {
     0
   );
 
+  // Fetch today's collections total for this vehicle ONCE per (vehicleId, companyId, date)
+  const lastFetchKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    const companyId = session?.user?.company?.company_id;
+    if (!selectedVehicleId || !companyId) return;
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, "0");
+    const d = String(today.getDate()).padStart(2, "0");
+    const ymd = `${y}-${m}-${d}`;
+    const key = `${selectedVehicleId}-${companyId}-${ymd}`;
+    if (lastFetchKeyRef.current === key) return; // prevent duplicate calls
+    lastFetchKeyRef.current = key;
+    fetchReport(Number(selectedVehicleId), ymd);
+  }, [selectedVehicleId, session?.user?.company?.company_id, fetchReport]);
+
+  const todaysTotal = useMemo(() => {
+    const rows = reportData?.data?.rows ?? [];
+    return rows.reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0);
+  }, [reportData]);
+
   const handleProcessCollection = async () => {
     // Validate session
     if (!session?.user) {
@@ -87,7 +121,7 @@ export default function CollectionPage() {
 
     // Validate that we have collections
     if (additionalCollections.length === 0) {
-      toast.error("Please add at least one collection before processing");
+      toast.error("Please add at least one collection before printing receipt");
       return;
     }
 
@@ -220,22 +254,22 @@ export default function CollectionPage() {
         <div className="space-y-6">
           {/* Today's Collections Section */}
           <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <IoReceiptOutline className="w-5 h-5 text-purple-600" />
-              <h2 className="text-lg font-semibold text-gray-800">Today&apos;s Collections</h2>
-            </div>
-
-            <Card className="bg-white rounded-xl p-6 text-center">
-              <div className="inline-block p-4 rounded-full border-2 border-dashed border-purple-300 mb-3">
-                <IoReceiptOutline className="w-8 h-8 text-purple-300" />
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <IoReceiptOutline className="w-5 h-5 text-purple-700" />
+                <h2 className="text-[15px] font-semibold text-gray-800">Today&apos;s Collections</h2>
+                <span className="ml-2 inline-flex items-center rounded-full bg-purple-700 text-white text-xs font-semibold px-3 py-1">
+                  Ksh {todaysTotal.toLocaleString()}
+                </span>
               </div>
-              <h3 className="text-md font-semibold text-gray-800 mb-1">
-                No Collections Today
-              </h3>
-              <p className="text-xs text-gray-500">
-                No receipts recorded for this vehicle today.
-              </p>
-            </Card>
+              <button
+                onClick={() => selectedVehicleId && router.push(`/user/report/${selectedVehicleId}`)}
+                className="text-xs font-semibold text-purple-700 hover:underline cursor-pointer"
+              >
+                View all
+              </button>
+            </div>
+            {/* Removed the info card beneath the total as requested */}
           </div>
 
           {/* Additional Collections Section */}
@@ -273,19 +307,23 @@ export default function CollectionPage() {
                 </p>
               </Card>
             ) : (
-              <Card className="bg-white rounded-xl p-4">
-                <div className="space-y-4">
-                  {additionalCollections.map((collection) => (
-                    <div key={collection.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
+              <Card className="bg-white rounded-xl p-4 relative overflow-hidden">
+                {/* Table-like header */}
+                <div className="grid grid-cols-12 text-[11px] font-semibold text-gray-600 mb-2 px-2">
+                  <div className="col-span-2">&nbsp;</div>
+                  <div className="col-span-6">Collection Type</div>
+                  <div className="col-span-4">Amount (KES)</div>
+                </div>
+
+                <div className="space-y-3">
+                  {additionalCollections.map((collection, idx) => (
+                    <div key={collection.id} className="grid grid-cols-12 items-center gap-2 p-3 border rounded-lg">
+                      <div className="col-span-2 text-xs text-gray-500 font-semibold">#{idx + 1}</div>
+                      <div className="col-span-6">
                         <Select
                           value={collection.collectionType}
                           onValueChange={(value) =>
-                            updateCollection(
-                              collection.id,
-                              "collectionType",
-                              value
-                            )
+                            updateCollection(collection.id, "collectionType", value)
                           }
                         >
                           <SelectTrigger className="w-full">
@@ -300,66 +338,99 @@ export default function CollectionPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="col-span-3">
                         <Input
                           type="number"
                           step="0.01"
                           value={collection.amount}
-                          onChange={(e) =>
-                            updateCollection(
-                              collection.id,
-                              "amount",
-                              e.target.value
-                            )
-                          }
-                          className="w-32"
+                          onChange={(e) => updateCollection(collection.id, "amount", e.target.value)}
                         />
+                      </div>
+                      <div className="col-span-1 flex justify-end">
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => removeCollection(collection.id)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          className="text-purple-700 hover:text-purple-800 hover:bg-purple-50"
+                          aria-label="Remove"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <X className="w-9 h-9" />
                         </Button>
                       </div>
                     </div>
                   ))}
+                </div>
 
-                  <div className="flex justify-center pt-4">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="rounded-full w-12 h-12 bg-purple-600 text-white hover:bg-purple-700"
-                      onClick={addCollection}
-                    >
-                      <Plus className="w-6 h-6" />
-                    </Button>
-                  </div>
-
-                  {/* Total Card */}
-                  <div className="bg-purple-600 rounded-xl p-4 text-white mt-4">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">
-                        Additional Collections Total
-                      </span>
-                      <span className="text-xl font-bold">
-                        Ksh {totalAmount.toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Process Collection Button */}
+                {/* Floating Add Button */}
+                <div className="mt-4">
                   <Button
-                    className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12 mt-2"
-                    onClick={handleProcessCollection}
+                    type="button"
+                    size="icon"
+                    className="rounded-full w-12 h-12 bg-purple-700 text-white hover:bg-purple-800 shadow-md"
+                    onClick={addCollection}
+                    aria-label="Add collection"
                   >
-                    <RiSendPlaneFill className="w-5 h-5 mr-2" />
-                    PROCESS COLLECTION
+                    <Plus className="w-6 h-6" />
                   </Button>
+                </div>
+
+                {/* Total pill */}
+                <div className="bg-purple-700 text-white rounded-xl px-4 py-3 mt-4 font-semibold flex items-center justify-between">
+                  <span>Additional Collections Total</span>
+                  <span>Ksh {totalAmount.toFixed(2)}</span>
                 </div>
               </Card>
             )}
+            {/* Bottom primary action with confirmation dialog */}
+            <div className="mt-4">
+              <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12">
+                    <RiSendPlaneFill className="w-5 h-5 mr-2" />
+                    PRINT RECEIPT
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Confirm Print</DialogTitle>
+                    <DialogDescription>
+                      You are about to print a receipt for
+                      {" "}
+                      <span className="font-semibold">{selectedVehicle?.number_plate || "vehicle"}</span>
+                      {" "}with total amount
+                      {" "}
+                      <span className="font-semibold">Ksh {totalAmount.toFixed(2)}</span>.
+                      Please confirm to continue.
+                    </DialogDescription>
+                  </DialogHeader>
+                  {/* Optional quick summary */}
+                  {additionalCollections.length > 0 && (
+                    <div className="mt-2 max-h-48 overflow-auto rounded-md border p-2 text-sm">
+                      {additionalCollections.map((c, i) => (
+                        <div key={c.id} className="flex items-center justify-between py-1">
+                          <span className="text-gray-600">#{i + 1} {c.collectionType || "Type"}</span>
+                          <span className="font-medium">Ksh {Number(c.amount || 0).toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button
+                      className="bg-purple-700 hover:bg-purple-800"
+                      onClick={async () => {
+                        setConfirmOpen(false);
+                        await handleProcessCollection();
+                      }}
+                    >
+                      Confirm & Print
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
       </div>
