@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useAppStore } from "@/store/appStore";
 import { useCompanyTemplateStore } from "@/store/companyTemplateStore";
-import { ArrowLeft,  Plus, Trash2 } from "lucide-react";
+import { ArrowLeft,  Plus, X } from "lucide-react";
 import { IoReceiptOutline } from "react-icons/io5";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,6 +18,15 @@ import { TopNavigation } from "@/components/ui/top-navigation";
 import { RiSendPlaneFill } from "react-icons/ri";
 import { IoWalletOutline } from "react-icons/io5";
 import { useReportByVehicleDate } from "@/hooks/report/useReportByVehicleDate";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface AdditionalCollection {
   id: string;
@@ -32,6 +41,7 @@ export default function CollectionPage() {
   const template = useCompanyTemplateStore((s) => s.template);
   
   const [additionalCollections, setAdditionalCollections] = useState<AdditionalCollection[]>([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   // UI local state
   
   // Initialize the save receipt hook
@@ -248,13 +258,13 @@ export default function CollectionPage() {
               <div className="flex items-center gap-2">
                 <IoReceiptOutline className="w-5 h-5 text-purple-700" />
                 <h2 className="text-[15px] font-semibold text-gray-800">Today&apos;s Collections</h2>
-                <span className="ml-2 inline-flex items-center rounded-full bg-purple-100 text-purple-700 text-xs font-semibold px-3 py-1">
+                <span className="ml-2 inline-flex items-center rounded-full bg-purple-700 text-white text-xs font-semibold px-3 py-1">
                   Ksh {todaysTotal.toLocaleString()}
                 </span>
               </div>
               <button
                 onClick={() => selectedVehicleId && router.push(`/user/report/${selectedVehicleId}`)}
-                className="text-xs font-semibold text-purple-700 hover:underline"
+                className="text-xs font-semibold text-purple-700 hover:underline cursor-pointer"
               >
                 View all
               </button>
@@ -344,7 +354,7 @@ export default function CollectionPage() {
                           className="text-purple-700 hover:text-purple-800 hover:bg-purple-50"
                           aria-label="Remove"
                         >
-                          <Trash2 className="w-5 h-5" />
+                          <X className="w-9 h-9" />
                         </Button>
                       </div>
                     </div>
@@ -371,15 +381,55 @@ export default function CollectionPage() {
                 </div>
               </Card>
             )}
-            {/* Bottom primary action */}
+            {/* Bottom primary action with confirmation dialog */}
             <div className="mt-4">
-              <Button
-                className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12"
-                onClick={handleProcessCollection}
-              >
-                <RiSendPlaneFill className="w-5 h-5 mr-2" />
-                PRINT RECEIPT
-              </Button>
+              <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12">
+                    <RiSendPlaneFill className="w-5 h-5 mr-2" />
+                    PRINT RECEIPT
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Confirm Print</DialogTitle>
+                    <DialogDescription>
+                      You are about to print a receipt for
+                      {" "}
+                      <span className="font-semibold">{selectedVehicle?.number_plate || "vehicle"}</span>
+                      {" "}with total amount
+                      {" "}
+                      <span className="font-semibold">Ksh {totalAmount.toFixed(2)}</span>.
+                      Please confirm to continue.
+                    </DialogDescription>
+                  </DialogHeader>
+                  {/* Optional quick summary */}
+                  {additionalCollections.length > 0 && (
+                    <div className="mt-2 max-h-48 overflow-auto rounded-md border p-2 text-sm">
+                      {additionalCollections.map((c, i) => (
+                        <div key={c.id} className="flex items-center justify-between py-1">
+                          <span className="text-gray-600">#{i + 1} {c.collectionType || "Type"}</span>
+                          <span className="font-medium">Ksh {Number(c.amount || 0).toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button
+                      className="bg-purple-700 hover:bg-purple-800"
+                      onClick={async () => {
+                        setConfirmOpen(false);
+                        await handleProcessCollection();
+                      }}
+                    >
+                      Confirm & Print
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </div>
