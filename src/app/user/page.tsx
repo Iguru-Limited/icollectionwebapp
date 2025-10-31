@@ -81,12 +81,23 @@ export default function UserPage() {
           />
         </div>
 
-        {/* Vehicle List */}
-        <VehicleTable 
-          vehicles={filteredVehicles}
-          isLoading={!hasHydrated}
-          variant="card"
-        />
+        {/* Desktop Table View */}
+        <div className="hidden md:block">
+          <VehicleTable 
+            vehicles={filteredVehicles}
+            isLoading={!hasHydrated}
+            variant="table"
+          />
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden">
+          <VehicleTable 
+            vehicles={filteredVehicles}
+            isLoading={!hasHydrated}
+            variant="card"
+          />
+        </div>
 
         {/* Mobile logout button */}
         <div className="md:hidden mt-6">
