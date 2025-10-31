@@ -6,11 +6,10 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Users, FileText, SquarePen, LogOut } from "lucide-react";
+import { Search, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { TopNavigation } from "@/components/ui/top-navigation";
-import { IoCar } from "react-icons/io5";
 
 export default function UserPage() {
   const { data: session } = useSession();
@@ -41,109 +40,121 @@ export default function UserPage() {
   );
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Top navigation mirrors bottom nav (visible on all routes) */}
+    <div className="min-h-screen bg-gray-50">
+      {/* Top navigation - Always visible */}
       <TopNavigation />
-      <div className="container mx-auto px-4 py-6 pb-24 space-y-6 max-w-md sm:max-w-lg md:max-w-3xl lg:max-w-5xl">
+      
+      <div className="container mx-auto px-4 py-4 pb-20 md:pb-6 space-y-4 max-w-screen-xl">
         
-        {/* Header bar styled like the screenshot (company • stage) */}
-        <Card className="bg-purple-700 rounded-2xl border-2 border-purple-800 shadow-md p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-white">
-              <span className="text-lg font-semibold truncate">
-                {session?.user?.username ?? "Company"}
-              </span>
-              <span className="mx-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />
-              <span className="text-sm opacity-90 truncate">
-                {session?.user?.stage?.stage_name ?? "Stage"}
-              </span>
+        {/* Header Section - User info (hidden on mobile, shown on larger screens) */}
+        <div className="hidden md:block">
+          <Card className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl shadow-lg p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-white">
+                <span className="text-lg font-semibold">
+                  {session?.user?.username ?? "Company"}
+                </span>
+                <span className="mx-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />
+                <span className="text-sm opacity-90">
+                  {session?.user?.stage?.stage_name ?? "Stage"}
+                </span>
+              </div>
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 rounded-full"
+                title="Logout"
+                aria-label="Logout"
+              >
+                <LogOut className="w-5 h-5" />
+              </Button>
             </div>
-            <Button
-              onClick={handleLogout}
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20 rounded-full h-10 w-10 md:h-12 md:w-12 lg:h-14 lg:w-14"
-              title="Logout"
-              aria-label="Logout"
-            >
-              <LogOut className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />
-            </Button>
-          </div>
-        </Card>
+          </Card>
+        </div>
 
-        {/* Vehicle Fleet Section */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <IoCar className="w-5 h-5 text-purple-700" />
-            <h2 className="font-semibold text-gray-800 text-lg">Vehicle Fleet</h2>
-          </div>
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Input
+            placeholder="Search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-12 pr-4 h-12 rounded-full border-2 border-gray-200 bg-white shadow-sm text-base focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+          />
+        </div>
 
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              placeholder="Search by plate number..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 rounded-xl border border-gray-300 shadow-sm text-sm focus:ring-2 focus:ring-purple-400"
-            />
-          </div>
-
-          {/* Vehicle Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {!hasHydrated ? (
-              <Card className="p-6 text-center text-gray-500 sm:col-span-2 lg:col-span-3">Loading vehicles...</Card>
-            ) : filteredVehicles.length === 0 ? (
-              <Card className="p-6 text-center text-gray-500 sm:col-span-2 lg:col-span-3">No vehicles found</Card>
-            ) : (
-              filteredVehicles.map((vehicle) => (
-                <Card
-                  key={vehicle.vehicle_id}
-                  className="rounded-xl border-2 border-red-400 p-4 shadow-sm"
-                >
-                  <div className="flex items-center space-x-3">
-                    <IoCar className="text-red-600 w-5 h-5" />
-                    <h3 className="text-lg font-semibold text-red-600 uppercase">
-                      {vehicle.number_plate}
-                    </h3>
-                  </div>
-
-                  <p className="text-gray-600 text-sm mt-2 flex items-center space-x-2">
-                    <Users className="w-4 h-4 text-gray-500" />
-                    <span>
-                      Capacity:{" "}
-                      <span className="font-medium text-red-600">
+        {/* Vehicle List */}
+        <div className="space-y-3">
+          {!hasHydrated ? (
+            <Card className="p-8 text-center text-gray-500">
+              <div className="animate-pulse">Loading vehicles...</div>
+            </Card>
+          ) : filteredVehicles.length === 0 ? (
+            <Card className="p-8 text-center text-gray-500">
+              No vehicles found
+            </Card>
+          ) : (
+            filteredVehicles.map((vehicle, index) => (
+              <Card
+                key={vehicle.vehicle_id}
+                className="rounded-2xl border-2 border-gray-200 bg-white shadow-sm hover:shadow-md transition-all p-4"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-semibold text-sm">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <h3 className="text-lg md:text-xl font-bold text-gray-800 uppercase">
+                        {vehicle.number_plate}
+                      </h3>
+                      <p className="text-xs md:text-sm text-gray-500">
                         {vehicle.seats || 5} seats
-                      </span>
-                    </span>
-                  </p>
-
-                  <div className="flex mt-4 space-x-3">
-                    <Button
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center justify-center gap-2"
-                      onClick={() => {
-                        setSelectedVehicleId(vehicle.vehicle_id);
-                        router.push("/user/collection");
-                      }}
-                    >
-                      <SquarePen className="w-4 h-4" /> Manage
-                    </Button>
-                    <Button
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center justify-center gap-2"
-                      onClick={() =>
-                        router.push(`/user/report/${vehicle.vehicle_id}`)
-                      }
-                    >
-                      <FileText className="w-4 h-4" /> View Report
-                    </Button>
+                      </p>
+                    </div>
                   </div>
-                </Card>
-              ))
-            )}
-          </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    className="bg-white border-2 border-purple-600 text-purple-600 hover:bg-purple-50 rounded-xl h-11 font-semibold text-sm md:text-base transition-all"
+                    onClick={() => {
+                      setSelectedVehicleId(vehicle.vehicle_id);
+                      router.push("/user/collection");
+                    }}
+                  >
+                    Receipts
+                  </Button>
+                  <Button
+                    className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-11 font-semibold text-sm md:text-base shadow-md transition-all"
+                    onClick={() =>
+                      router.push(`/user/report/${vehicle.vehicle_id}`)
+                    }
+                  >
+                    Transactions
+                  </Button>
+                </div>
+              </Card>
+            ))
+          )}
+        </div>
+
+        {/* Mobile logout button */}
+        <div className="md:hidden mt-6">
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="w-full rounded-xl h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50"
+          >
+            <LogOut className="w-5 h-5 mr-2" />
+            Logout
+          </Button>
         </div>
       </div>
 
+      {/* Bottom Navigation - Mobile only */}
       <BottomNavigation />
     </div>
   );
