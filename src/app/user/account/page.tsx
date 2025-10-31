@@ -1,7 +1,7 @@
 "use client";
 import { useSession, signOut } from "next-auth/react";
 import { motion } from "framer-motion";
-import { User, LogOut, Receipt, Car, DollarSign, PiggyBank, TrendingUp } from "lucide-react";
+import { User, LogOut, Receipt, Car, DollarSign, PiggyBank, TrendingUp, Wallet } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TopNavigation } from "@/components/ui/top-navigation";
@@ -40,6 +40,7 @@ export default function AccountPage() {
     vehicles: template?.vehicles?.length || 0,
     loans: 45000,
     savings: 120000,
+    Operations:5000,
     total: 165000,
   };
 
@@ -142,6 +143,21 @@ export default function AccountPage() {
                 </div>
                 <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
                   <PiggyBank className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </Card>
+
+            {/* Operations */}
+            <Card className="rounded-xl p-4 shadow-sm border-2 border-red-100 hover:shadow-md transition-all">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Operations</p>
+                  <p className="text-3xl font-bold text-red-600">
+                    {summaryData.Operations.toLocaleString()}
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <Wallet className="w-6 h-6 text-red-600" />
                 </div>
               </div>
             </Card>
