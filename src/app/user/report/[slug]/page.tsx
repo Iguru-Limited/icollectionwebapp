@@ -9,7 +9,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
-  FileText
+  FileText,
+  Printer,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -19,6 +22,14 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { TopNavigation } from "@/components/ui/top-navigation";
 import { Spinner } from "@/components/ui/spinner";
 import { useReportByVehicleDate } from "@/hooks/report/useReportByVehicleDate";
@@ -241,11 +252,100 @@ export default function VehicleReportPage() {
           </Card>
         )}
 
+        {/* Desktop Table View */}
+        {!isLoading && !error && status === "authenticated" && filteredRows.length > 0 && (
+          <Card className="hidden md:block rounded-2xl shadow-md overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-purple-50 hover:bg-purple-50">
+                  <TableHead className="font-semibold text-purple-900">#</TableHead>
+                  <TableHead className="font-semibold text-purple-900">Receipt Number</TableHead>
+                  <TableHead className="font-semibold text-purple-900">Vehicle</TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-right">Amount</TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-center">Collections</TableHead>
+                  <TableHead className="font-semibold text-purple-900">Created</TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredRows.map((row, index) => {
+                  const slugCount = Object.keys(row.payload?.slugs ?? {}).length;
+                  const isOpen = !!expanded[row.id];
+                  return (
+                    <>
+                      <TableRow key={row.id} className="hover:bg-gray-50">
+                        <TableCell className="font-medium text-gray-600">
+                          {index + 1}
+                        </TableCell>
+                        <TableCell className="font-bold text-gray-800">
+                          #{row.receipt_number}
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700">
+                            {row.number_plate}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right font-bold text-gray-900">
+                          Ksh {Number(row.total_amount).toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-center text-gray-700">
+                          {slugCount}
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {formatDateTime(row.created_at)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs"
+                              onClick={() => setExpanded((prev) => ({ ...prev, [row.id]: !isOpen }))}
+                            >
+                              {isOpen ? <ChevronUp className="w-3 h-3 mr-1" /> : <ChevronDown className="w-3 h-3 mr-1" />}
+                              {isOpen ? "Hide" : "Details"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="bg-purple-600 hover:bg-purple-700 text-xs"
+                            >
+                              <Printer className="w-3 h-3 mr-1" />
+                              Reprint
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      {isOpen && (
+                        <TableRow key={`${row.id}-breakdown`} className="bg-purple-50/50">
+                          <TableCell colSpan={7} className="py-3">
+                            <div className="pl-8">
+                              <p className="text-xs font-semibold text-purple-900 mb-2">Breakdown:</p>
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                {Object.entries(row.payload?.slugs ?? {}).map(([label, amount]) => (
+                                  <div key={label} className="flex items-center justify-between rounded-lg bg-white border border-purple-200 px-3 py-2">
+                                    <span className="text-sm font-medium text-gray-700">{label}</span>
+                                    <span className="text-sm font-semibold text-purple-700">Ksh {Number(amount).toLocaleString()}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </Card>
+        )}
+
+        {/* Mobile Card View */}
         {!isLoading && !error && status === "authenticated" && filteredRows.map((row) => {
           const slugCount = Object.keys(row.payload?.slugs ?? {}).length;
           const isOpen = !!expanded[row.id];
           return (
-            <Card key={row.id} className="rounded-2xl p-4 shadow-sm">
+            <Card key={row.id} className="md:hidden rounded-2xl p-4 shadow-sm">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="text-sm font-semibold text-gray-900">#{row.receipt_number}</div>
