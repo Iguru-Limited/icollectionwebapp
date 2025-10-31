@@ -126,7 +126,7 @@ export default function VehicleReportPage() {
   {/* Top app bar */}
   <TopNavigation />
       <div className="sticky top-0 z-50 bg-purple-700 text-white">
-        <div className="mx-auto px-4 py-3 max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-4xl">
+        <div className="mx-auto px-4 py-3 max-w-screen-xl">
           <div className="grid grid-cols-3 items-center">
             <div className="justify-self-start">
               <Button
@@ -147,7 +147,7 @@ export default function VehicleReportPage() {
       </div>
 
       {/* Content */}
-  <div className="mx-auto px-4 py-4 space-y-4 max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-4xl">
+  <div className="mx-auto px-4 py-4 space-y-4 max-w-screen-xl">
         {/* Select Date */}
         <Card className="rounded-2xl p-4 shadow-sm">
           <div className="text-xs font-semibold text-gray-600 flex items-center gap-2 mb-3">
