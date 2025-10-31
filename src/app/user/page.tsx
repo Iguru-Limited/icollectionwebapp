@@ -41,35 +41,7 @@ export default function UserPage() {
       {/* Top navigation - Always visible */}
       <TopNavigation />
       
-      <div className="container mx-auto px-4 py-4 pb-20 md:pb-6 space-y-4 max-w-screen-xl">
-        
-        {/* Header Section - User info (hidden on mobile, shown on larger screens) */}
-        <div className="hidden md:block">
-          <Card className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl shadow-lg p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-white">
-                <span className="text-lg font-semibold">
-                  {session?.user?.username ?? "Company"}
-                </span>
-                <span className="mx-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />
-                <span className="text-sm opacity-90">
-                  {session?.user?.stage?.stage_name ?? "Stage"}
-                </span>
-              </div>
-              <Button
-                onClick={handleLogout}
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20 rounded-full"
-                title="Logout"
-                aria-label="Logout"
-              >
-                <LogOut className="w-5 h-5" />
-              </Button>
-            </div>
-          </Card>
-        </div>
-
+      <div className="container mx-auto px-4 py-4 pb-20 md:pb-6 space-y-4 max-w-screen-xl"> 
         {/* Search Bar */}
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />

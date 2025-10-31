@@ -7,7 +7,7 @@ const navItems = [
   { icon: Home, label: "Home", href: "/user" },
   { icon: PieChart, label: "Report", href: "/user/reports" },
   { icon: Car, label: "Vehicle", href: "/user/vehicles" },
-  { icon: User, label: "Account", href: "/user" },
+  { icon: User, label: "Account", href: "/user/account" },
 ];
 
 export function BottomNavigation() {
