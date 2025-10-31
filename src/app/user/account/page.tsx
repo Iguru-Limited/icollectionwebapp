@@ -3,6 +3,7 @@ import { useSession, signOut } from "next-auth/react";
 import { motion } from "framer-motion";
 import { User, LogOut, Receipt, Car, DollarSign, PiggyBank, TrendingUp, Wallet, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { TransactionSummaryTable } from "@/components/ui/transaction-summary-table";
 import { Button } from "@/components/ui/button";
 import { TopNavigation } from "@/components/ui/top-navigation";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
@@ -77,12 +78,15 @@ export default function AccountPage() {
                   {session?.user?.username || "User"}
                 </h1>
                 <p className="text-purple-100 text-sm">
-                <span className="mx-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />
-                  {session?.user?.company?.company_name || "Company"}
+                
+                  <h1 className="text-2xl font-bold text-white"> <span className="mx-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" /> {session?.user?.company?.company_name || "Company"}</h1>
+                  
                 </p>
                 <p className="text-purple-200 text-xs mt-0.5">
-                <span className="mx-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />
-                  {session?.user?.stage?.stage_name || "Stage"}
+                    
+                
+                    <h1 className="text-2xl font-bold text-white"> <span className="mx-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" /> {session?.user?.stage?.stage_name || "Stage"} </h1>
+                  
                 </p>
               </div>
             </div>
@@ -120,47 +124,17 @@ export default function AccountPage() {
 
         {/* Transactions Summary */}
 
-        <div>
-          <h2 className="text-lg font-bold text-gray-800 mb-3 px-2">
-            Transactions Summary
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white rounded-xl shadow border text-sm">
-              <thead>
-                <tr className="bg-purple-50 text-purple-900">
-                  <th className="py-3 px-4 text-left font-semibold">Metric</th>
-                  <th className="py-3 px-4 text-left font-semibold">Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b hover:bg-purple-50">
-                  <td className="py-3 px-4 font-medium text-gray-700">Receipts</td>
-                  <td className="py-3 px-4 text-purple-600 text-xl font-bold">{summaryData.receipts}</td>
-                </tr>
-                <tr className="border-b hover:bg-blue-50">
-                  <td className="py-3 px-4 font-medium text-gray-700">Vehicles</td>
-                  <td className="py-3 px-4 text-blue-600 text-xl font-bold">{summaryData.vehicles}</td>
-                </tr>
-                <tr className="border-b hover:bg-orange-50">
-                  <td className="py-3 px-4 font-medium text-gray-700">Loans</td>
-                  <td className="py-3 px-4 text-orange-600 text-xl font-bold">{summaryData.loans.toLocaleString()}</td>
-                </tr>
-                <tr className="border-b hover:bg-green-50">
-                  <td className="py-3 px-4 font-medium text-gray-700">Savings</td>
-                  <td className="py-3 px-4 text-green-600 text-xl font-bold">{summaryData.savings.toLocaleString()}</td>
-                </tr>
-                <tr className="border-b hover:bg-red-50">
-                  <td className="py-3 px-4 font-medium text-gray-700">Operations</td>
-                  <td className="py-3 px-4 text-red-600 text-xl font-bold">{summaryData.Operations.toLocaleString()}</td>
-                </tr>
-                <tr className="hover:bg-indigo-50">
-                  <td className="py-3 px-4 font-medium text-gray-700">Total</td>
-                  <td className="py-3 px-4 text-indigo-600 text-xl font-bold">{summaryData.total.toLocaleString()}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <TransactionSummaryTable
+          title="Transactions Summary"
+          data={[
+            { label: "Receipts", value: summaryData.receipts },
+            { label: "Vehicles", value: summaryData.vehicles },
+            { label: "Loans", value: summaryData.loans.toLocaleString() },
+            { label: "Savings", value: summaryData.savings.toLocaleString() },
+            { label: "Operations", value: summaryData.Operations.toLocaleString() },
+            { label: "Total", value: summaryData.total.toLocaleString() },
+          ]}
+        />
 
         {/* Account Details */}
         {/* <Card className="rounded-2xl shadow-md p-6">

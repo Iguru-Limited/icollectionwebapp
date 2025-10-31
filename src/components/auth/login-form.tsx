@@ -69,22 +69,22 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6 w-full max-w-sm mx-auto", className)} {...props}>
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold text-gray-900">Welcome!</h1>
-          <p className="text-gray-500 text-sm">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Welcome!</h1>
+          <p className="text-gray-500 text-xl md:text-2xl">
             Please login in to continue.
           </p>
         </div>
 
         {error && (
           <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription className="text-xl">{error}</AlertDescription>
           </Alert>
         )}
 
         <div className="space-y-4">
           {/* Username Input */}
           <div className="relative">
-            <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-300 w-5 h-5" />
+            <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-300 w-6 h-6" />
             <Input
               id="username"
               type="text"
@@ -93,13 +93,13 @@ export function LoginForm({
               onChange={(e) => setUsername(e.target.value)}
               required
               disabled={isLoading}
-              className="pl-12 h-12 bg-purple-50 border-purple-100 rounded-full text-gray-700 placeholder:text-purple-300 focus:border-purple-400 focus:ring-purple-400"
+              className="pl-12 h-14 bg-purple-50 border-purple-100 rounded-full text-gray-700 text-xl placeholder:text-purple-300 focus:border-purple-400 focus:ring-purple-400"
             />
           </div>
 
           {/* Password Input */}
           <div className="relative">
-            <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-300 w-5 h-5" />
+            <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-300 w-6 h-6" />
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
@@ -108,7 +108,7 @@ export function LoginForm({
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={isLoading}
-              className="pl-12 pr-12 h-12 bg-purple-50 border-purple-100 rounded-full text-gray-700 placeholder:text-purple-300 focus:border-purple-400 focus:ring-purple-400"
+              className="pl-12 pr-12 h-14 bg-purple-50 border-purple-100 rounded-full text-gray-700 text-xl placeholder:text-purple-300 focus:border-purple-400 focus:ring-purple-400"
             />
             <button
               type="button"
@@ -116,9 +116,9 @@ export function LoginForm({
               className="absolute right-4 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-purple-500"
             >
               {showPassword ? (
-                <EyeOff className="w-5 h-5" />
+                <EyeOff className="w-6 h-6" />
               ) : (
-                <Eye className="w-5 h-5" />
+                <Eye className="w-6 h-6" />
               )}
             </button>
           </div>
@@ -126,7 +126,7 @@ export function LoginForm({
           {/* Login Button */}
           <Button 
             type="submit" 
-            className="w-full h-12 bg-purple-700 hover:bg-purple-800 text-white rounded-full font-medium text-base"
+            className="w-full h-14 bg-purple-700 hover:bg-purple-800 text-white rounded-full font-medium text-xl md:text-2xl"
             disabled={isLoading}
           >
             {isLoading ? "Logging in..." : "Login"}
@@ -136,7 +136,7 @@ export function LoginForm({
 
       {/* Footer */}
       <div className="text-center">
-        <p className="text-gray-400 text-xs">
+        <p className="text-gray-400 text-lg md:text-xl">
           ©2025,iGuru Limited.All rights reserved
         </p>
       </div>

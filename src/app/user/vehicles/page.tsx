@@ -48,10 +48,10 @@ export default function VehiclesPage() {
               <Car className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-bold text-gray-800">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
                 Vehicle Fleet
               </h1>
-              <p className="text-xs md:text-sm text-gray-500">
+              <p className="text-xl md:text-2xl text-gray-500">
                 Manage your vehicle fleet
               </p>
             </div>

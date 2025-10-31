@@ -246,7 +246,7 @@ export default function CollectionPage() {
           >
             <ArrowLeft className="w-5 h-5 text-gray-700" />
           </Button>
-          <h1 className="text-lg font-semibold text-gray-700">
+          <h1 className="text-3xl font-bold text-gray-700">
             {selectedVehicle?.number_plate || "Vehicle"} NEW COLLECTION
           </h1>
         </div>
@@ -258,13 +258,13 @@ export default function CollectionPage() {
               <div className="flex items-center gap-2">
                 <IoReceiptOutline className="w-5 h-5 text-purple-700" />
                 <h2 className="text-[15px] font-semibold text-gray-800">Today&apos;s Collections</h2>
-                <span className="ml-2 inline-flex items-center rounded-full bg-purple-700 text-white text-xs font-semibold px-3 py-1">
+                <span className="ml-2 inline-flex items-center rounded-full bg-purple-700 text-white text-xl font-semibold px-3 py-1">
                   Ksh {todaysTotal.toLocaleString()}
                 </span>
               </div>
               <button
                 onClick={() => selectedVehicleId && router.push(`/user/report/${selectedVehicleId}`)}
-                className="text-xs font-semibold text-purple-700 hover:underline cursor-pointer"
+                className="text-xl font-semibold text-purple-700 hover:underline cursor-pointer"
               >
                 View all
               </button>
@@ -277,7 +277,7 @@ export default function CollectionPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
                 <IoWalletOutline className="w-5 h-5 text-purple-600" />
-                <h2 className="text-lg font-semibold text-gray-800">Additional Collections</h2>
+                <h2 className="text-2xl font-bold text-gray-800">Additional Collections</h2>
               </div>
               {additionalCollections.length > 0 && (
                 <Badge className="bg-purple-600 text-white rounded-full px-3">
@@ -302,7 +302,7 @@ export default function CollectionPage() {
                 <h3 className="text-md font-medium text-gray-700 mb-1">
                   No collections added
                 </h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-xl text-gray-500">
                   Tap the button above to add a collection.
                 </p>
               </Card>
@@ -318,7 +318,7 @@ export default function CollectionPage() {
                 <div className="space-y-3">
                   {additionalCollections.map((collection, idx) => (
                     <div key={collection.id} className="grid grid-cols-12 items-center gap-2 p-3 border rounded-lg">
-                      <div className="col-span-2 text-xs text-gray-500 font-semibold">#{idx + 1}</div>
+                      <div className="col-span-2 text-xl text-gray-500 font-semibold">#{idx + 1}</div>
                       <div className="col-span-6">
                         <Select
                           value={collection.collectionType}
@@ -405,7 +405,7 @@ export default function CollectionPage() {
                   </DialogHeader>
                   {/* Optional quick summary */}
                   {additionalCollections.length > 0 && (
-                    <div className="mt-2 max-h-48 overflow-auto rounded-md border p-2 text-sm">
+                    <div className="mt-2 max-h-48 overflow-auto rounded-md border p-2 text-xl">
                       {additionalCollections.map((c, i) => (
                         <div key={c.id} className="flex items-center justify-between py-1">
                           <span className="text-gray-600">#{i + 1} {c.collectionType || "Type"}</span>
