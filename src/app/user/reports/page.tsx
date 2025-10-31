@@ -6,14 +6,15 @@ import { Card } from "@/components/ui/card";
 import { TopNavigation } from "@/components/ui/top-navigation";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 // Demo data based on the sketch
 const demoSummary = {
-  receiptCount: 41,
-  vehicles: 3,
-  total: 48873,
-  openths: 98873,
-  loan: 18830,
+  Receipts: 41,
+  Vehicles: 3,
+  Total: 48873,
+  Operations: 98873,
+  Loans: 18830,
 };
 
 const demoReceipts = [
@@ -124,23 +125,23 @@ export default function Reports() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs opacity-80">Receipt #</p>
-              <p className="text-2xl font-bold">{demoSummary.receiptCount}</p>
+              <p className="text-2xl font-bold">{demoSummary.Receipts}</p>
             </div>
             <div>
               <p className="text-xs opacity-80">Vehicles</p>
-              <p className="text-2xl font-bold">{demoSummary.vehicles}</p>
+              <p className="text-2xl font-bold">{demoSummary.Vehicles}</p>
             </div>
             <div>
               <p className="text-xs opacity-80">Total</p>
-              <p className="text-2xl font-bold">{demoSummary.total.toLocaleString()}</p>
+              <p className="text-2xl font-bold">{demoSummary.Total.toLocaleString()}</p>
             </div>
             <div>
               <p className="text-xs opacity-80">Openths</p>
-              <p className="text-2xl font-bold">{demoSummary.openths.toLocaleString()}</p>
+              <p className="text-2xl font-bold">{demoSummary.Operations.toLocaleString()}</p>
             </div>
             <div className="col-span-2">
               <p className="text-xs opacity-80">Loan</p>
-              <p className="text-2xl font-bold">{demoSummary.loan.toLocaleString()}</p>
+              <p className="text-2xl font-bold">{demoSummary.Loans.toLocaleString()}</p>
             </div>
           </div>
         </Card>
@@ -149,10 +150,69 @@ export default function Reports() {
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-gray-700 px-2">Recent Receipts</h3>
           
+          {/* Desktop Table View */}
+          <Card className="hidden md:block rounded-2xl shadow-md overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-purple-50 hover:bg-purple-50">
+                  <TableHead className="font-semibold text-purple-900">#</TableHead>
+                  <TableHead className="font-semibold text-purple-900">Receipt Number</TableHead>
+                  <TableHead className="font-semibold text-purple-900">Details</TableHead>
+                  <TableHead className="font-semibold text-purple-900">Date</TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-right">Amount</TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {demoReceipts.map((receipt, index) => (
+                  <TableRow key={receipt.id} className="hover:bg-gray-50">
+                    <TableCell className="font-medium text-gray-600">
+                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-semibold text-sm">
+                        {index + 1}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-bold text-gray-800">
+                      {receipt.receiptNumber}
+                    </TableCell>
+                    <TableCell className="text-gray-600">
+                      {receipt.details}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {receipt.date}
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-purple-600">
+                      {receipt.amount > 0 ? `Ksh ${receipt.amount.toLocaleString()}` : '-'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs border-purple-600 text-purple-600 hover:bg-purple-50"
+                        >
+                          <Eye className="w-3 h-3 mr-1" />
+                          View
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-purple-600 hover:bg-purple-700 text-xs"
+                        >
+                          <ReceiptIcon className="w-3 h-3 mr-1" />
+                          Receipt
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+
+          {/* Mobile Card View */}
           {demoReceipts.map((receipt, index) => (
             <Card
               key={receipt.id}
-              className="rounded-xl p-4 shadow-sm bg-white border-2 border-gray-200 hover:shadow-md transition-all"
+              className="md:hidden rounded-xl p-4 shadow-sm bg-white border-2 border-gray-200 hover:shadow-md transition-all"
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
