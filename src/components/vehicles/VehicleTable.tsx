@@ -93,7 +93,7 @@ export function VehicleTable({ vehicles, isLoading = false, variant = "card" }: 
                       }}
                     >
                       <SquarePen className="w-3 h-3 mr-1" />
-                      Collect
+                      Receipt
                     </Button>
                     <Button
                       size="sm"
@@ -103,7 +103,7 @@ export function VehicleTable({ vehicles, isLoading = false, variant = "card" }: 
                       }
                     >
                       <FileText className="w-3 h-3 mr-1" />
-                      Report
+                      Transactions
                     </Button>
                   </div>
                 </TableCell>
