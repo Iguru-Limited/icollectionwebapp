@@ -120,28 +120,57 @@ export default function Reports() {
         </Card>
 
         {/* Summary Card */}
-        <Card className="rounded-2xl p-5 shadow-md bg-gradient-to-br from-purple-600 to-purple-700 text-white">
-          <h3 className="text-sm font-semibold mb-4 opacity-90">Summary</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs opacity-80">Receipt #</p>
-              <p className="text-2xl font-bold">{demoSummary.Receipts}</p>
-            </div>
-            <div>
-              <p className="text-xs opacity-80">Vehicles</p>
-              <p className="text-2xl font-bold">{demoSummary.Vehicles}</p>
-            </div>
-            <div>
-              <p className="text-xs opacity-80">Total</p>
-              <p className="text-2xl font-bold">{demoSummary.Total.toLocaleString()}</p>
-            </div>
-            <div>
-              <p className="text-xs opacity-80">Openths</p>
-              <p className="text-2xl font-bold">{demoSummary.Operations.toLocaleString()}</p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-xs opacity-80">Loan</p>
-              <p className="text-2xl font-bold">{demoSummary.Loans.toLocaleString()}</p>
+        <Card className="rounded-2xl shadow-lg overflow-hidden border-0">
+          <div className="bg-gradient-to-br from-purple-600 to-purple-700 p-6">
+            <h3 className="text-base font-bold text-white mb-1">Daily Summary</h3>
+            <p className="text-xs text-purple-100">Overview of today&apos;s collections</p>
+          </div>
+          
+          <div className="p-6 bg-white">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {/* Receipts */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+                <p className="text-xs font-medium text-blue-700 mb-1">Receipts</p>
+                <p className="text-3xl font-bold text-blue-900">{demoSummary.Receipts}</p>
+                <p className="text-xs text-blue-600 mt-1">Total count</p>
+              </div>
+
+              {/* Vehicles */}
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
+                <p className="text-xs font-medium text-green-700 mb-1">Vehicles</p>
+                <p className="text-3xl font-bold text-green-900">{demoSummary.Vehicles}</p>
+                <p className="text-xs text-green-600 mt-1">Active today</p>
+              </div>
+
+              {/* Total */}
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
+                <p className="text-xs font-medium text-purple-700 mb-1">Total Collections</p>
+                <p className="text-3xl font-bold text-purple-900">Ksh {demoSummary.Total.toLocaleString()}</p>
+                <p className="text-xs text-purple-600 mt-1">Revenue</p>
+              </div>
+
+              {/* Operations */}
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
+                <p className="text-xs font-medium text-orange-700 mb-1">Operations</p>
+                <p className="text-3xl font-bold text-orange-900">Ksh {demoSummary.Operations.toLocaleString()}</p>
+                <p className="text-xs text-orange-600 mt-1">Expenses</p>
+              </div>
+
+              {/* Loans */}
+              <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 border border-red-200">
+                <p className="text-xs font-medium text-red-700 mb-1">Loans</p>
+                <p className="text-3xl font-bold text-red-900">Ksh {demoSummary.Loans.toLocaleString()}</p>
+                <p className="text-xs text-red-600 mt-1">Outstanding</p>
+              </div>
+
+              {/* Net Balance */}
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
+                <p className="text-xs font-medium text-gray-700 mb-1">Net Balance</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  Ksh {(demoSummary.Total - demoSummary.Operations - demoSummary.Loans).toLocaleString()}
+                </p>
+                <p className="text-xs text-gray-600 mt-1">After deductions</p>
+              </div>
             </div>
           </div>
         </Card>
