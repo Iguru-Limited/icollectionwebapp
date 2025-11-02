@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Eye, Receipt as ReceiptIcon } from 'lucide-react';
+import { Eye, Receipt as ReceiptIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { TopNavigation } from '@/components/ui/top-navigation';
 import { BottomNavigation } from '@/components/ui/bottom-navigation';
@@ -15,6 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { TransactionSummaryTable } from '@/components/ui/transaction-summary-table';
+import { DateSelector } from '@/components/ui/date-selector';
 
 // Demo data based on the sketch
 const demoSummary = {
@@ -68,25 +69,8 @@ const demoReceipts = [
   },
 ];
 
-function formatDate(date: Date) {
-  return date.toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
 export default function Reports() {
   const [selectedDate, setSelectedDate] = useState(new Date());
-
-  const goToPreviousDay = () => {
-    setSelectedDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1));
-  };
-
-  const goToNextDay = () => {
-    setSelectedDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1));
-  };
 
   return (
     <motion.div
@@ -98,33 +82,8 @@ export default function Reports() {
       <TopNavigation />
 
       <div className="container mx-auto px-4 py-4 pb-20 md:pb-6 space-y-4 max-w-screen-xl">
-        {/* Date Navigation - "Today" with arrows */}
-        <Card className="rounded-2xl p-4 shadow-sm bg-white">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full hover:bg-purple-50"
-              onClick={goToPreviousDay}
-            >
-              <ChevronLeft className="w-5 h-5 text-purple-600" />
-            </Button>
-
-            <div className="flex-1 text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Today</h2>
-              <p className="text-xl md:text-2xl text-gray-500">{formatDate(selectedDate)}</p>
-            </div>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full hover:bg-purple-50"
-              onClick={goToNextDay}
-            >
-              <ChevronRight className="w-5 h-5 text-purple-600" />
-            </Button>
-          </div>
-        </Card>
+        {/* Date Navigation */}
+        <DateSelector selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
         {/* Summary Card */}
         <TransactionSummaryTable

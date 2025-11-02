@@ -5,9 +5,6 @@ import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
   Search,
   FileText,
   Printer,
@@ -29,29 +26,9 @@ import {
 import { TopNavigation } from '@/components/ui/top-navigation';
 import { Spinner } from '@/components/ui/spinner';
 import { useReportByVehicleDate } from '@/hooks/report/useReportByVehicleDate';
+import { DateSelector } from '@/components/ui/date-selector';
 
 // Utilities
-function formatLongDate(date: Date) {
-  return date.toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
-function isSameYMD(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
-
-function isToday(date: Date) {
-  return isSameYMD(date, new Date());
-}
-
 function toYMD(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -160,46 +137,7 @@ export default function VehicleReportPage() {
       {/* Content */}
       <div className="mx-auto px-4 py-4 space-y-4 max-w-screen-xl">
         {/* Select Date */}
-        <Card className="rounded-2xl p-4 shadow-sm">
-          <div className="text-xs font-semibold text-gray-600 flex items-center gap-2 mb-3">
-            <CalendarIcon className="w-4 h-4 text-purple-700" />
-            SELECT DATE
-          </div>
-
-          <div className="flex items-center justify-between">
-            <button
-              className="rounded-full p-2 bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors"
-              onClick={() =>
-                setSelectedDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1))
-              }
-              aria-label="Previous day"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-
-            <div className="border-2 border-purple-600 rounded-xl px-4 py-3 min-w-[12rem] md:min-w-[18rem] flex items-center justify-between gap-4">
-              <div>
-                <div className="text-purple-700 text-sm font-semibold">
-                  {isToday(selectedDate) ? 'Today' : 'Selected Date'}
-                </div>
-                <div className="text-gray-700 text-xs leading-tight">
-                  {formatLongDate(selectedDate)}
-                </div>
-              </div>
-              <CalendarIcon className="w-5 h-5 text-purple-700" />
-            </div>
-
-            <button
-              className="rounded-full p-2 bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors"
-              onClick={() =>
-                setSelectedDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1))
-              }
-              aria-label="Next day"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </Card>
+        <DateSelector selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
         {/* Collections Summary */}
         <Card className="rounded-2xl p-4 shadow-sm">

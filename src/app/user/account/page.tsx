@@ -1,7 +1,7 @@
 'use client';
 import { useSession, signOut } from 'next-auth/react';
 import { motion } from 'framer-motion';
-import { User, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { User, LogOut } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { TransactionSummaryTable } from '@/components/ui/transaction-summary-table';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { TopNavigation } from '@/components/ui/top-navigation';
 import { BottomNavigation } from '@/components/ui/bottom-navigation';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { useEffect, useState } from 'react';
+import { DateSelector } from '@/components/ui/date-selector';
 
 export default function AccountPage() {
   const { data: session } = useSession();
@@ -26,23 +27,6 @@ export default function AccountPage() {
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/login' });
-  };
-
-  const goToPreviousDay = () => {
-    setSelectedDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1));
-  };
-
-  const goToNextDay = () => {
-    setSelectedDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1));
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString(undefined, {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
   };
 
   // Demo summary data - in real app, this would come from API
@@ -97,32 +81,7 @@ export default function AccountPage() {
         </Card>
 
         {/* Date Selector */}
-        <Card className="rounded-2xl p-4 shadow-sm bg-white">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full hover:bg-purple-50"
-              onClick={goToPreviousDay}
-            >
-              <ChevronLeft className="w-5 h-5 text-purple-600" />
-            </Button>
-
-            <div className="flex-1 text-center">
-              <h2 className="text-lg md:text-xl font-bold text-gray-800">Today</h2>
-              <p className="text-xs md:text-sm text-gray-500">{formatDate(selectedDate)}</p>
-            </div>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full hover:bg-purple-50"
-              onClick={goToNextDay}
-            >
-              <ChevronRight className="w-5 h-5 text-purple-600" />
-            </Button>
-          </div>
-        </Card>
+        <DateSelector selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
         {/* Transactions Summary */}
 
