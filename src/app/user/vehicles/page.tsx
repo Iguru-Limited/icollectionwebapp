@@ -1,19 +1,19 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import { motion } from "framer-motion";
-import { Search, Car } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { TopNavigation } from "@/components/ui/top-navigation";
-import { BottomNavigation } from "@/components/ui/bottom-navigation";
-import { Badge } from "@/components/ui/badge";
-import { useCompanyTemplateStore } from "@/store/companyTemplateStore";
-import { VehicleTable } from "@/components/vehicles/VehicleTable";
+'use client';
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { motion } from 'framer-motion';
+import { Search, Car } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { TopNavigation } from '@/components/ui/top-navigation';
+import { BottomNavigation } from '@/components/ui/bottom-navigation';
+import { Badge } from '@/components/ui/badge';
+import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
+import { VehicleTable } from '@/components/vehicles/VehicleTable';
 
 export default function VehiclesPage() {
   const { data: session } = useSession();
-  const [searchQuery, setSearchQuery] = useState("");
-  
+  const [searchQuery, setSearchQuery] = useState('');
+
   const template = useCompanyTemplateStore((s) => s.template);
   const setTemplate = useCompanyTemplateStore((s) => s.setTemplate);
   const hasHydrated = useCompanyTemplateStore((s) => s._hasHydrated);
@@ -26,9 +26,7 @@ export default function VehiclesPage() {
   }, [hasHydrated, template, session, setTemplate]);
 
   const filteredVehicles = (template?.vehicles ?? []).filter((vehicle) =>
-    searchQuery
-      ? vehicle.number_plate.toLowerCase().includes(searchQuery.toLowerCase())
-      : true
+    searchQuery ? vehicle.number_plate.toLowerCase().includes(searchQuery.toLowerCase()) : true,
   );
 
   return (
@@ -48,12 +46,8 @@ export default function VehiclesPage() {
               <Car className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
-                Vehicle Fleet
-              </h1>
-              <p className="text-xl md:text-2xl text-gray-500">
-                Manage your vehicle fleet
-              </p>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Vehicle Fleet</h1>
+              <p className="text-xl md:text-2xl text-gray-500">Manage your vehicle fleet</p>
             </div>
           </div>
           <Badge variant="outline" className="hidden md:flex">
@@ -74,20 +68,12 @@ export default function VehiclesPage() {
 
         {/* Desktop Table View */}
         <div className="hidden md:block">
-          <VehicleTable 
-            vehicles={filteredVehicles}
-            isLoading={!hasHydrated}
-            variant="table"
-          />
+          <VehicleTable vehicles={filteredVehicles} isLoading={!hasHydrated} variant="table" />
         </div>
 
         {/* Mobile Card View */}
         <div className="md:hidden">
-          <VehicleTable 
-            vehicles={filteredVehicles}
-            isLoading={!hasHydrated}
-            variant="card"
-          />
+          <VehicleTable vehicles={filteredVehicles} isLoading={!hasHydrated} variant="card" />
         </div>
       </div>
 
@@ -95,4 +81,3 @@ export default function VehiclesPage() {
     </motion.div>
   );
 }
-

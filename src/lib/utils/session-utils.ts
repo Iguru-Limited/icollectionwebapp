@@ -4,7 +4,7 @@
  * Utility functions for session management and timeout handling
  */
 
-import type { Session } from "next-auth";
+import type { Session } from 'next-auth';
 
 type ExpiryInput = Session | number | Date | string | null | undefined;
 
@@ -79,7 +79,7 @@ export function isSessionExpired(input: ExpiryInput): boolean {
  */
 export function formatTimeRemaining(milliseconds: number): string {
   if (milliseconds <= 0) {
-    return "Expired";
+    return 'Expired';
   }
 
   const totalSeconds = Math.floor(milliseconds / 1000);
@@ -104,7 +104,7 @@ export function formatTimeRemaining(milliseconds: number): string {
 export function getSessionWarningState(session: Session | null): {
   isExpired: boolean;
   isCritical: boolean; // Less than 5 minutes
-  isWarning: boolean;  // Less than 15 minutes
+  isWarning: boolean; // Less than 15 minutes
   timeRemaining: number;
 } {
   const timeRemaining = getTimeUntilExpiry(session);
@@ -141,10 +141,10 @@ export function getSessionExpiryDate(session: Session | null): Date | null {
  */
 export function getSessionTimePercentage(
   session: Session | null,
-  sessionDuration: number = 24 * 60 * 60 * 1000 // 24 hours default
+  sessionDuration: number = 24 * 60 * 60 * 1000, // 24 hours default
 ): number {
   const timeRemaining = getTimeUntilExpiry(session);
-  
+
   if (timeRemaining <= 0) {
     return 0;
   }
@@ -162,7 +162,7 @@ export function getSessionTimePercentage(
 export function createSessionRefreshTimer(
   session: Session | null,
   callback: () => void,
-  thresholdMinutes: number = 10
+  thresholdMinutes: number = 10,
 ): NodeJS.Timeout | null {
   const timeRemaining = getTimeUntilExpiry(session);
   const thresholdMs = thresholdMinutes * 60 * 1000;
@@ -184,9 +184,9 @@ export function createSessionRefreshTimer(
  */
 export function formatSessionExpiry(session: Session | null): string {
   const expiryDate = getSessionExpiryDate(session);
-  
+
   if (!expiryDate) {
-    return "Unknown";
+    return 'Unknown';
   }
 
   return expiryDate.toLocaleString();
@@ -200,7 +200,7 @@ export function formatSessionExpiry(session: Session | null): string {
  */
 export function shouldRefreshSession(
   session: Session | null,
-  refreshThresholdMinutes: number = 15
+  refreshThresholdMinutes: number = 15,
 ): boolean {
   const timeRemaining = getTimeUntilExpiry(session);
   const thresholdMs = refreshThresholdMinutes * 60 * 1000;

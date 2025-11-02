@@ -1,14 +1,14 @@
-"use client";
-import { useSession, signOut } from "next-auth/react";
-import { motion } from "framer-motion";
-import { User, LogOut, Receipt, Car, DollarSign, PiggyBank, TrendingUp, Wallet, ChevronLeft, ChevronRight } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { TransactionSummaryTable } from "@/components/ui/transaction-summary-table";
-import { Button } from "@/components/ui/button";
-import { TopNavigation } from "@/components/ui/top-navigation";
-import { BottomNavigation } from "@/components/ui/bottom-navigation";
-import { useCompanyTemplateStore } from "@/store/companyTemplateStore";
-import { useEffect, useState } from "react";
+'use client';
+import { useSession, signOut } from 'next-auth/react';
+import { motion } from 'framer-motion';
+import { User, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { TransactionSummaryTable } from '@/components/ui/transaction-summary-table';
+import { Button } from '@/components/ui/button';
+import { TopNavigation } from '@/components/ui/top-navigation';
+import { BottomNavigation } from '@/components/ui/bottom-navigation';
+import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
+import { useEffect, useState } from 'react';
 
 export default function AccountPage() {
   const { data: session } = useSession();
@@ -25,7 +25,7 @@ export default function AccountPage() {
   }, [hasHydrated, template, session, setTemplate]);
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/login" });
+    await signOut({ callbackUrl: '/login' });
   };
 
   const goToPreviousDay = () => {
@@ -38,10 +38,10 @@ export default function AccountPage() {
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString(undefined, {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric",
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
     });
   };
 
@@ -51,7 +51,7 @@ export default function AccountPage() {
     vehicles: template?.vehicles?.length || 0,
     loans: 45000,
     savings: 120000,
-    Operations:5000,
+    Operations: 5000,
     total: 165000,
   };
 
@@ -74,24 +74,26 @@ export default function AccountPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">
-                <span className="mx-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />
-                  {session?.user?.username || "User"}
+                  <span className="mx-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />
+                  {session?.user?.username || 'User'}
                 </h1>
                 <p className="text-purple-100 text-sm">
-                
-                  <h1 className="text-2xl font-bold text-white"> <span className="mx-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" /> {session?.user?.company?.company_name || "Company"}</h1>
-                  
+                  <h1 className="text-2xl font-bold text-white">
+                    {' '}
+                    <span className="mx-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />{' '}
+                    {session?.user?.company?.company_name || 'Company'}
+                  </h1>
                 </p>
                 <p className="text-purple-200 text-xs mt-0.5">
-                    
-                
-                    <h1 className="text-2xl font-bold text-white"> <span className="mx-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" /> {session?.user?.stage?.stage_name || "Stage"} </h1>
-                  
+                  <h1 className="text-2xl font-bold text-white">
+                    {' '}
+                    <span className="mx-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />{' '}
+                    {session?.user?.stage?.stage_name || 'Stage'}{' '}
+                  </h1>
                 </p>
               </div>
             </div>
-           
-          </div>         
+          </div>
         </Card>
 
         {/* Date Selector */}
@@ -105,12 +107,12 @@ export default function AccountPage() {
             >
               <ChevronLeft className="w-5 h-5 text-purple-600" />
             </Button>
-            
+
             <div className="flex-1 text-center">
               <h2 className="text-lg md:text-xl font-bold text-gray-800">Today</h2>
               <p className="text-xs md:text-sm text-gray-500">{formatDate(selectedDate)}</p>
             </div>
-            
+
             <Button
               variant="ghost"
               size="icon"
@@ -127,12 +129,12 @@ export default function AccountPage() {
         <TransactionSummaryTable
           title="Transactions Summary"
           data={[
-            { label: "Receipts", value: summaryData.receipts },
-            { label: "Vehicles", value: summaryData.vehicles },
-            { label: "Loans", value: summaryData.loans.toLocaleString() },
-            { label: "Savings", value: summaryData.savings.toLocaleString() },
-            { label: "Operations", value: summaryData.Operations.toLocaleString() },
-            { label: "Total", value: summaryData.total.toLocaleString() },
+            { label: 'Receipts', value: summaryData.receipts },
+            { label: 'Vehicles', value: summaryData.vehicles },
+            { label: 'Loans', value: summaryData.loans.toLocaleString() },
+            { label: 'Savings', value: summaryData.savings.toLocaleString() },
+            { label: 'Operations', value: summaryData.Operations.toLocaleString() },
+            { label: 'Total', value: summaryData.total.toLocaleString() },
           ]}
         />
 

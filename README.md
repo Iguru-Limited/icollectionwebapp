@@ -53,6 +53,7 @@ bun run electron-dev
 ```
 
 This will:
+
 1. Start the Next.js dev server on port 3000
 2. Wait for the server to be ready
 3. Launch Electron with hot-reload support
@@ -69,6 +70,7 @@ bun run build
 ```
 
 Deploy to Vercel:
+
 ```bash
 vercel --prod
 ```
@@ -83,6 +85,7 @@ bun run electron-pack
 ```
 
 This creates distributable packages in the `dist/` directory:
+
 - **Linux**: `.AppImage` file
 - **Windows**: `.exe` installer (when built on Windows)
 - **macOS**: `.dmg` installer (when built on macOS)
@@ -146,6 +149,7 @@ if (window.electronAPI?.isElectron) {
 ### Collection Form
 
 The collection form supports:
+
 - Adding multiple collection entries
 - Different collection types per entry
 - Dynamic form fields
@@ -154,18 +158,40 @@ The collection form supports:
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `bun run dev` | Start Next.js development server |
-| `bun run build` | Build for web (Vercel) |
-| `bun run build:web` | Build for web (Vercel) |
-| `bun run build:electron` | Build Next.js for Electron |
-| `bun run start` | Start production Next.js server |
-| `bun run lint` | Run ESLint |
-| `bun run electron` | Run Electron (requires built app) |
-| `bun run electron-dev` | Run Electron in development mode |
-| `bun run electron-pack` | Build Electron distributable |
-| `bun run electron-dist` | Build Electron (no publish) |
+| Command                  | Description                       |
+| ------------------------ | --------------------------------- |
+| `bun run dev`            | Start Next.js development server  |
+| `bun run build`          | Build for web (Vercel)            |
+| `bun run build:web`      | Build for web (Vercel)            |
+| `bun run build:electron` | Build Next.js for Electron        |
+| `bun run start`          | Start production Next.js server   |
+| `bun run lint`           | Run ESLint                        |
+| `bun run lint:fix`       | Run ESLint with auto-fix          |
+| `bun run typecheck`      | Type-check the project             |
+| `bun run format`         | Format code with Prettier          |
+| `bun run format:check`   | Check formatting without writing   |
+| `bun run electron`       | Run Electron (requires built app) |
+| `bun run electron-dev`   | Run Electron in development mode  |
+| `bun run electron-pack`  | Build Electron distributable      |
+| `bun run electron-dist`  | Build Electron (no publish)       |
+
+## Code quality and formatting
+
+We use ESLint (flat config) and Prettier for consistent code quality and style.
+
+```powershell
+# Lint and fix
+bun run lint:fix
+
+# Type-check
+bun run typecheck
+
+# Format code
+bun run format
+
+# Check formatting only
+bun run format:check
+```
 
 ## Configuration
 
@@ -208,6 +234,7 @@ Your web app will be live with browser-based printing.
 ### Desktop Distribution
 
 1. Build for your target platform:
+
    ```bash
    bun run electron-pack
    ```
@@ -236,6 +263,7 @@ The desktop version provides additional native features:
 ### Electron Build Issues
 
 If you encounter module loading errors:
+
 1. Clear the build cache: `rm -rf dist out .next`
 2. Reinstall dependencies: `rm -rf node_modules && bun install`
 3. Rebuild: `bun run electron-pack`

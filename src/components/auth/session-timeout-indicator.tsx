@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useSessionTimeout } from "@/hooks/auth/useSessionTimeout";
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertTriangle, Clock } from "lucide-react";
-import { toast } from "sonner";
-import { useEffect } from "react";
+import { useSessionTimeout } from '@/hooks/auth/useSessionTimeout';
+import { Card, CardContent } from '@/components/ui/card';
+import { AlertTriangle, Clock } from 'lucide-react';
+import { toast } from 'sonner';
+import { useEffect } from 'react';
 
 /**
  * Component to display session timeout information to users
@@ -14,11 +14,12 @@ export function SessionTimeoutIndicator() {
   const { timeRemaining, isExpired, isAuthenticated } = useSessionTimeout();
 
   // Parse time remaining to show warnings
-  const timeInMinutes = timeRemaining.includes('h') 
-    ? parseInt(timeRemaining.split('h')[0]) * 60 + parseInt(timeRemaining.split('h')[1].split('m')[0] || '0')
-    : timeRemaining.includes('m') 
-    ? parseInt(timeRemaining.split('m')[0])
-    : 0;
+  const timeInMinutes = timeRemaining.includes('h')
+    ? parseInt(timeRemaining.split('h')[0]) * 60 +
+      parseInt(timeRemaining.split('h')[1].split('m')[0] || '0')
+    : timeRemaining.includes('m')
+      ? parseInt(timeRemaining.split('m')[0])
+      : 0;
 
   // Show warning if less than 30 minutes remaining
   const showWarning = timeInMinutes < 30 && timeInMinutes > 0;
@@ -26,7 +27,7 @@ export function SessionTimeoutIndicator() {
   // Show toast warning when session is about to expire
   useEffect(() => {
     if (showWarning && timeInMinutes === 5) {
-      toast.warning("Your session will expire in 5 minutes. Please save your work.", {
+      toast.warning('Your session will expire in 5 minutes. Please save your work.', {
         duration: 10000, // Show for 10 seconds
       });
     }
@@ -38,7 +39,9 @@ export function SessionTimeoutIndicator() {
   }
 
   return (
-    <Card className={`w-fit ${showWarning ? 'border-orange-200 bg-orange-50' : 'border-green-200 bg-green-50'}`}>
+    <Card
+      className={`w-fit ${showWarning ? 'border-orange-200 bg-orange-50' : 'border-green-200 bg-green-50'}`}
+    >
       <CardContent className="p-3">
         <div className="flex items-center gap-2 text-sm">
           {showWarning ? (

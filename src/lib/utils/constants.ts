@@ -1,9 +1,9 @@
 // src/lib/constants.ts
 export const API_ENDPOINTS = {
   BASE_URL: process.env.API_BASE_URL ?? 'https://iguru.co.ke/iCollections/endpoints',
-  TOKEN_REFRESH:"/auth/refresh.php",  
-  LOGIN:"/api/auth/login.php",
-  URL_1:"https://iguru.co.ke/iCollections/endpoints/api/routing/",
+  TOKEN_REFRESH: '/auth/refresh.php',
+  LOGIN: '/api/auth/login.php',
+  URL_1: 'https://iguru.co.ke/iCollections/endpoints/api/routing/',
 } as const;
 
 export const APP_CONFIG = {
@@ -20,7 +20,6 @@ export const STORAGE_KEYS = {
   THEME: 'theme',
   LANGUAGE: 'language',
 } as const;
-
 
 export const THEME_COLORS = {
   PRIMARY: '#3B82F6',
@@ -46,4 +45,3 @@ export const HTTP_STATUS = {
   NOT_FOUND: 404,
   INTERNAL_SERVER_ERROR: 500,
 } as const;
-

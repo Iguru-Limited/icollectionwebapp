@@ -1,5 +1,5 @@
 // src/lib/token-refresh.ts
-"use client";
+'use client';
 
 import { TokenRefreshRequest, TokenRefreshResponse } from '@/types/auth/userauthentication';
 import { API_ENDPOINTS } from './constants';
@@ -9,7 +9,7 @@ export enum RefreshErrorType {
   INVALID_TOKEN = 'INVALID_TOKEN',
   SERVER_ERROR = 'SERVER_ERROR',
   TIMEOUT = 'TIMEOUT',
-  UNKNOWN = 'UNKNOWN'
+  UNKNOWN = 'UNKNOWN',
 }
 
 export interface RefreshError {
@@ -33,13 +33,13 @@ export class TokenRefreshService {
 
   // Session timeout: 6 hours
   private readonly SESSION_TIMEOUT = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
-  
+
   // Inactivity timeout: 1 hour
   private readonly INACTIVITY_TIMEOUT = 60 * 60 * 1000; // 1 hour in milliseconds
-  
+
   // Token refresh interval: 60 minutes
   private readonly REFRESH_INTERVAL = 60 * 60 * 1000; // 60 minutes in milliseconds
-  
+
   // Retry delay: exponential backoff starting at 5 seconds
   private readonly RETRY_DELAY_BASE = 5000; // 5 seconds
 
@@ -87,7 +87,7 @@ export class TokenRefreshService {
         type: RefreshErrorType.UNKNOWN,
         message: 'Unknown error occurred',
         retryable: false,
-        originalError: error
+        originalError: error,
       };
     }
 
@@ -97,41 +97,48 @@ export class TokenRefreshService {
         type: RefreshErrorType.NETWORK_ERROR,
         message: 'Network connection error',
         retryable: true,
-        originalError: error
+        originalError: error,
       };
     }
 
     // Timeout errors
-    if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('timeout'))) {
+    if (
+      error instanceof Error &&
+      (error.name === 'AbortError' || error.message.includes('timeout'))
+    ) {
       return {
         type: RefreshErrorType.TIMEOUT,
         message: 'Request timeout',
         retryable: true,
-        originalError: error
+        originalError: error,
       };
     }
 
     // HTTP status errors
-    if (error instanceof Error && error.message && error.message.includes('Token refresh failed:')) {
+    if (
+      error instanceof Error &&
+      error.message &&
+      error.message.includes('Token refresh failed:')
+    ) {
       const statusMatch = error.message.match(/\d+/);
       if (statusMatch) {
         const status = parseInt(statusMatch[0]);
-        
+
         if (status === 401 || status === 403) {
           return {
             type: RefreshErrorType.INVALID_TOKEN,
             message: 'Invalid or expired refresh token',
             retryable: false,
-            originalError: error
+            originalError: error,
           };
         }
-        
+
         if (status >= 500) {
           return {
             type: RefreshErrorType.SERVER_ERROR,
             message: 'Server error occurred',
             retryable: true,
-            originalError: error
+            originalError: error,
           };
         }
       }
@@ -140,9 +147,11 @@ export class TokenRefreshService {
     // Default categorization
     return {
       type: RefreshErrorType.UNKNOWN,
-      message: (error instanceof Error ? error.message : 'Unknown error occurred') || 'Unknown error occurred',
+      message:
+        (error instanceof Error ? error.message : 'Unknown error occurred') ||
+        'Unknown error occurred',
       retryable: true,
-      originalError: error
+      originalError: error,
     };
   }
 
@@ -164,13 +173,13 @@ export class TokenRefreshService {
 
     // Track various user activities
     const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-    
+
     const updateActivity = () => {
       this.lastActivity = Date.now();
       this.resetInactivityTimer();
     };
 
-    events.forEach(event => {
+    events.forEach((event) => {
       document.addEventListener(event, updateActivity, true);
     });
 
@@ -215,7 +224,7 @@ export class TokenRefreshService {
    */
   public startTokenRefresh(refreshToken: string): void {
     console.log('Starting automatic token refresh...');
-    
+
     // Clear any existing timer
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
@@ -268,7 +277,7 @@ export class TokenRefreshService {
     }
 
     this.refreshPromise = this.performTokenRefreshWithRetry(refreshToken);
-    
+
     try {
       const newToken = await this.refreshPromise;
       return newToken;
@@ -292,7 +301,7 @@ export class TokenRefreshService {
       } catch (error) {
         lastError = error;
         const categorizedError = this.categorizeError(error);
-        
+
         console.warn(`Token refresh attempt ${attempt + 1} failed:`, categorizedError);
 
         // If not retryable or max retries reached, break
@@ -316,7 +325,7 @@ export class TokenRefreshService {
    */
   private handleRefreshFailure(error: unknown): void {
     const categorizedError = this.categorizeError(error);
-    
+
     // Notify callback if set
     if (this.refreshFailureCallback) {
       this.refreshFailureCallback(categorizedError);
@@ -333,7 +342,7 @@ export class TokenRefreshService {
    * Utility function for delays
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -349,14 +358,14 @@ export class TokenRefreshService {
   private async performTokenRefresh(refreshToken: string): Promise<string> {
     try {
       console.log('Refreshing token...');
-      
+
       const response = await fetch(`${API_ENDPOINTS.BASE_URL}${API_ENDPOINTS.TOKEN_REFRESH}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          refresh_token: refreshToken
+          refresh_token: refreshToken,
         } as TokenRefreshRequest),
       });
 
@@ -371,10 +380,10 @@ export class TokenRefreshService {
       }
 
       console.log('Token refreshed successfully');
-      
+
       // Update the session with new tokens
       await this.updateSessionTokens(data.token, data.refresh_token);
-      
+
       return data.token;
     } catch (error) {
       console.error('Token refresh error:', error);
@@ -389,7 +398,10 @@ export class TokenRefreshService {
   private async updateSessionTokens(newToken: string, newRefreshToken: string): Promise<void> {
     // This method is kept for compatibility but the actual update
     // is handled by the useTokenRefresh hook using NextAuth's update function
-    console.log('Token refresh completed:', { newToken: newToken.substring(0, 20) + '...', newRefreshToken: newRefreshToken.substring(0, 20) + '...' });
+    console.log('Token refresh completed:', {
+      newToken: newToken.substring(0, 20) + '...',
+      newRefreshToken: newRefreshToken.substring(0, 20) + '...',
+    });
   }
 
   /**
@@ -397,7 +409,7 @@ export class TokenRefreshService {
    */
   private logout(): void {
     this.stopTokenRefresh();
-    
+
     // Only redirect in browser environment
     if (typeof window !== 'undefined') {
       window.location.href = '/login';

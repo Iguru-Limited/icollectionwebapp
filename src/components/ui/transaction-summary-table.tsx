@@ -1,5 +1,5 @@
-import * as React from "react";
-import { Card } from "./card";
+import * as React from 'react';
+import { Card } from './card';
 
 export interface TransactionSummaryTableProps {
   data: Array<{ label: string; value: string | number }>;
@@ -9,9 +9,7 @@ export interface TransactionSummaryTableProps {
 export function TransactionSummaryTable({ data, title }: TransactionSummaryTableProps) {
   return (
     <Card className="rounded-2xl shadow-md p-6">
-      {title && (
-        <h2 className="text-2xl font-bold text-purple-700 mb-4">{title}</h2>
-      )}
+      {title && <h2 className="text-2xl font-bold text-purple-700 mb-4">{title}</h2>}
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white rounded-xl border text-xl">
           <thead>
@@ -22,11 +20,14 @@ export function TransactionSummaryTable({ data, title }: TransactionSummaryTable
           </thead>
           <tbody>
             {data.map((row, idx) => (
-              <tr key={row.label} className={
-                idx === data.length - 1
-                  ? "bg-purple-100 text-purple-800 font-bold text-2xl"
-                  : "border-b hover:bg-purple-50 text-purple-700"
-              }>
+              <tr
+                key={row.label}
+                className={
+                  idx === data.length - 1
+                    ? 'bg-purple-100 text-purple-800 font-bold text-2xl'
+                    : 'border-b hover:bg-purple-50 text-purple-700'
+                }
+              >
                 <td className="py-3 px-4 font-medium">{row.label}</td>
                 <td className="py-3 px-4">{row.value}</td>
               </tr>

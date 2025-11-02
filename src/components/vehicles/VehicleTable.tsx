@@ -1,7 +1,7 @@
-"use client";
-import { Car, FileText, SquarePen } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+'use client';
+import { Car, FileText, SquarePen } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -9,9 +9,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { useRouter } from "next/navigation";
-import { useAppStore } from "@/store/appStore";
+} from '@/components/ui/table';
+import { useRouter } from 'next/navigation';
+import { useAppStore } from '@/store/appStore';
 
 interface Vehicle {
   vehicle_id: number;
@@ -22,10 +22,10 @@ interface Vehicle {
 interface VehicleTableProps {
   vehicles: Vehicle[];
   isLoading?: boolean;
-  variant?: "table" | "card";
+  variant?: 'table' | 'card';
 }
 
-export function VehicleTable({ vehicles, isLoading = false, variant = "card" }: VehicleTableProps) {
+export function VehicleTable({ vehicles, isLoading = false, variant = 'card' }: VehicleTableProps) {
   const router = useRouter();
   const setSelectedVehicleId = useAppStore((s) => s.setSelectedVehicleId);
 
@@ -38,24 +38,18 @@ export function VehicleTable({ vehicles, isLoading = false, variant = "card" }: 
   }
 
   if (vehicles.length === 0) {
-    return (
-      <Card className="p-8 text-center text-gray-500">
-        No vehicles found
-      </Card>
-    );
+    return <Card className="p-8 text-center text-gray-500">No vehicles found</Card>;
   }
 
   // Table variant for desktop
-  if (variant === "table") {
+  if (variant === 'table') {
     return (
       <Card className="rounded-2xl shadow-md overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-purple-50 hover:bg-purple-50">
               <TableHead className="font-semibold text-purple-900 text-2xl">#</TableHead>
-              <TableHead className="font-semibold text-purple-900 text-2xl">
-                Number Plate
-              </TableHead>
+              <TableHead className="font-semibold text-purple-900 text-2xl">Number Plate</TableHead>
               <TableHead className="font-semibold text-purple-900 text-center text-2xl">
                 Seats
               </TableHead>
@@ -67,9 +61,7 @@ export function VehicleTable({ vehicles, isLoading = false, variant = "card" }: 
           <TableBody>
             {vehicles.map((vehicle, index) => (
               <TableRow key={vehicle.vehicle_id} className="hover:bg-gray-50">
-                <TableCell className="font-large text-gray-600 text-2xl">
-                  {index + 1}
-                </TableCell>
+                <TableCell className="font-large text-gray-600 text-2xl">{index + 1}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Car className="w-6 h-6 text-purple-600" />
@@ -89,7 +81,7 @@ export function VehicleTable({ vehicles, isLoading = false, variant = "card" }: 
                       className="text-2xl"
                       onClick={() => {
                         setSelectedVehicleId(vehicle.vehicle_id);
-                        router.push("/user/collection");
+                        router.push('/user/collection');
                       }}
                     >
                       <SquarePen className="w-5 h-5 mr-1" />
@@ -98,9 +90,7 @@ export function VehicleTable({ vehicles, isLoading = false, variant = "card" }: 
                     <Button
                       size="sm"
                       className="bg-purple-600 hover:bg-purple-700 text-2xl"
-                      onClick={() =>
-                        router.push(`/user/report/${vehicle.vehicle_id}`)
-                      }
+                      onClick={() => router.push(`/user/report/${vehicle.vehicle_id}`)}
                     >
                       <FileText className="w-5 h-5 mr-1" />
                       Transactions
@@ -132,9 +122,7 @@ export function VehicleTable({ vehicles, isLoading = false, variant = "card" }: 
                 <h3 className="text-2xl md:text-3xl font-bold text-gray-800 uppercase">
                   {vehicle.number_plate}
                 </h3>
-                <p className="text-xl md:text-2xl text-gray-500">
-                  {vehicle.seats || 14} seats
-                </p>
+                <p className="text-xl md:text-2xl text-gray-500">{vehicle.seats || 14} seats</p>
               </div>
             </div>
           </div>
@@ -145,16 +133,14 @@ export function VehicleTable({ vehicles, isLoading = false, variant = "card" }: 
               className="bg-white border-2 border-purple-600 text-purple-600 hover:bg-purple-50 rounded-xl h-14 font-semibold text-xl md:text-2xl transition-all"
               onClick={() => {
                 setSelectedVehicleId(vehicle.vehicle_id);
-                router.push("/user/collection");
+                router.push('/user/collection');
               }}
             >
               Receipts
             </Button>
             <Button
               className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-14 font-semibold text-xl md:text-2xl shadow-md transition-all"
-              onClick={() =>
-                router.push(`/user/report/${vehicle.vehicle_id}`)
-              }
+              onClick={() => router.push(`/user/report/${vehicle.vehicle_id}`)}
             >
               Transactions
             </Button>

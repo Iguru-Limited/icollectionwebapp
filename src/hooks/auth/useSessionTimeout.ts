@@ -1,8 +1,12 @@
-"use client";
+'use client';
 
-import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
-import { getTimeUntilExpiry, formatTimeRemaining, isSessionExpired } from "@/lib/utils/session-utils";
+import { useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
+import {
+  getTimeUntilExpiry,
+  formatTimeRemaining,
+  isSessionExpired,
+} from '@/lib/utils/session-utils';
 
 /**
  * Hook to track session timeout and provide session information
@@ -10,11 +14,11 @@ import { getTimeUntilExpiry, formatTimeRemaining, isSessionExpired } from "@/lib
  */
 export function useSessionTimeout() {
   const { data: session, status } = useSession();
-  const [timeRemaining, setTimeRemaining] = useState<string>("");
+  const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [isExpired, setIsExpired] = useState<boolean>(false);
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user) {
+    if (status === 'authenticated' && session?.user) {
       // Get the token from the session (this would need to be passed through the session)
       // For now, we'll use a placeholder approach
       const checkExpiry = () => {
@@ -22,7 +26,7 @@ export function useSessionTimeout() {
         if (session) {
           const remaining = getTimeUntilExpiry(session);
           const expired = isSessionExpired(session);
-          
+
           setTimeRemaining(formatTimeRemaining(remaining));
           setIsExpired(expired);
         }
@@ -36,7 +40,7 @@ export function useSessionTimeout() {
 
       return () => clearInterval(interval);
     } else {
-      setTimeRemaining("");
+      setTimeRemaining('');
       setIsExpired(false);
     }
   }, [status, session]);
@@ -44,7 +48,7 @@ export function useSessionTimeout() {
   return {
     timeRemaining,
     isExpired,
-    isAuthenticated: status === "authenticated",
-    session
+    isAuthenticated: status === 'authenticated',
+    session,
   };
 }

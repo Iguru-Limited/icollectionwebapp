@@ -1,17 +1,17 @@
-"use client";
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+'use client';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Drawer,
   DrawerContent,
@@ -19,10 +19,10 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer";
-import { useIsMobile } from "@/hooks/useMediaQuery";
-import { data } from "../../data";
-import { PrintService } from "@/lib/utils/printService";
+} from '@/components/ui/drawer';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import { data } from '../../data';
+import { PrintService } from '@/lib/utils/printService';
 
 interface CollectionEntry {
   id: string;
@@ -38,9 +38,9 @@ const containerVariants = {
     transition: {
       duration: 0.6,
       staggerChildren: 0.1,
-      delayChildren: 0.2
-    }
-  }
+      delayChildren: 0.2,
+    },
+  },
 };
 
 const itemVariants = {
@@ -50,23 +50,23 @@ const itemVariants = {
     y: 0,
     transition: {
       duration: 0.4,
-      ease: "easeOut" as const
-    }
-  }
+      ease: 'easeOut' as const,
+    },
+  },
 };
 
 const buttonVariants = {
   hover: { scale: 1.05 },
-  tap: { scale: 0.95 }
+  tap: { scale: 0.95 },
 };
 
-const FormContent = ({ 
-  entries, 
-  onUpdateEntry, 
-  onAddEntry, 
-  onRemoveEntry, 
-  onCancel, 
-  onProcess
+const FormContent = ({
+  entries,
+  onUpdateEntry,
+  onAddEntry,
+  onRemoveEntry,
+  onCancel,
+  onProcess,
 }: {
   entries: CollectionEntry[];
   onUpdateEntry: (id: string, field: keyof CollectionEntry, value: string) => void;
@@ -75,10 +75,7 @@ const FormContent = ({
   onCancel: () => void;
   onProcess: () => void;
 }) => (
-  <motion.div 
-    variants={containerVariants}
-    className="flex flex-col md:space-y-6 space-y-4"
-  >
+  <motion.div variants={containerVariants} className="flex flex-col md:space-y-6 space-y-4">
     {/* Collection Entries */}
     {entries.map((entry, index) => (
       <motion.div
@@ -91,9 +88,7 @@ const FormContent = ({
         {index > 0 && (
           <div className="border-t border-gray-200 pt-4">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-sm font-semibold text-gray-700">
-                Collection #{index + 1}
-              </h3>
+              <h3 className="text-sm font-semibold text-gray-700">Collection #{index + 1}</h3>
               {entries.length > 1 && (
                 <Button
                   variant="outline"
@@ -107,15 +102,13 @@ const FormContent = ({
             </div>
           </div>
         )}
-        
+
         <div className="grid grid-cols-2 md:space-x-16 space-x-4">
           {/* Collection Type */}
           <motion.div variants={itemVariants} className="space-y-2">
-            <label className="text-sm font-bold text-gray-900">
-              Collection Type
-            </label>
-            <Select 
-              value={entry.type} 
+            <label className="text-sm font-bold text-gray-900">Collection Type</label>
+            <Select
+              value={entry.type}
               onValueChange={(value) => onUpdateEntry(entry.id, 'type', value)}
             >
               <SelectTrigger className="bg-white border-gray-300 rounded-none">
@@ -133,10 +126,8 @@ const FormContent = ({
 
           {/* Amount */}
           <motion.div variants={itemVariants} className="space-y-2">
-            <label className="text-sm font-bold text-gray-900">
-              Amount
-            </label>
-            <Input 
+            <label className="text-sm font-bold text-gray-900">Amount</label>
+            <Input
               type="number"
               value={entry.amount}
               onChange={(e) => onUpdateEntry(entry.id, 'amount', e.target.value)}
@@ -149,16 +140,9 @@ const FormContent = ({
     ))}
 
     {/* Add Another Button */}
-    <motion.div 
-      variants={itemVariants}
-      className="flex justify-end md:pt-4 pt-2"
-    >
-      <motion.div
-        variants={buttonVariants}
-        whileHover="hover"
-        whileTap="tap"
-      >
-        <Button 
+    <motion.div variants={itemVariants} className="flex justify-end md:pt-4 pt-2">
+      <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+        <Button
           onClick={onAddEntry}
           className="bg-black hover:bg-gray-800 text-white rounded-none w-full md:w-32"
         >
@@ -168,16 +152,9 @@ const FormContent = ({
     </motion.div>
 
     {/* Bottom Action Buttons */}
-    <motion.div 
-      variants={itemVariants}
-      className="grid grid-cols-2 gap-4 pt-6"
-    >
-      <motion.div
-        variants={buttonVariants}
-        whileHover="hover"
-        whileTap="tap"
-      >
-        <Button 
+    <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4 pt-6">
+      <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+        <Button
           variant="outline"
           onClick={onCancel}
           className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-none w-full"
@@ -185,16 +162,9 @@ const FormContent = ({
           Cancel
         </Button>
       </motion.div>
-      
-      <motion.div
-        variants={buttonVariants}
-        whileHover="hover"
-        whileTap="tap"
-      >
-        <Button 
-          onClick={onProcess}
-          className="bg-green-600 hover:bg-green-700 text-white w-full"
-        >
+
+      <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+        <Button onClick={onProcess} className="bg-green-600 hover:bg-green-700 text-white w-full">
           Process
         </Button>
       </motion.div>
@@ -206,27 +176,25 @@ export default function CollectionForm() {
   const isMobile = useIsMobile();
   const router = useRouter();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  
+
   // Initialize with one empty entry
-  const [entries, setEntries] = useState<CollectionEntry[]>([
-    { id: '1', type: '', amount: '' }
-  ]);
+  const [entries, setEntries] = useState<CollectionEntry[]>([{ id: '1', type: '', amount: '' }]);
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
   const handleUpdateEntry = (id: string, field: keyof CollectionEntry, value: string) => {
-    setEntries(prev => prev.map(entry => 
-      entry.id === id ? { ...entry, [field]: value } : entry
-    ));
+    setEntries((prev) =>
+      prev.map((entry) => (entry.id === id ? { ...entry, [field]: value } : entry)),
+    );
   };
 
   const handleAddEntry = () => {
-    setEntries(prev => [...prev, { id: generateId(), type: '', amount: '' }]);
+    setEntries((prev) => [...prev, { id: generateId(), type: '', amount: '' }]);
   };
 
   const handleRemoveEntry = (id: string) => {
     if (entries.length > 1) {
-      setEntries(prev => prev.filter(entry => entry.id !== id));
+      setEntries((prev) => prev.filter((entry) => entry.id !== id));
     }
   };
 
@@ -241,7 +209,7 @@ export default function CollectionForm() {
   const handleProcess = async () => {
     try {
       const printService = new PrintService();
-      
+
       // Build a minimal pre-formatted receipt text for preview/printing
       const id = `ICR-${Date.now()}`;
       const now = new Date();
@@ -254,30 +222,38 @@ export default function CollectionForm() {
       const localDateTime = `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
 
       const itemsText = entries
-        .map(entry => `${entry.type}                 ${parseFloat(entry.amount || '0').toFixed(2)}`)
+        .map(
+          (entry) => `${entry.type}                 ${parseFloat(entry.amount || '0').toFixed(2)}`,
+        )
         .join('\n');
       const totalValue = entries.reduce((sum, e) => sum + (parseFloat(e.amount || '0') || 0), 0);
 
       const receiptText = [
         `Receipt #${id}`,
-        data.currentVehicle?.plateNumber ? `Vehicle: ${data.currentVehicle.plateNumber}` : undefined,
+        data.currentVehicle?.plateNumber
+          ? `Vehicle: ${data.currentVehicle.plateNumber}`
+          : undefined,
         itemsText,
         '------------------------------',
         `TOTAL ${totalValue.toFixed(2)}`,
         '------------------------------',
         '**Terms and Conditions Apply**',
-        localDateTime
-      ].filter(Boolean).join('\n');
+        localDateTime,
+      ]
+        .filter(Boolean)
+        .join('\n');
 
       // Print using the unified text-based method
-      const printResult = await printService.printReceiptText(receiptText, { overrideDateTime: localDateTime });
-      
+      const printResult = await printService.printReceiptText(receiptText, {
+        overrideDateTime: localDateTime,
+      });
+
       if (printResult.success) {
         alert(`Receipt printed successfully on ${printResult.printer}`);
       } else {
         alert(`Print failed: ${printResult.error}`);
       }
-      
+
       // Navigate back
       if (isMobile) {
         setIsDrawerOpen(false);
@@ -292,18 +268,10 @@ export default function CollectionForm() {
 
   if (isMobile) {
     return (
-      <motion.section
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
+      <motion.section initial="hidden" animate="visible" variants={containerVariants}>
         <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
           <DrawerTrigger asChild>
-            <motion.div
-              variants={buttonVariants}
-              whileHover="hover"
-              whileTap="tap"
-            >
+            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
               <Button className="bg-green-600 hover:bg-green-700 text-white rounded-none w-full">
                 New Collection
               </Button>
@@ -312,12 +280,10 @@ export default function CollectionForm() {
           <DrawerContent className="bg-gray-50 h-[70vh] min-h-[500px]">
             <DrawerHeader>
               <DrawerTitle>Collection Form</DrawerTitle>
-              <DrawerDescription>
-                Add a new collection for this vehicle
-              </DrawerDescription>
+              <DrawerDescription>Add a new collection for this vehicle</DrawerDescription>
             </DrawerHeader>
             <div className="px-4 pb-4 flex-1 overflow-y-auto">
-              <FormContent 
+              <FormContent
                 entries={entries}
                 onUpdateEntry={handleUpdateEntry}
                 onAddEntry={handleAddEntry}
@@ -333,14 +299,10 @@ export default function CollectionForm() {
   }
 
   return (
-    <motion.section
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-    >
+    <motion.section initial="hidden" animate="visible" variants={containerVariants}>
       <Card className="bg-gray-50 border border-gray-200 rounded-none">
         <CardContent className="p-8">
-          <FormContent 
+          <FormContent
             entries={entries}
             onUpdateEntry={handleUpdateEntry}
             onAddEntry={handleAddEntry}

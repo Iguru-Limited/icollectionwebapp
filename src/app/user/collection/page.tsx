@@ -1,23 +1,29 @@
-"use client";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useSession } from "next-auth/react";
-import { useAppStore } from "@/store/appStore";
-import { useCompanyTemplateStore } from "@/store/companyTemplateStore";
-import { ArrowLeft,  Plus, X } from "lucide-react";
-import { IoReceiptOutline } from "react-icons/io5";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { useRouter } from "next/navigation";
-import { PrintService } from "@/lib/utils/printService";
-import { toast } from "sonner";
-import { useSaveReceipt } from "@/hooks/receipt/useSaveReceipt";
-import { TopNavigation } from "@/components/ui/top-navigation";
-import { RiSendPlaneFill } from "react-icons/ri";
-import { IoWalletOutline } from "react-icons/io5";
-import { useReportByVehicleDate } from "@/hooks/report/useReportByVehicleDate";
+'use client';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useAppStore } from '@/store/appStore';
+import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
+import { ArrowLeft, Plus, X } from 'lucide-react';
+import { IoReceiptOutline } from 'react-icons/io5';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { useRouter } from 'next/navigation';
+import { PrintService } from '@/lib/utils/printService';
+import { toast } from 'sonner';
+import { useSaveReceipt } from '@/hooks/receipt/useSaveReceipt';
+import { TopNavigation } from '@/components/ui/top-navigation';
+import { RiSendPlaneFill } from 'react-icons/ri';
+import { IoWalletOutline } from 'react-icons/io5';
+import { useReportByVehicleDate } from '@/hooks/report/useReportByVehicleDate';
 import {
   Dialog,
   DialogContent,
@@ -26,7 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
 interface AdditionalCollection {
   id: string;
@@ -39,33 +45,31 @@ export default function CollectionPage() {
   const { data: session } = useSession();
   const selectedVehicleId = useAppStore((s) => s.selectedVehicleId);
   const template = useCompanyTemplateStore((s) => s.template);
-  
+
   const [additionalCollections, setAdditionalCollections] = useState<AdditionalCollection[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
   // UI local state
-  
+
   // Initialize the save receipt hook
   const { saveReceipt } = useSaveReceipt();
   const { fetchReport, data: reportData } = useReportByVehicleDate();
 
   // Get the selected vehicle
-  const selectedVehicle = template?.vehicles.find(
-    (v) => v.vehicle_id === selectedVehicleId
-  );
+  const selectedVehicle = template?.vehicles.find((v) => v.vehicle_id === selectedVehicleId);
 
   // Get company collection defaults for the popup
   const collectionDefaults = template?.company_collection_defaults || [];
 
   // Group collection defaults by collection title
   const collectionTypes = Array.from(
-    new Set(collectionDefaults.map((field) => field.collection.title))
+    new Set(collectionDefaults.map((field) => field.collection.title)),
   );
 
   const addCollection = () => {
     const newCollection: AdditionalCollection = {
       id: Date.now().toString(),
-      collectionType: collectionTypes[0] || "",
-      amount: "",
+      collectionType: collectionTypes[0] || '',
+      amount: '',
     };
     setAdditionalCollections([...additionalCollections, newCollection]);
   };
@@ -76,13 +80,13 @@ export default function CollectionPage() {
 
   const updateCollection = (id: string, field: keyof AdditionalCollection, value: string) => {
     setAdditionalCollections(
-      additionalCollections.map((c) => (c.id === id ? { ...c, [field]: value } : c))
+      additionalCollections.map((c) => (c.id === id ? { ...c, [field]: value } : c)),
     );
   };
 
   const totalAmount = additionalCollections.reduce(
     (sum, c) => sum + (parseFloat(c.amount) || 0),
-    0
+    0,
   );
 
   // Fetch today's collections total for this vehicle ONCE per (vehicleId, companyId, date)
@@ -92,8 +96,8 @@ export default function CollectionPage() {
     if (!selectedVehicleId || !companyId) return;
     const today = new Date();
     const y = today.getFullYear();
-    const m = String(today.getMonth() + 1).padStart(2, "0");
-    const d = String(today.getDate()).padStart(2, "0");
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
     const ymd = `${y}-${m}-${d}`;
     const key = `${selectedVehicleId}-${companyId}-${ymd}`;
     if (lastFetchKeyRef.current === key) return; // prevent duplicate calls
@@ -109,48 +113,48 @@ export default function CollectionPage() {
   const handleProcessCollection = async () => {
     // Validate session
     if (!session?.user) {
-      toast.error("Session expired. Please log in again.");
+      toast.error('Session expired. Please log in again.');
       return;
     }
 
     // Validate vehicle selection
     if (!selectedVehicle) {
-      toast.error("No vehicle selected");
+      toast.error('No vehicle selected');
       return;
     }
 
     // Validate that we have collections
     if (additionalCollections.length === 0) {
-      toast.error("Please add at least one collection before printing receipt");
+      toast.error('Please add at least one collection before printing receipt');
       return;
     }
 
     // Validate that all collections have a type and amount
     const invalidCollections = additionalCollections.filter(
-      (c) => !c.collectionType || parseFloat(c.amount) <= 0
+      (c) => !c.collectionType || parseFloat(c.amount) <= 0,
     );
 
     if (invalidCollections.length > 0) {
-      toast.error("Please fill in all collection types and amounts");
+      toast.error('Please fill in all collection types and amounts');
       return;
     }
 
     // Show loading toast and store its ID
-    const toastId = toast.loading("Processing collection...");
+    const toastId = toast.loading('Processing collection...');
 
     try {
       // Get current date and time in local timezone
       const now = new Date();
-      
+
       // Format date as YYYY-MM-DD using local time (not UTC)
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const day = String(now.getDate()).padStart(2, '0');
       const tripDate = `${year}-${month}-${day}`;
-      
+
       // Prepare slugs object from collections
       const slugs: { [key: string]: number } = {};
-      additionalCollections.forEach(collection => {
+      additionalCollections.forEach((collection) => {
         // Convert collection type to snake_case slug
         const slug = collection.collectionType.toLowerCase().replace(/\s+/g, '_');
         slugs[slug] = parseFloat(collection.amount);
@@ -159,28 +163,25 @@ export default function CollectionPage() {
       // Prepare payload for API
       const payload = {
         meta: {
-          number_plate: selectedVehicle?.number_plate || "",
-          receipt_no: "",
+          number_plate: selectedVehicle?.number_plate || '',
+          receipt_no: '',
           trip_date: tripDate,
         },
         slugs,
       };
 
       // Save receipt to API
-      const result = await saveReceipt(
-        selectedVehicleId || 0,
-        payload
-      );
+      const result = await saveReceipt(selectedVehicleId || 0, payload);
 
       if (!result) {
         toast.dismiss(toastId);
-        toast.error("Failed to save receipt");
+        toast.error('Failed to save receipt');
         return;
       }
 
       // Update loading message
       toast.dismiss(toastId);
-      const printToastId = toast.loading("Printing receipt...");
+      const printToastId = toast.loading('Printing receipt...');
 
       // Now print the receipt using the receipt_text from API
       const printService = new PrintService();
@@ -194,34 +195,35 @@ export default function CollectionPage() {
       const MM = String(nowLocal.getMinutes()).padStart(2, '0');
       const SS = String(nowLocal.getSeconds()).padStart(2, '0');
       const localDateTime = `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
-      
+
       // Use the pre-formatted receipt text from API but override date/time to local
-      const printResult = await printService.printReceiptText(
-        result.data.receipt_text,
-        { overrideDateTime: localDateTime }
-      );
-      
+      const printResult = await printService.printReceiptText(result.data.receipt_text, {
+        overrideDateTime: localDateTime,
+      });
+
       // Dismiss printing toast
       toast.dismiss(printToastId);
-      
+
       if (printResult.success) {
         toast.success(`Receipt #${result.data.receipt_number} saved and printed successfully!`);
-        
+
         // Clear collections after successful print
         setAdditionalCollections([]);
-        
+
         // Navigate back to user page
         setTimeout(() => {
-          router.push("/user");
+          router.push('/user');
         }, 1500);
       } else {
         // Receipt saved but print failed
-        toast.warning(`Receipt saved as #${result.data.receipt_number} but print failed: ${printResult.error}`);
-        
+        toast.warning(
+          `Receipt saved as #${result.data.receipt_number} but print failed: ${printResult.error}`,
+        );
+
         // Still clear and navigate since receipt was saved
         setAdditionalCollections([]);
         setTimeout(() => {
-          router.push("/user");
+          router.push('/user');
         }, 2000);
       }
     } catch (error) {
@@ -238,16 +240,11 @@ export default function CollectionPage() {
       <div className="container mx-auto px-4 py-4 pb-24 max-w-screen-xl">
         {/* Header */}
         <div className="flex items-center mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push("/user")}
-            className="mr-3"
-          >
+          <Button variant="ghost" size="icon" onClick={() => router.push('/user')} className="mr-3">
             <ArrowLeft className="w-5 h-5 text-gray-700" />
           </Button>
           <h1 className="text-3xl font-bold text-gray-700">
-            {selectedVehicle?.number_plate || "Vehicle"} NEW COLLECTION
+            {selectedVehicle?.number_plate || 'Vehicle'} NEW COLLECTION
           </h1>
         </div>
 
@@ -257,13 +254,17 @@ export default function CollectionPage() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <IoReceiptOutline className="w-5 h-5 text-purple-700" />
-                <h2 className="text-[15px] font-semibold text-gray-800">Today&apos;s Collections</h2>
+                <h2 className="text-[15px] font-semibold text-gray-800">
+                  Today&apos;s Collections
+                </h2>
                 <span className="ml-2 inline-flex items-center rounded-full bg-purple-700 text-white text-xl font-semibold px-3 py-1">
                   Ksh {todaysTotal.toLocaleString()}
                 </span>
               </div>
               <button
-                onClick={() => selectedVehicleId && router.push(`/user/report/${selectedVehicleId}`)}
+                onClick={() =>
+                  selectedVehicleId && router.push(`/user/report/${selectedVehicleId}`)
+                }
                 className="text-xl font-semibold text-purple-700 hover:underline cursor-pointer"
               >
                 View all
@@ -299,12 +300,8 @@ export default function CollectionPage() {
                     <Plus className="w-6 h-6" />
                   </Button>
                 </div>
-                <h3 className="text-md font-medium text-gray-700 mb-1">
-                  No collections added
-                </h3>
-                <p className="text-xl text-gray-500">
-                  Tap the button above to add a collection.
-                </p>
+                <h3 className="text-md font-medium text-gray-700 mb-1">No collections added</h3>
+                <p className="text-xl text-gray-500">Tap the button above to add a collection.</p>
               </Card>
             ) : (
               <Card className="bg-white rounded-xl p-4 relative overflow-hidden">
@@ -317,13 +314,18 @@ export default function CollectionPage() {
 
                 <div className="space-y-3">
                   {additionalCollections.map((collection, idx) => (
-                    <div key={collection.id} className="grid grid-cols-12 items-center gap-2 p-3 border rounded-lg">
-                      <div className="col-span-2 text-xl text-gray-500 font-semibold">#{idx + 1}</div>
+                    <div
+                      key={collection.id}
+                      className="grid grid-cols-12 items-center gap-2 p-3 border rounded-lg"
+                    >
+                      <div className="col-span-2 text-xl text-gray-500 font-semibold">
+                        #{idx + 1}
+                      </div>
                       <div className="col-span-6">
                         <Select
                           value={collection.collectionType}
                           onValueChange={(value) =>
-                            updateCollection(collection.id, "collectionType", value)
+                            updateCollection(collection.id, 'collectionType', value)
                           }
                         >
                           <SelectTrigger className="w-full">
@@ -343,7 +345,9 @@ export default function CollectionPage() {
                           type="number"
                           step="0.01"
                           value={collection.amount}
-                          onChange={(e) => updateCollection(collection.id, "amount", e.target.value)}
+                          onChange={(e) =>
+                            updateCollection(collection.id, 'amount', e.target.value)
+                          }
                         />
                       </div>
                       <div className="col-span-1 flex justify-end">
@@ -394,13 +398,13 @@ export default function CollectionPage() {
                   <DialogHeader>
                     <DialogTitle>Confirm Print</DialogTitle>
                     <DialogDescription>
-                      You are about to print a receipt for
-                      {" "}
-                      <span className="font-semibold">{selectedVehicle?.number_plate || "vehicle"}</span>
-                      {" "}with total amount
-                      {" "}
-                      <span className="font-semibold">Ksh {totalAmount.toFixed(2)}</span>.
-                      Please confirm to continue.
+                      You are about to print a receipt for{' '}
+                      <span className="font-semibold">
+                        {selectedVehicle?.number_plate || 'vehicle'}
+                      </span>{' '}
+                      with total amount{' '}
+                      <span className="font-semibold">Ksh {totalAmount.toFixed(2)}</span>. Please
+                      confirm to continue.
                     </DialogDescription>
                   </DialogHeader>
                   {/* Optional quick summary */}
@@ -408,8 +412,12 @@ export default function CollectionPage() {
                     <div className="mt-2 max-h-48 overflow-auto rounded-md border p-2 text-xl">
                       {additionalCollections.map((c, i) => (
                         <div key={c.id} className="flex items-center justify-between py-1">
-                          <span className="text-gray-600">#{i + 1} {c.collectionType || "Type"}</span>
-                          <span className="font-medium">Ksh {Number(c.amount || 0).toLocaleString()}</span>
+                          <span className="text-gray-600">
+                            #{i + 1} {c.collectionType || 'Type'}
+                          </span>
+                          <span className="font-medium">
+                            Ksh {Number(c.amount || 0).toLocaleString()}
+                          </span>
                         </div>
                       ))}
                     </div>

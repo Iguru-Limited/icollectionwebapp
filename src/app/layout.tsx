@@ -1,10 +1,9 @@
-"use client";
-import "./globals.css";
+'use client';
+import './globals.css';
 
-import { Toaster } from "@/components/ui/sonner";
-import { AuthSessionProvider } from "@/components/auth/session-provider";
-import { QueryProvider } from "@/components/providers/query-provider";
-
+import { Toaster } from '@/components/ui/sonner';
+import { AuthSessionProvider } from '@/components/auth/session-provider';
+import { QueryProvider } from '@/components/providers/query-provider';
 
 export default function RootLayout({
   children,

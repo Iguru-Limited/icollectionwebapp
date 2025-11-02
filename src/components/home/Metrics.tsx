@@ -1,11 +1,11 @@
-"use client";
-import { Bus, DollarSign, Receipt, Filter } from "lucide-react";
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { data } from "../../data";
+'use client';
+import { Bus, DollarSign, Receipt, Filter } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { data } from '../../data';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -13,9 +13,9 @@ const containerVariants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1,
-      delayChildren: 0.2
-    }
-  }
+      delayChildren: 0.2,
+    },
+  },
 };
 
 const cardVariants = {
@@ -25,9 +25,9 @@ const cardVariants = {
     y: 0,
     transition: {
       duration: 0.5,
-      ease: "easeOut" as const
-    }
-  }
+      ease: 'easeOut' as const,
+    },
+  },
 };
 
 export default function Metrics() {
@@ -38,11 +38,7 @@ export default function Metrics() {
   };
 
   return (
-    <motion.section
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-    >
+    <motion.section initial="hidden" animate="visible" variants={containerVariants}>
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -56,20 +52,9 @@ export default function Metrics() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="flex items-center space-x-3"
         >
-          <Input
-            type="date"
-            defaultValue="2025-10-07"
-            className="w-40 rounded-none"
-          />
-          <Input
-            type="date"
-            defaultValue="2025-10-07"
-            className="w-40 rounded-none"
-          />
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
+          <Input type="date" defaultValue="2025-10-07" className="w-40 rounded-none" />
+          <Input type="date" defaultValue="2025-10-07" className="w-40 rounded-none" />
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button className="text-white rounded-none">
               <Filter className="w-4 h-4 mr-2" />
               Filter
@@ -79,10 +64,7 @@ export default function Metrics() {
       </motion.div>
 
       {/* Metric Cards */}
-      <motion.div
-        variants={containerVariants}
-        className="md:grid md:grid-cols-3 gap-6"
-      >
+      <motion.div variants={containerVariants} className="md:grid md:grid-cols-3 gap-6">
         {/* Vehicles Card */}
         <motion.div variants={cardVariants}>
           <Card className="border border-gray-200 rounded-none hidden md:block">
@@ -103,11 +85,7 @@ export default function Metrics() {
         </motion.div>
 
         {/* Receipts Issued Card */}
-        <motion.div
-          variants={cardVariants}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
+        <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Card
             className="border border-gray-200 rounded-none cursor-pointer hover:shadow-md transition-shadow"
             onClick={handleCardClick}
@@ -122,23 +100,19 @@ export default function Metrics() {
                     <p className="text-sm text-gray-600">Receipts Issued</p>
                     <p className="text-2xl font-bold font-mono">{data.metrics.receiptsIssued}</p>
                   </div>
-
                 </div>
-
               </div>
               <div className="flex pt-6">
-                <Button variant="outline" size="sm" className="rounded-none w-full">View All</Button>
+                <Button variant="outline" size="sm" className="rounded-none w-full">
+                  View All
+                </Button>
               </div>
             </CardContent>
           </Card>
         </motion.div>
 
         {/* Total Collected Card */}
-        <motion.div
-          variants={cardVariants}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
+        <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Card
             className="border border-gray-200 rounded-none cursor-pointer hover:shadow-md transition-shadow"
             onClick={handleCardClick}

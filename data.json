@@ -1,11 +1,5 @@
 {
-  "collectionTypes": [
-    "terminus",
-    "operations", 
-    "savings",
-    "loan",
-    "investment"
-  ],
+  "collectionTypes": ["terminus", "operations", "savings", "loan", "investment"],
   "receipts": [
     {
       "id": 1,

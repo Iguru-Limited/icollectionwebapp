@@ -1,13 +1,20 @@
-"use client";
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Eye, Receipt as ReceiptIcon } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { TopNavigation } from "@/components/ui/top-navigation";
-import { BottomNavigation } from "@/components/ui/bottom-navigation";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TransactionSummaryTable } from "@/components/ui/transaction-summary-table";
+'use client';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Eye, Receipt as ReceiptIcon } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { TopNavigation } from '@/components/ui/top-navigation';
+import { BottomNavigation } from '@/components/ui/bottom-navigation';
+import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { TransactionSummaryTable } from '@/components/ui/transaction-summary-table';
 
 // Demo data based on the sketch
 const demoSummary = {
@@ -21,52 +28,52 @@ const demoSummary = {
 const demoReceipts = [
   {
     id: 1,
-    receiptNumber: "RCE181",
-    date: "2024-10-31",
-    details: "Morning Collection",
-    status: "view details",
+    receiptNumber: 'RCE181',
+    date: '2024-10-31',
+    details: 'Morning Collection',
+    status: 'view details',
     amount: 15200,
   },
   {
     id: 2,
-    receiptNumber: "RCE142",
-    date: "2024-10-31",
-    details: "Evening Collection",
-    status: "view receipt",
+    receiptNumber: 'RCE142',
+    date: '2024-10-31',
+    details: 'Evening Collection',
+    status: 'view receipt',
     amount: 18500,
   },
   {
     id: 3,
-    receiptNumber: "RCE145",
-    date: "2024-10-31",
-    details: "Afternoon Collection",
-    status: "view",
+    receiptNumber: 'RCE145',
+    date: '2024-10-31',
+    details: 'Afternoon Collection',
+    status: 'view',
     amount: 9800,
   },
   {
     id: 4,
-    receiptNumber: "RCE146",
-    date: "2024-10-31",
-    details: "Special Route",
-    status: "view",
+    receiptNumber: 'RCE146',
+    date: '2024-10-31',
+    details: 'Special Route',
+    status: 'view',
     amount: 5373,
   },
   {
     id: 5,
-    receiptNumber: "RCE147",
-    date: "2024-10-31",
-    details: "Late Collection",
-    status: "pending",
+    receiptNumber: 'RCE147',
+    date: '2024-10-31',
+    details: 'Late Collection',
+    status: 'pending',
     amount: 0,
   },
 ];
 
 function formatDate(date: Date) {
   return date.toLocaleDateString(undefined, {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   });
 }
 
@@ -89,9 +96,8 @@ export default function Reports() {
       className="min-h-screen bg-gray-50"
     >
       <TopNavigation />
-      
+
       <div className="container mx-auto px-4 py-4 pb-20 md:pb-6 space-y-4 max-w-screen-xl">
-        
         {/* Date Navigation - "Today" with arrows */}
         <Card className="rounded-2xl p-4 shadow-sm bg-white">
           <div className="flex items-center justify-between">
@@ -103,12 +109,12 @@ export default function Reports() {
             >
               <ChevronLeft className="w-5 h-5 text-purple-600" />
             </Button>
-            
+
             <div className="flex-1 text-center">
               <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Today</h2>
               <p className="text-xl md:text-2xl text-gray-500">{formatDate(selectedDate)}</p>
             </div>
-            
+
             <Button
               variant="ghost"
               size="icon"
@@ -124,29 +130,35 @@ export default function Reports() {
         <TransactionSummaryTable
           title="Daily Summary"
           data={[
-            { label: "Receipts", value: demoSummary.Receipts },
-            { label: "Vehicles", value: demoSummary.Vehicles },
-            { label: "Operations", value: `Ksh ${demoSummary.Operations.toLocaleString()}` },
-            { label: "Loans", value: `Ksh ${demoSummary.Loans.toLocaleString()}` },
-            { label: "Total", value: `Ksh ${demoSummary.Total.toLocaleString()}` },
+            { label: 'Receipts', value: demoSummary.Receipts },
+            { label: 'Vehicles', value: demoSummary.Vehicles },
+            { label: 'Operations', value: `Ksh ${demoSummary.Operations.toLocaleString()}` },
+            { label: 'Loans', value: `Ksh ${demoSummary.Loans.toLocaleString()}` },
+            { label: 'Total', value: `Ksh ${demoSummary.Total.toLocaleString()}` },
           ]}
         />
 
         {/* Receipts List */}
         <div className="space-y-3">
           <h3 className="text-xl font-semibold text-gray-700 px-2">Recent Receipts</h3>
-          
+
           {/* Desktop Table View */}
           <Card className="hidden md:block rounded-2xl shadow-md overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-purple-50 hover:bg-purple-50">
                   <TableHead className="font-semibold text-purple-900 text-xl">#</TableHead>
-                  <TableHead className="font-semibold text-purple-900 text-xl">Receipt Number</TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-xl">
+                    Receipt Number
+                  </TableHead>
                   <TableHead className="font-semibold text-purple-900 text-xl">Details</TableHead>
                   <TableHead className="font-semibold text-purple-900 text-xl">Date</TableHead>
-                  <TableHead className="font-semibold text-purple-900 text-right text-xl">Amount</TableHead>
-                  <TableHead className="font-semibold text-purple-900 text-right text-xl">Actions</TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-right text-xl">
+                    Amount
+                  </TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-right text-xl">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -160,12 +172,8 @@ export default function Reports() {
                     <TableCell className="font-bold text-gray-800 text-2xl">
                       {receipt.receiptNumber}
                     </TableCell>
-                    <TableCell className="text-gray-600 text-xl">
-                      {receipt.details}
-                    </TableCell>
-                    <TableCell className="text-xl text-gray-600">
-                      {receipt.date}
-                    </TableCell>
+                    <TableCell className="text-gray-600 text-xl">{receipt.details}</TableCell>
+                    <TableCell className="text-xl text-gray-600">{receipt.date}</TableCell>
                     <TableCell className="text-right font-bold text-purple-600 text-2xl">
                       {receipt.amount > 0 ? `Ksh ${receipt.amount.toLocaleString()}` : '-'}
                     </TableCell>
@@ -179,10 +187,7 @@ export default function Reports() {
                           <Eye className="w-4 h-4 mr-1" />
                           View
                         </Button>
-                        <Button
-                          size="sm"
-                          className="bg-purple-600 hover:bg-purple-700 text-xl"
-                        >
+                        <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-xl">
                           <ReceiptIcon className="w-4 h-4 mr-1" />
                           Receipt
                         </Button>
@@ -225,14 +230,14 @@ export default function Reports() {
                   className="rounded-lg border-2 border-purple-600 text-purple-600 hover:bg-purple-50 text-xs font-semibold"
                 >
                   <Eye className="w-3 h-3 mr-1" />
-                  {receipt.status === "view details" ? "View Details" : "View"}
+                  {receipt.status === 'view details' ? 'View Details' : 'View'}
                 </Button>
                 <Button
                   size="sm"
                   className="rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold"
                 >
                   <ReceiptIcon className="w-3 h-3 mr-1" />
-                  {receipt.status === "view receipt" ? "View Receipt" : "Receipt"}
+                  {receipt.status === 'view receipt' ? 'View Receipt' : 'Receipt'}
                 </Button>
               </div>
             </Card>

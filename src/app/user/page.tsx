@@ -1,18 +1,17 @@
-"use client";
-import { useSession, signOut } from "next-auth/react";
-import { useCompanyTemplateStore } from "@/store/companyTemplateStore";
-import { useEffect, useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, LogOut } from "lucide-react";
-import { BottomNavigation } from "@/components/ui/bottom-navigation";
-import { TopNavigation } from "@/components/ui/top-navigation";
-import { VehicleTable } from "@/components/vehicles/VehicleTable";
+'use client';
+import { useSession, signOut } from 'next-auth/react';
+import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
+import { useEffect, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Search, LogOut } from 'lucide-react';
+import { BottomNavigation } from '@/components/ui/bottom-navigation';
+import { TopNavigation } from '@/components/ui/top-navigation';
+import { VehicleTable } from '@/components/vehicles/VehicleTable';
 
 export default function UserPage() {
   const { data: session } = useSession();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const template = useCompanyTemplateStore((s) => s.template);
   const setTemplate = useCompanyTemplateStore((s) => s.setTemplate);
@@ -24,24 +23,21 @@ export default function UserPage() {
       setTemplate(session.company_template);
     }
   }, [hasHydrated, template, session, setTemplate]);
- 
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/login" });
+    await signOut({ callbackUrl: '/login' });
   };
 
   const filteredVehicles = (template?.vehicles ?? []).filter((vehicle) =>
-    searchQuery
-      ? vehicle.number_plate.toLowerCase().includes(searchQuery.toLowerCase())
-      : true
+    searchQuery ? vehicle.number_plate.toLowerCase().includes(searchQuery.toLowerCase()) : true,
   );
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top navigation - Always visible */}
       <TopNavigation />
-      
-      <div className="container mx-auto px-4 py-4 pb-20 md:pb-6 space-y-4 max-w-screen-xl"> 
+
+      <div className="container mx-auto px-4 py-4 pb-20 md:pb-6 space-y-4 max-w-screen-xl">
         {/* Search Bar */}
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -55,20 +51,12 @@ export default function UserPage() {
 
         {/* Desktop Table View */}
         <div className="hidden md:block">
-          <VehicleTable 
-            vehicles={filteredVehicles}
-            isLoading={!hasHydrated}
-            variant="table"
-          />
+          <VehicleTable vehicles={filteredVehicles} isLoading={!hasHydrated} variant="table" />
         </div>
 
         {/* Mobile Card View */}
         <div className="md:hidden">
-          <VehicleTable 
-            vehicles={filteredVehicles}
-            isLoading={!hasHydrated}
-            variant="card"
-          />
+          <VehicleTable vehicles={filteredVehicles} isLoading={!hasHydrated} variant="card" />
         </div>
 
         {/* Mobile logout button */}

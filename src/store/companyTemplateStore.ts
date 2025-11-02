@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import type { CompanyTemplateResponse } from "@/types/company-template";
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import type { CompanyTemplateResponse } from '@/types/company-template';
 
 type CompanyTemplateState = {
   template: CompanyTemplateResponse | null;
@@ -24,12 +24,12 @@ export const useCompanyTemplateStore = create<CompanyTemplateState>()(
       },
     }),
     {
-      name: "company-template-store",
+      name: 'company-template-store',
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ template: s.template }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },
-    }
-  )
+    },
+  ),
 );

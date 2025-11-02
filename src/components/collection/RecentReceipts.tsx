@@ -1,7 +1,7 @@
-"use client";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+'use client';
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -9,9 +9,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { useIsMobile } from "@/hooks/useMediaQuery";
-import { data } from "../../data";
+} from '@/components/ui/table';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import { data } from '../../data';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -19,9 +19,9 @@ const containerVariants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1,
-      delayChildren: 0.2
-    }
-  }
+      delayChildren: 0.2,
+    },
+  },
 };
 
 const rowVariants = {
@@ -31,14 +31,14 @@ const rowVariants = {
     x: 0,
     transition: {
       duration: 0.4,
-      ease: "easeOut" as const
-    }
-  }
+      ease: 'easeOut' as const,
+    },
+  },
 };
 
 const buttonVariants = {
   hover: { scale: 1.05 },
-  tap: { scale: 0.95 }
+  tap: { scale: 0.95 },
 };
 
 interface Receipt {
@@ -54,9 +54,9 @@ const ReceiptCard = ({ receipt }: { receipt: Receipt }) => (
   <motion.div
     key={receipt.id}
     variants={rowVariants}
-    whileHover={{ 
-      backgroundColor: "rgba(249, 250, 251, 0.8)",
-      transition: { duration: 0.2 }
+    whileHover={{
+      backgroundColor: 'rgba(249, 250, 251, 0.8)',
+      transition: { duration: 0.2 },
     }}
     className="hover:bg-gray-50"
   >
@@ -74,15 +74,8 @@ const ReceiptCard = ({ receipt }: { receipt: Receipt }) => (
               {receipt.date} • {receipt.time}
             </div>
           </div>
-          <motion.div
-            variants={buttonVariants}
-            whileHover="hover"
-            whileTap="tap"
-          >
-            <Button 
-              size="sm" 
-              className="bg-black hover:bg-gray-800 text-white rounded-none"
-            >
+          <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+            <Button size="sm" className="bg-black hover:bg-gray-800 text-white rounded-none">
               Reprint
             </Button>
           </motion.div>
@@ -103,7 +96,7 @@ export default function RecentReceipts() {
       variants={containerVariants}
       className="mb-8"
     >
-      <motion.h2 
+      <motion.h2
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -142,9 +135,9 @@ export default function RecentReceipts() {
                   <motion.tr
                     key={receipt.id}
                     variants={rowVariants}
-                    whileHover={{ 
-                      backgroundColor: "rgba(249, 250, 251, 0.8)",
-                      transition: { duration: 0.2 }
+                    whileHover={{
+                      backgroundColor: 'rgba(249, 250, 251, 0.8)',
+                      transition: { duration: 0.2 },
                     }}
                     className="hover:bg-gray-50"
                   >
@@ -155,13 +148,9 @@ export default function RecentReceipts() {
                     <TableCell className="font-mono">{receipt.date}</TableCell>
                     <TableCell className="font-mono">{receipt.time}</TableCell>
                     <TableCell>
-                      <motion.div
-                        variants={buttonVariants}
-                        whileHover="hover"
-                        whileTap="tap"
-                      >
-                        <Button 
-                          size="sm" 
+                      <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                        <Button
+                          size="sm"
                           className="bg-black hover:bg-gray-800 text-white rounded-none"
                         >
                           Reprint

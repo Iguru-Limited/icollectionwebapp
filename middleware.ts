@@ -5,32 +5,23 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Define public routes that don't require authentication
-  const publicRoutes = ['/login', '/api/auth'];
-  
+  // Define protected routes and their required roles
   // Define protected routes and their required roles
   const protectedRoutes = {
     '/user': ['user'],
     '/user/collection': ['user'],
     '/user/reports': ['user'],
-
-
   };
 
-  // Check if the current path is public
-  const isPublicRoute = publicRoutes.some(route => 
-    pathname.startsWith(route)
-  );
+  // Public routes like /login and /api/auth are handled via matcher below.
 
   // Check if the current path requires authentication
-  const requiresAuth = Object.keys(protectedRoutes).some(route => 
-    pathname.startsWith(route)
-  );
+  const requiresAuth = Object.keys(protectedRoutes).some((route) => pathname.startsWith(route));
 
   // Get the token from the request
-  const token = await getToken({ 
-    req: request, 
-    secret: process.env.NEXTAUTH_SECRET 
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
   });
 
   // If route requires authentication but user is not authenticated
@@ -42,19 +33,21 @@ export async function middleware(request: NextRequest) {
   // If user is authenticated, check role-based access
   if (token && requiresAuth) {
     const userRole = token.role;
-    
+
     // Find the matching route and check if user has required role
-    const matchedRoute = Object.entries(protectedRoutes).find(([route]) => 
-      pathname.startsWith(route)
+    const matchedRoute = Object.entries(protectedRoutes).find(([route]) =>
+      pathname.startsWith(route),
     );
 
     if (matchedRoute) {
       const [, allowedRoles] = matchedRoute;
-      
+
       // Check if user's role is allowed for this route
       if (!allowedRoles.includes(userRole)) {
-        console.log(`Access denied: User with role '${userRole}' tried to access '${pathname}' which requires roles: ${allowedRoles.join(', ')}`);
-        
+        console.log(
+          `Access denied: User with role '${userRole}' tried to access '${pathname}' which requires roles: ${allowedRoles.join(', ')}`,
+        );
+
         // Redirect to appropriate dashboard based on user role
         if (userRole === 'user') {
           return NextResponse.redirect(new URL('/user', request.url));
@@ -69,7 +62,9 @@ export async function middleware(request: NextRequest) {
   // If user is authenticated and trying to access login page, redirect to appropriate dashboard
   if (token && pathname === '/login') {
     const userRole = token.role;
-    console.log(`Authenticated user with role '${userRole}' accessing login page - redirecting to dashboard`);
+    console.log(
+      `Authenticated user with role '${userRole}' accessing login page - redirecting to dashboard`,
+    );
     if (userRole === 'user') {
       return NextResponse.redirect(new URL('/user', request.url));
     }
@@ -78,10 +73,12 @@ export async function middleware(request: NextRequest) {
   // If user is authenticated and accessing root, redirect to appropriate dashboard
   if (token && pathname === '/') {
     const userRole = token.role;
-    console.log(`Authenticated user with role '${userRole}' accessing root - redirecting to dashboard`);
+    console.log(
+      `Authenticated user with role '${userRole}' accessing root - redirecting to dashboard`,
+    );
     if (userRole === 'user') {
       return NextResponse.redirect(new URL('/user', request.url));
-    } 
+    }
   }
   // Allow access to public routes and authenticated users
   return NextResponse.next();
