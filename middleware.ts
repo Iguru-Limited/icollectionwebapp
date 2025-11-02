@@ -4,58 +4,22 @@ import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // Define protected routes and their required roles
-  // Define protected routes and their required roles
-  const protectedRoutes = {
-    '/user': ['user'],
-    '/user/collection': ['user'],
-    '/user/reports': ['user'],
-  };
-
-  // Public routes like /login and /api/auth are handled via matcher below.
-
-  // Check if the current path requires authentication
-  const requiresAuth = Object.keys(protectedRoutes).some((route) => pathname.startsWith(route));
-
+  // Guard the /user area directly
+  const isUserArea = pathname.startsWith('/user');
   // Get the token from the request
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  // If route requires authentication but user is not authenticated
-  if (requiresAuth && !token) {
-    console.log(`Unauthorized access attempt to ${pathname} - redirecting to login`);
+  if (isUserArea && !token) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // If user is authenticated, check role-based access
-  if (token && requiresAuth) {
+  if (isUserArea && token) {
     const userRole = token.role;
-
-    // Find the matching route and check if user has required role
-    const matchedRoute = Object.entries(protectedRoutes).find(([route]) =>
-      pathname.startsWith(route),
-    );
-
-    if (matchedRoute) {
-      const [, allowedRoles] = matchedRoute;
-
-      // Check if user's role is allowed for this route
-      if (!allowedRoles.includes(userRole)) {
-        console.log(
-          `Access denied: User with role '${userRole}' tried to access '${pathname}' which requires roles: ${allowedRoles.join(', ')}`,
-        );
-
-        // Redirect to appropriate dashboard based on user role
-        if (userRole === 'user') {
-          return NextResponse.redirect(new URL('/user', request.url));
-        } else {
-          // Unknown role, redirect to login
-          return NextResponse.redirect(new URL('/login', request.url));
-        }
-      }
+    if (userRole && userRole !== 'user') {
+      return NextResponse.redirect(new URL('/login', request.url));
     }
   }
 
@@ -85,17 +49,6 @@ export async function middleware(request: NextRequest) {
 }
 // Configure which routes the middleware should run on
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api/auth (NextAuth API routes - allow these)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     * - _vercel (Vercel internal routes)
-     * - robots.txt, sitemap.xml (SEO files)
-     */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|public|_vercel|robots.txt|sitemap.xml).*)',
-  ],
+  // Run middleware only on protected and relevant top-level routes
+  matcher: ['/user/:path*', '/', '/login'],
 };
