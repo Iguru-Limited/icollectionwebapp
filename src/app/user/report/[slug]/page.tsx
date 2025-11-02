@@ -127,7 +127,7 @@ export default function VehicleReportPage() {
               </Button>
             </div>
             <div className="justify-self-center">
-              <h1 className="text-sm font-semibold truncate">{appBarTitle}</h1>
+              <h1 className="text-2xl font-semibold truncate">{appBarTitle}</h1>
             </div>
             <div />
           </div>
@@ -141,18 +141,18 @@ export default function VehicleReportPage() {
 
         {/* Collections Summary */}
         <Card className="rounded-2xl p-4 shadow-sm">
-          <div className="flex items-center gap-2 text-gray-800 font-semibold text-sm mb-3">
+          <div className="flex items-center gap-2 text-gray-800 font-semibold text-xl mb-3">
             <FileText className="w-4 h-4 text-purple-700" />
             Collections Summary
           </div>
           <Separator className="my-2" />
           <div className="grid grid-cols-2">
             <div className="px-2 py-4 text-center">
-              <div className="text-[11px] tracking-wide text-gray-600">TOTAL RECEIPTS</div>
-              <div className="text-2xl font-extrabold text-gray-900">{totalReceipts}</div>
+              <div className="text-[15px] tracking-wide text-gray-600">TOTAL RECEIPTS</div>
+              <div className="text-2xl  font-extrabold text-gray-900">{totalReceipts}</div>
             </div>
             <div className="px-2 py-4 text-center border-l">
-              <div className="text-[11px] tracking-wide text-gray-600">TOTAL AMOUNT</div>
+              <div className="text-[15px] tracking-wide text-gray-600">TOTAL AMOUNT</div>
               <div className="text-2xl font-extrabold text-gray-900">
                 <span className="font-semibold">Ksh</span> {totalAmount.toLocaleString()}
               </div>
@@ -197,7 +197,7 @@ export default function VehicleReportPage() {
           <Card className="hidden md:block rounded-2xl shadow-md overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="bg-purple-50 hover:bg-purple-50">
+                <TableRow className="bg-purple-50 hover:bg-purple-50 text-xl">
                   <TableHead className="font-semibold text-purple-900">#</TableHead>
                   <TableHead className="font-semibold text-purple-900">Receipt Number</TableHead>
                   <TableHead className="font-semibold text-purple-900">Vehicle</TableHead>
@@ -211,7 +211,7 @@ export default function VehicleReportPage() {
                   </TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody className='text-xl'>
                 {filteredRows.map((row, index) => {
                   const slugCount = Object.keys(row.payload?.slugs ?? {}).length;
                   const isOpen = !!expanded[row.id];
@@ -223,7 +223,7 @@ export default function VehicleReportPage() {
                           #{row.receipt_number}
                         </TableCell>
                         <TableCell>
-                          <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700">
+                          <span className="px-2 py-1 rounded-full bg-purple-100 text-purple-700">
                             {row.number_plate}
                           </span>
                         </TableCell>
@@ -231,15 +231,14 @@ export default function VehicleReportPage() {
                           Ksh {Number(row.total_amount).toLocaleString()}
                         </TableCell>
                         <TableCell className="text-center text-gray-700">{slugCount}</TableCell>
-                        <TableCell className="text-sm text-gray-600">
+                        <TableCell className="text-gray-600">
                           {formatDateTime(row.created_at)}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button
                               size="sm"
-                              variant="outline"
-                              className="text-xs"
+                              variant="outline"                              
                               onClick={() =>
                                 setExpanded((prev) => ({ ...prev, [row.id]: !isOpen }))
                               }
@@ -251,7 +250,7 @@ export default function VehicleReportPage() {
                               )}
                               {isOpen ? 'Hide' : 'Details'}
                             </Button>
-                            <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-xs">
+                            <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
                               <Printer className="w-3 h-3 mr-1" />
                               Reprint
                             </Button>
