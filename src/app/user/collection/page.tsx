@@ -254,7 +254,7 @@ export default function CollectionPage() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <IoReceiptOutline className="w-5 h-5 text-purple-700" />
-                <h2 className="text-[15px] font-semibold text-gray-800">
+                <h2 className="text-[20px] font-semibold text-gray-800">
                   Today&apos;s Collections
                 </h2>
                 <span className="ml-2 inline-flex items-center rounded-full bg-purple-700 text-white text-xl font-semibold px-3 py-1">
@@ -305,8 +305,20 @@ export default function CollectionPage() {
               </Card>
             ) : (
               <Card className="bg-white rounded-xl p-4 relative overflow-hidden">
+                 {/* Floating Add Button */}
+                <div className="mt-4 flex  justify-center">
+                  <Button
+                    type="button"
+                    size="icon"
+                    className="rounded-full w-12 h-12 bg-purple-700 text-white hover:bg-purple-800 shadow-md"
+                    onClick={addCollection}
+                    aria-label="Add collection"
+                  >
+                    <Plus className="w-6 h-6" />
+                  </Button>
+                </div>
                 {/* Table-like header */}
-                <div className="grid grid-cols-12 text-[11px] font-semibold text-gray-600 mb-2 px-2">
+                <div className="grid grid-cols-12 text-[20px] font-semibold text-black-600 mb-2 px-2">
                   <div className="col-span-2">&nbsp;</div>
                   <div className="col-span-6">Collection Type</div>
                   <div className="col-span-4">Amount (KES)</div>
@@ -316,10 +328,10 @@ export default function CollectionPage() {
                   {additionalCollections.map((collection, idx) => (
                     <div
                       key={collection.id}
-                      className="grid grid-cols-12 items-center gap-2 p-3 border rounded-lg"
+                      className="grid grid-cols-12 items-center gap-2 p-3 border rounded-lg text-2xl"
                     >
-                      <div className="col-span-2 text-xl text-gray-500 font-semibold">
-                        #{idx + 1}
+                      <div className="col-span-2 text-2xl text-gray-500 font-semibold">
+                        {idx + 1}
                       </div>
                       <div className="col-span-6">
                         <Select
@@ -365,18 +377,7 @@ export default function CollectionPage() {
                   ))}
                 </div>
 
-                {/* Floating Add Button */}
-                <div className="mt-4">
-                  <Button
-                    type="button"
-                    size="icon"
-                    className="rounded-full w-12 h-12 bg-purple-700 text-white hover:bg-purple-800 shadow-md"
-                    onClick={addCollection}
-                    aria-label="Add collection"
-                  >
-                    <Plus className="w-6 h-6" />
-                  </Button>
-                </div>
+               
 
                 {/* Total pill */}
                 <div className="bg-purple-700 text-white rounded-xl px-4 py-3 mt-4 font-semibold flex items-center justify-between">
