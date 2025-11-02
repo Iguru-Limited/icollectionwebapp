@@ -45,6 +45,12 @@ export default function CollectionPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [mpesaRef, setMpesaRef] = useState('');
   const [mpesaPhone, setMpesaPhone] = useState('');
+  const [promptSent, setPromptSent] = useState(false);
+
+  // Reset helper flags when switching method
+  useEffect(() => {
+    setPromptSent(false);
+  }, [paymentMethod]);
   // UI local state
 
   // Initialize the save receipt hook
@@ -444,6 +450,7 @@ export default function CollectionPage() {
                             toast.error('Enter a valid Safaricom number');
                             return;
                           }
+                          setPromptSent(true);
                           toast.success(`Prompt sent to ${phone}`);
                         }}
                       >
@@ -452,6 +459,49 @@ export default function CollectionPage() {
                     </div>
                   )}
                 </div>
+                {/* Confirm & Print for non-cash flows */}
+                {paymentMethod === 'mpesa' && (
+                  <div className="mt-4">
+                    <Button
+                      className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12"
+                      onClick={async () => {
+                        const ref = mpesaRef.trim();
+                        const valid = /^[A-Za-z0-9]{7,12}$/.test(ref);
+                        if (!valid) {
+                          toast.error('Please enter a valid M-Pesa reference');
+                          return;
+                        }
+                        await handleProcessCollection();
+                      }}
+                      disabled={additionalCollections.length === 0}
+                    >
+                      Confirm & Print
+                    </Button>
+                  </div>
+                )}
+                {paymentMethod === 'mpesa_prompt' && (
+                  <div className="mt-4">
+                    <Button
+                      className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12"
+                      onClick={async () => {
+                        const phone = mpesaPhone.replace(/\s+/g, '');
+                        const valid = /^(\+254|0)7\d{8}$/.test(phone);
+                        if (!valid) {
+                          toast.error('Please enter a valid phone number');
+                          return;
+                        }
+                        if (!promptSent) {
+                          toast.error('Please send the M-Pesa prompt first');
+                          return;
+                        }
+                        await handleProcessCollection();
+                      }}
+                      disabled={additionalCollections.length === 0}
+                    >
+                      Confirm & Print
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 

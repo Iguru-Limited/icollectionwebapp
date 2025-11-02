@@ -174,7 +174,7 @@ export default function Reports() {
                     </TableCell>
                     <TableCell className="text-gray-600 text-xl">{receipt.details}</TableCell>
                     <TableCell className="text-xl text-gray-600">{receipt.date}</TableCell>
-                    <TableCell className="text-right font-bold text-purple-600 text-2xl">
+                    <TableCell className="text-right font-bold text-black text-2xl">
                       {receipt.amount > 0 ? `Ksh ${receipt.amount.toLocaleString()}` : '-'}
                     </TableCell>
                     <TableCell className="text-right">
@@ -182,7 +182,7 @@ export default function Reports() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-xl border-purple-600 text-purple-600 hover:bg-purple-50"
+                          className="text-xl"
                         >
                           <Eye className="w-4 h-4 mr-1" />
                           View
