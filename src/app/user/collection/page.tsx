@@ -21,6 +21,7 @@ import { PrintService } from '@/lib/utils/printService';
 import { toast } from 'sonner';
 import { useSaveReceipt } from '@/hooks/receipt/useSaveReceipt';
 import { TopNavigation } from '@/components/ui/top-navigation';
+import { BottomNavigation } from '@/components/ui/bottom-navigation';
 import { RiSendPlaneFill } from 'react-icons/ri';
 import { IoWalletOutline } from 'react-icons/io5';
 import { useReportByVehicleDate } from '@/hooks/report/useReportByVehicleDate';
@@ -269,7 +270,10 @@ export default function CollectionPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
-      <TopNavigation />
+      {/* Top navigation - hidden on small screens */}
+      <div className="hidden md:block">
+        <TopNavigation />
+      </div>
       <div className="container mx-auto px-4 py-4 pb-24 max-w-screen-xl">
         {/* Header */}
         <div className="flex items-center mb-6">
@@ -668,6 +672,10 @@ export default function CollectionPage() {
             )}
           </div>
         </div>
+      </div>
+      {/* Bottom Navigation - Mobile only */}
+      <div className="md:hidden">
+        <BottomNavigation />
       </div>
     </div>
   );

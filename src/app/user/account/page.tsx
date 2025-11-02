@@ -46,7 +46,10 @@ export default function AccountPage() {
       transition={{ duration: 0.4 }}
       className="min-h-screen bg-gray-50"
     >
-      <TopNavigation />
+      {/* Top navigation - hidden on small screens */}
+      <div className="hidden md:block">
+        <TopNavigation />
+      </div>
 
       <div className="container mx-auto px-4 py-4 pb-20 md:pb-6 space-y-4 max-w-screen-xl">
         {/* User Info Card */}
@@ -155,7 +158,10 @@ export default function AccountPage() {
         </div>
       </div>
 
-      <BottomNavigation />
+      {/* Bottom Navigation - Mobile only */}
+      <div className="md:hidden">
+        <BottomNavigation />
+      </div>
     </motion.div>
   );
 }

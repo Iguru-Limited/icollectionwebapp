@@ -34,8 +34,10 @@ export default function UserPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top navigation - Always visible */}
-      <TopNavigation />
+      {/* Top navigation - hidden on small screens */}
+      <div className="hidden md:block">
+        <TopNavigation />
+      </div>
 
       <div className="container mx-auto px-4 py-4 pb-20 md:pb-6 space-y-4 max-w-screen-xl">
         {/* Search Bar */}
@@ -73,7 +75,9 @@ export default function UserPage() {
       </div>
 
       {/* Bottom Navigation - Mobile only */}
-      <BottomNavigation />
+      <div className="md:hidden">
+        <BottomNavigation />
+      </div>
     </div>
   );
 }

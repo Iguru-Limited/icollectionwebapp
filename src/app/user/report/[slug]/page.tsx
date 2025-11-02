@@ -24,6 +24,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { TopNavigation } from '@/components/ui/top-navigation';
+import { BottomNavigation } from '@/components/ui/bottom-navigation';
 import { Spinner } from '@/components/ui/spinner';
 import { useReportByVehicleDate } from '@/hooks/report/useReportByVehicleDate';
 import { DateSelector } from '@/components/ui/date-selector';
@@ -111,9 +112,11 @@ export default function VehicleReportPage() {
       transition={{ duration: 0.5 }}
       className="min-h-screen bg-[#F5F5F7]"
     >
-      {/* Top app bar */}
-      <TopNavigation />
-      <div className="sticky top-0 z-50 bg-purple-700 text-white">
+      {/* Top app bar (hidden on small screens) */}
+      <div className="hidden md:block">
+        <TopNavigation />
+      </div>
+      <div className="hidden md:block sticky top-0 z-50 bg-purple-700 text-white">
         <div className="mx-auto px-4 py-3 max-w-screen-xl">
           <div className="grid grid-cols-3 items-center">
             <div className="justify-self-start">
@@ -361,6 +364,10 @@ export default function VehicleReportPage() {
               </Card>
             );
           })}
+      </div>
+      {/* Bottom Navigation - Mobile only */}
+      <div className="md:hidden">
+        <BottomNavigation />
       </div>
     </motion.div>
   );
