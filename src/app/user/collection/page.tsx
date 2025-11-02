@@ -42,6 +42,7 @@ export default function CollectionPage() {
 
   const [additionalCollections, setAdditionalCollections] = useState<AdditionalCollection[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [mpesaDialogOpen, setMpesaDialogOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [mpesaRef, setMpesaRef] = useState('');
   const [mpesaPhone, setMpesaPhone] = useState('');
@@ -113,7 +114,7 @@ export default function CollectionPage() {
     return rows.reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0);
   }, [reportData]);
 
-  const handleProcessCollection = async () => {
+  const handleProcessCollection = async (shouldPrint: boolean = true) => {
     // Validate session
     if (!session?.user) {
       toast.error('Session expired. Please log in again.');
@@ -190,35 +191,64 @@ export default function CollectionPage() {
         return;
       }
 
-  // Update loading message
+        // Update loading message
       toast.dismiss(toastId);
-      const printToastId = toast.loading('Printing receipt...');
 
-      // Now print the receipt using the receipt_text from API
-      const printService = new PrintService();
+      // Only print if requested
+      if (shouldPrint) {
+        const printToastId = toast.loading('Printing receipt...');
 
-      // Compute local datetime in format YYYY-MM-DD HH:MM:SS
-      const nowLocal = new Date();
-      const yyyy = nowLocal.getFullYear();
-      const mm = String(nowLocal.getMonth() + 1).padStart(2, '0');
-      const dd = String(nowLocal.getDate()).padStart(2, '0');
-      const HH = String(nowLocal.getHours()).padStart(2, '0');
-      const MM = String(nowLocal.getMinutes()).padStart(2, '0');
-      const SS = String(nowLocal.getSeconds()).padStart(2, '0');
-      const localDateTime = `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
+        // Now print the receipt using the receipt_text from API
+        const printService = new PrintService();
 
-      // Use the pre-formatted receipt text from API but override date/time to local
-      const printResult = await printService.printReceiptText(result.data.receipt_text, {
-        overrideDateTime: localDateTime,
-      });
+        // Compute local datetime in format YYYY-MM-DD HH:MM:SS
+        const nowLocal = new Date();
+        const yyyy = nowLocal.getFullYear();
+        const mm = String(nowLocal.getMonth() + 1).padStart(2, '0');
+        const dd = String(nowLocal.getDate()).padStart(2, '0');
+        const HH = String(nowLocal.getHours()).padStart(2, '0');
+        const MM = String(nowLocal.getMinutes()).padStart(2, '0');
+        const SS = String(nowLocal.getSeconds()).padStart(2, '0');
+        const localDateTime = `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
 
-      // Dismiss printing toast
-      toast.dismiss(printToastId);
+        // Use the pre-formatted receipt text from API but override date/time to local
+        const printResult = await printService.printReceiptText(result.data.receipt_text, {
+          overrideDateTime: localDateTime,
+        });
 
-      if (printResult.success) {
-        toast.success(`Receipt #${result.data.receipt_number} saved and printed successfully!`);
+        // Dismiss printing toast
+        toast.dismiss(printToastId);
 
-        // Clear collections after successful print
+        if (printResult.success) {
+          toast.success(`Receipt #${result.data.receipt_number} saved and printed successfully!`);
+
+          // Clear collections after successful print
+          setAdditionalCollections([]);
+          setPaymentMethod('cash');
+          setMpesaRef('');
+          setMpesaPhone('');
+
+          // Navigate back to user page
+          setTimeout(() => {
+            router.push('/user');
+          }, 1500);
+        } else {
+          // Receipt saved but print failed
+          toast.warning(
+            `Receipt saved as #${result.data.receipt_number} but print failed: ${printResult.error}`,
+          );
+
+          // Still clear and navigate since receipt was saved
+          setAdditionalCollections([]);
+          setTimeout(() => {
+            router.push('/user');
+          }, 2000);
+        }
+      } else {
+        // Save only, no printing
+        toast.success(`Receipt #${result.data.receipt_number} saved successfully!`);
+
+        // Clear collections after save
         setAdditionalCollections([]);
         setPaymentMethod('cash');
         setMpesaRef('');
@@ -228,17 +258,6 @@ export default function CollectionPage() {
         setTimeout(() => {
           router.push('/user');
         }, 1500);
-      } else {
-        // Receipt saved but print failed
-        toast.warning(
-          `Receipt saved as #${result.data.receipt_number} but print failed: ${printResult.error}`,
-        );
-
-        // Still clear and navigate since receipt was saved
-        setAdditionalCollections([]);
-        setTimeout(() => {
-          router.push('/user');
-        }, 2000);
       }
     } catch (error) {
       // Dismiss loading toast on error
@@ -462,44 +481,128 @@ export default function CollectionPage() {
                 {/* Confirm & Print for non-cash flows */}
                 {paymentMethod === 'mpesa' && (
                   <div className="mt-4">
-                    <Button
-                      className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12"
-                      onClick={async () => {
-                        const ref = mpesaRef.trim();
-                        const valid = /^[A-Za-z0-9]{7,12}$/.test(ref);
-                        if (!valid) {
-                          toast.error('Please enter a valid M-Pesa reference');
-                          return;
-                        }
-                        await handleProcessCollection();
-                      }}
-                      disabled={additionalCollections.length === 0}
-                    >
-                      Confirm & Print
-                    </Button>
+                    <Dialog open={mpesaDialogOpen} onOpenChange={setMpesaDialogOpen}>
+                      <div>
+                        <Button
+                          className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12"
+                          onClick={() => {
+                            const ref = mpesaRef.trim();
+                            const valid = /^[A-Za-z0-9]{7,12}$/.test(ref);
+                            if (!valid) {
+                              toast.error('Please enter a valid M-Pesa reference');
+                              return;
+                            }
+                            setMpesaDialogOpen(true);
+                          }}
+                          disabled={additionalCollections.length === 0}
+                        >
+                          Process Receipt
+                        </Button>
+                      </div>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Save or Print Receipt?</DialogTitle>
+                          <DialogDescription>
+                            You are about to process a receipt for{' '}
+                            <span className="font-semibold">
+                              {selectedVehicle?.number_plate || 'vehicle'}
+                            </span>{' '}
+                            with M-Pesa reference{' '}
+                            <span className="font-semibold">{mpesaRef.trim().toUpperCase()}</span>.
+                            Total: <span className="font-semibold">Ksh {totalAmount.toFixed(2)}</span>
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter className="flex gap-2">
+                          <Button variant="outline" onClick={() => setMpesaDialogOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            onClick={async () => {
+                              setMpesaDialogOpen(false);
+                              await handleProcessCollection(false);
+                            }}
+                          >
+                            Save Only
+                          </Button>
+                          <Button
+                            className="bg-purple-700 hover:bg-purple-800"
+                            onClick={async () => {
+                              setMpesaDialogOpen(false);
+                              await handleProcessCollection(true);
+                            }}
+                          >
+                            Save & Print
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 )}
                 {paymentMethod === 'mpesa_prompt' && (
                   <div className="mt-4">
-                    <Button
-                      className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12"
-                      onClick={async () => {
-                        const phone = mpesaPhone.replace(/\s+/g, '');
-                        const valid = /^(\+254|0)7\d{8}$/.test(phone);
-                        if (!valid) {
-                          toast.error('Please enter a valid phone number');
-                          return;
-                        }
-                        if (!promptSent) {
-                          toast.error('Please send the M-Pesa prompt first');
-                          return;
-                        }
-                        await handleProcessCollection();
-                      }}
-                      disabled={additionalCollections.length === 0}
-                    >
-                      Confirm & Print
-                    </Button>
+                    <Dialog open={mpesaDialogOpen} onOpenChange={setMpesaDialogOpen}>
+                      <div>
+                        <Button
+                          className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12"
+                          onClick={() => {
+                            const phone = mpesaPhone.replace(/\s+/g, '');
+                            const valid = /^(\+254|0)7\d{8}$/.test(phone);
+                            if (!valid) {
+                              toast.error('Please enter a valid phone number');
+                              return;
+                            }
+                            if (!promptSent) {
+                              toast.error('Please send the M-Pesa prompt first');
+                              return;
+                            }
+                            setMpesaDialogOpen(true);
+                          }}
+                          disabled={additionalCollections.length === 0}
+                        >
+                          Process Receipt
+                        </Button>
+                      </div>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Save or Print Receipt?</DialogTitle>
+                          <DialogDescription>
+                            You are about to process a receipt for{' '}
+                            <span className="font-semibold">
+                              {selectedVehicle?.number_plate || 'vehicle'}
+                            </span>{' '}
+                            with M-Pesa prompt sent to{' '}
+                            <span className="font-semibold">{mpesaPhone.trim()}</span>. Total:{' '}
+                            <span className="font-semibold">Ksh {totalAmount.toFixed(2)}</span>
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter className="flex gap-2">
+                          <Button variant="outline" onClick={() => setMpesaDialogOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            onClick={async () => {
+                              setMpesaDialogOpen(false);
+                              await handleProcessCollection(false);
+                            }}
+                          >
+                            Save Only
+                          </Button>
+                          <Button
+                            className="bg-purple-700 hover:bg-purple-800"
+                            onClick={async () => {
+                              setMpesaDialogOpen(false);
+                              await handleProcessCollection(true);
+                            }}
+                          >
+                            Save & Print
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 )}
               </div>
