@@ -15,7 +15,7 @@ export interface ReceiptPayload {
 }
 
 export interface SaveReceiptRequest {
-  route: "app_save_raw_data";
+  route: 'app_save_raw_data';
   company_id: number;
   vehicle_id: number;
   user_id: number;
@@ -40,7 +40,7 @@ export interface SaveReceiptResponse {
 
 // Report: Get raw data by vehicle and date
 export interface ReportByVehicleDateRequest {
-  route: "app_get_raw_data_by_vehicle";
+  route: 'app_get_raw_data_by_vehicle';
   company_id: number;
   vehicle_id: number;
   date: string; // YYYY-MM-DD

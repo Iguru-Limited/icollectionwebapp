@@ -1,5 +1,5 @@
 // src/hooks/auth/useTokenRefresh.ts
-"use client";
+'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
@@ -21,7 +21,7 @@ export function useTokenRefresh() {
     // Set up error handling callbacks
     tokenRefreshService.setRefreshFailureCallback((error: RefreshError) => {
       setLastError(error);
-      
+
       // Only auto-logout for non-retryable errors
       if (!error.retryable) {
         console.error('Non-retryable token refresh error, logging out:', error);
@@ -43,20 +43,22 @@ export function useTokenRefresh() {
 
       try {
         // Check if token needs refresh (within 5 minutes of expiry)
-        const tokenExpiry = Date.now() + (60 * 60 * 1000); // Assuming 1 hour token lifetime
+        const tokenExpiry = Date.now() + 60 * 60 * 1000; // Assuming 1 hour token lifetime
         if (tokenRefreshService.shouldRefreshToken(tokenExpiry)) {
           console.log('Token needs refresh, refreshing...');
           setIsRefreshing(true);
-          
+
           if (session.user.refresh_token) {
-            const newToken = await tokenRefreshService.refreshTokenWithRetry(session.user.refresh_token);
-            
+            const newToken = await tokenRefreshService.refreshTokenWithRetry(
+              session.user.refresh_token,
+            );
+
             // Update the session with new tokens
             await update({
               token: newToken,
               refresh_token: session.user.refresh_token, // Keep the same refresh token for now
             });
-            
+
             setLastError(null); // Clear any previous errors on success
           }
         }
@@ -64,7 +66,7 @@ export function useTokenRefresh() {
         console.error('Token refresh failed:', error);
         const categorizedError = tokenRefreshService.categorizeErrorPublic(error);
         setLastError(categorizedError);
-        
+
         // Only logout for non-retryable errors
         if (!categorizedError.retryable) {
           await signOut({ callbackUrl: '/login' });
@@ -98,16 +100,16 @@ export function useTokenRefresh() {
 
   const retryTokenRefresh = async () => {
     if (!session?.user?.refresh_token) return;
-    
+
     try {
       setIsRefreshing(true);
       const newToken = await tokenRefreshService.refreshTokenWithRetry(session.user.refresh_token);
-      
+
       await update({
         token: newToken,
         refresh_token: session.user.refresh_token,
       });
-      
+
       setLastError(null);
     } catch (error) {
       const categorizedError = tokenRefreshService.categorizeErrorPublic(error);

@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const isElectron = process.env.ELECTRON === 'true';
 
@@ -8,9 +8,9 @@ const nextConfig: NextConfig = {
     output: 'export',
     trailingSlash: false,
     images: {
-      unoptimized: true
-    }
-  })
+      unoptimized: true,
+    },
+  }),
 };
 
 export default nextConfig;

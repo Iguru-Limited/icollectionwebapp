@@ -1,11 +1,7 @@
-"use client";
-import { useState } from "react";
-import { useSession } from "next-auth/react";
-import type {
-  SaveReceiptRequest,
-  SaveReceiptResponse,
-  ReceiptPayload,
-} from "@/types/receipt";
+'use client';
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import type { SaveReceiptRequest, SaveReceiptResponse, ReceiptPayload } from '@/types/receipt';
 
 interface UseSaveReceiptOptions {
   onSuccess?: (data: SaveReceiptResponse) => void;
@@ -18,26 +14,23 @@ export function useSaveReceipt(options?: UseSaveReceiptOptions) {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<SaveReceiptResponse | null>(null);
 
-  const saveReceipt = async (
-    vehicleId: number,
-    payload: ReceiptPayload
-  ) => {
+  const saveReceipt = async (vehicleId: number, payload: ReceiptPayload) => {
     if (!session?.user?.company?.company_id) {
-      const errorMsg = "Company ID not found in session";
+      const errorMsg = 'Company ID not found in session';
       setError(errorMsg);
       options?.onError?.(errorMsg);
       return null;
     }
 
     if (!session?.user?.user_id) {
-      const errorMsg = "User ID not found in session";
+      const errorMsg = 'User ID not found in session';
       setError(errorMsg);
       options?.onError?.(errorMsg);
       return null;
     }
 
     if (!session?.user?.stage?.stage_id) {
-      const errorMsg = "Stage ID not found in session";
+      const errorMsg = 'Stage ID not found in session';
       setError(errorMsg);
       options?.onError?.(errorMsg);
       return null;
@@ -47,7 +40,7 @@ export function useSaveReceipt(options?: UseSaveReceiptOptions) {
     setError(null);
 
     try {
-      const requestBody: Omit<SaveReceiptRequest, "route"> = {
+      const requestBody: Omit<SaveReceiptRequest, 'route'> = {
         company_id: Number(session.user.company.company_id),
         vehicle_id: vehicleId,
         user_id: Number(session.user.user_id),
@@ -55,30 +48,30 @@ export function useSaveReceipt(options?: UseSaveReceiptOptions) {
         payload,
       };
 
-      const response = await fetch("/api/receipt", {
-        method: "POST",
+      const response = await fetch('/api/receipt', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to save receipt");
+        throw new Error(errorData.error || 'Failed to save receipt');
       }
 
       const result: SaveReceiptResponse = await response.json();
 
       if (!result.success) {
-        throw new Error(result.message || "Failed to save receipt");
+        throw new Error(result.message || 'Failed to save receipt');
       }
 
       setData(result);
       options?.onSuccess?.(result);
       return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage);
       options?.onError?.(errorMessage);
       return null;

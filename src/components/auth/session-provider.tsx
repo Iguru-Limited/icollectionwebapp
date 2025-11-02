@@ -1,5 +1,5 @@
 // src/components/auth/session-provider.tsx
-"use client";
+'use client';
 
 import { SessionProvider } from 'next-auth/react';
 import { useTokenRefresh } from '@/hooks/auth/useTokenRefresh';
@@ -13,12 +13,12 @@ interface AuthSessionProviderProps {
 function TokenRefreshWrapper({ children }: { children: ReactNode }) {
   // This hook will handle automatic token refresh
   const { retryTokenRefresh } = useTokenRefresh();
-  
+
   return (
     <>
-      <TokenRefreshNotifications 
+      <TokenRefreshNotifications
         onRetry={retryTokenRefresh}
-        onLogout={() => window.location.href = '/login'}
+        onLogout={() => (window.location.href = '/login')}
       />
       {children}
     </>
@@ -28,9 +28,7 @@ function TokenRefreshWrapper({ children }: { children: ReactNode }) {
 export function AuthSessionProvider({ children }: AuthSessionProviderProps) {
   return (
     <SessionProvider>
-      <TokenRefreshWrapper>
-        {children}
-      </TokenRefreshWrapper>
+      <TokenRefreshWrapper>{children}</TokenRefreshWrapper>
     </SessionProvider>
   );
 }

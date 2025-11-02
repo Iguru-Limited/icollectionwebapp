@@ -1,6 +1,5 @@
-const { app, BrowserWindow, ipcMain, dialog, shell, protocol } = require('electron');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
-const fs = require('fs');
 const isDev = process.env.NODE_ENV === 'development';
 
 // electron-store must be imported dynamically as it's an ES module
@@ -26,27 +25,27 @@ function createWindow() {
       enableRemoteModule: false,
       preload: path.join(__dirname, 'preload.js'),
       webSecurity: false, // Allow loading local resources
-      allowRunningInsecureContent: false
+      allowRunningInsecureContent: false,
     },
     icon: path.join(__dirname, '../public/icon.png'), // Add your app icon
     titleBarStyle: 'default',
-    show: false // Don't show until ready
+    show: false, // Don't show until ready
   });
 
   // Load the app
   console.log('isDev:', isDev);
   console.log('__dirname:', __dirname);
-  
+
   if (isDev) {
     const startUrl = 'http://localhost:3000';
     console.log('Loading URL:', startUrl);
-    mainWindow.loadURL(startUrl).catch(err => {
+    mainWindow.loadURL(startUrl).catch((err) => {
       console.error('Failed to load URL:', err);
     });
   } else {
     const indexPath = path.join(__dirname, '../out/index.html');
     console.log('Loading file:', indexPath);
-    mainWindow.loadFile(indexPath).catch(err => {
+    mainWindow.loadFile(indexPath).catch((err) => {
       console.error('Failed to load file:', err);
     });
   }
@@ -54,7 +53,7 @@ function createWindow() {
   // Show window when ready
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
-    
+
     // Open DevTools only in development
     if (isDev) {
       mainWindow.webContents.openDevTools();
@@ -69,7 +68,8 @@ function createWindow() {
   // Log console messages from renderer
   mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
     console.log(`[Renderer ${level}]:`, message);
-    if (level === 3) { // Error level
+    if (level === 3) {
+      // Error level
       console.error(`  at ${sourceId}:${line}`);
     }
   });
@@ -109,8 +109,8 @@ ipcMain.handle('print-receipt', async (event, receiptData) => {
   try {
     // Get default printer
     const printers = await mainWindow.webContents.getPrinters();
-    const defaultPrinter = printers.find(p => p.isDefault) || printers[0];
-    
+    const defaultPrinter = printers.find((p) => p.isDefault) || printers[0];
+
     if (!defaultPrinter) {
       throw new Error('No printer found');
     }
@@ -122,17 +122,17 @@ ipcMain.handle('print-receipt', async (event, receiptData) => {
       deviceName: defaultPrinter.name,
       pageSize: 'A4',
       margins: {
-        marginType: 'none'
-      }
+        marginType: 'none',
+      },
     };
 
     // Create print content
     const printContent = generateReceiptHTML(receiptData);
-    
+
     // Load content and print
     await mainWindow.webContents.loadURL(`data:text/html,${encodeURIComponent(printContent)}`);
     await mainWindow.webContents.print(printOptions);
-    
+
     return { success: true, printer: defaultPrinter.name };
   } catch (error) {
     console.error('Print error:', error);
@@ -216,12 +216,16 @@ function generateReceiptHTML(receiptData) {
       </div>
       
       <div class="items">
-        ${receiptData.items.map(item => `
+        ${receiptData.items
+          .map(
+            (item) => `
           <div class="item">
             <span>${item.type}</span>
             <span>${item.amount}</span>
           </div>
-        `).join('')}
+        `,
+          )
+          .join('')}
       </div>
       
       <div class="total">

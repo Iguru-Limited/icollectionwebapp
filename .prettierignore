@@ -1,0 +1,12 @@
+# Build outputs
+.next
+out
+build
+dist
+coverage
+
+# Dependencies
+node_modules
+
+# Misc
+public

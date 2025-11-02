@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -23,7 +23,7 @@ export function TokenRefreshNotifications({ onRetry, onLogout }: TokenRefreshNot
     const handleRefreshFailure = (error: RefreshError) => {
       setLastError(error);
       setRetryCount(tokenRefreshService.getRetryCount());
-      
+
       // Show appropriate toast notification
       switch (error.type) {
         case RefreshErrorType.NETWORK_ERROR:
@@ -32,28 +32,28 @@ export function TokenRefreshNotifications({ onRetry, onLogout }: TokenRefreshNot
             icon: <IconWifiOff className="h-4 w-4" />,
           });
           break;
-          
+
         case RefreshErrorType.SERVER_ERROR:
           toast.error('Server temporarily unavailable. Retrying...', {
             duration: 5000,
             icon: <IconAlertTriangle className="h-4 w-4" />,
           });
           break;
-          
+
         case RefreshErrorType.TIMEOUT:
           toast.error('Request timeout. Retrying...', {
             duration: 5000,
             icon: <IconRefresh className="h-4 w-4" />,
           });
           break;
-          
+
         case RefreshErrorType.INVALID_TOKEN:
           toast.error('Session expired. Please log in again.', {
             duration: 8000,
             icon: <IconAlertTriangle className="h-4 w-4" />,
           });
           break;
-          
+
         default:
           toast.error('Connection issue. Retrying...', {
             duration: 5000,
@@ -83,7 +83,7 @@ export function TokenRefreshNotifications({ onRetry, onLogout }: TokenRefreshNot
 
     // Register callbacks
     tokenRefreshService.setRefreshFailureCallback(handleRefreshFailure);
-    
+
     // Check network status periodically
     const networkCheckInterval = setInterval(checkNetworkStatus, 5000);
 
@@ -130,63 +130,51 @@ export function TokenRefreshNotifications({ onRetry, onLogout }: TokenRefreshNot
 
       {/* Token refresh error notification */}
       {lastError && (
-        <Alert className={`mb-2 ${
-          lastError.type === RefreshErrorType.INVALID_TOKEN 
-            ? 'border-red-200 bg-red-50' 
-            : 'border-yellow-200 bg-yellow-50'
-        }`}>
-          <IconAlertTriangle className={`h-4 w-4 ${
-            lastError.type === RefreshErrorType.INVALID_TOKEN 
-              ? 'text-red-600' 
-              : 'text-yellow-600'
-          }`} />
-          <AlertTitle className={
-            lastError.type === RefreshErrorType.INVALID_TOKEN 
-              ? 'text-red-800' 
-              : 'text-yellow-800'
-          }>
-            {lastError.type === RefreshErrorType.INVALID_TOKEN 
-              ? 'Session Expired' 
+        <Alert
+          className={`mb-2 ${
+            lastError.type === RefreshErrorType.INVALID_TOKEN
+              ? 'border-red-200 bg-red-50'
+              : 'border-yellow-200 bg-yellow-50'
+          }`}
+        >
+          <IconAlertTriangle
+            className={`h-4 w-4 ${
+              lastError.type === RefreshErrorType.INVALID_TOKEN ? 'text-red-600' : 'text-yellow-600'
+            }`}
+          />
+          <AlertTitle
+            className={
+              lastError.type === RefreshErrorType.INVALID_TOKEN ? 'text-red-800' : 'text-yellow-800'
+            }
+          >
+            {lastError.type === RefreshErrorType.INVALID_TOKEN
+              ? 'Session Expired'
               : 'Connection Issue'}
           </AlertTitle>
-          <AlertDescription className={
-            lastError.type === RefreshErrorType.INVALID_TOKEN 
-              ? 'text-red-700' 
-              : 'text-yellow-700'
-          }>
+          <AlertDescription
+            className={
+              lastError.type === RefreshErrorType.INVALID_TOKEN ? 'text-red-700' : 'text-yellow-700'
+            }
+          >
             {lastError.message}
             {lastError.retryable && retryCount > 0 && (
-              <span className="block mt-1 text-sm">
-                Retry attempt: {retryCount}/3
-              </span>
+              <span className="block mt-1 text-sm">Retry attempt: {retryCount}/3</span>
             )}
           </AlertDescription>
-          
+
           <div className="flex gap-2 mt-3">
             {lastError.type === RefreshErrorType.INVALID_TOKEN ? (
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={handleLogout}
-              >
+              <Button size="sm" variant="destructive" onClick={handleLogout}>
                 Log In Again
               </Button>
             ) : lastError.retryable ? (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleRetry}
-              >
+              <Button size="sm" variant="outline" onClick={handleRetry}>
                 <IconRefresh className="h-3 w-3 mr-1" />
                 Retry
               </Button>
             ) : null}
-            
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={dismissError}
-            >
+
+            <Button size="sm" variant="ghost" onClick={dismissError}>
               <IconX className="h-3 w-3" />
             </Button>
           </div>

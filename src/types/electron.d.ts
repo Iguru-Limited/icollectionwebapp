@@ -1,8 +1,14 @@
 export interface ElectronAPI {
   printReceipt: (receiptData: ReceiptData) => Promise<PrintResult>;
   getPrinters: () => Promise<PrinterResult>;
-  saveSettings: (settings: Record<string, unknown>) => Promise<{ success: boolean; error?: string }>;
-  loadSettings: () => Promise<{ success: boolean; settings: Record<string, unknown>; error?: string }>;
+  saveSettings: (
+    settings: Record<string, unknown>,
+  ) => Promise<{ success: boolean; error?: string }>;
+  loadSettings: () => Promise<{
+    success: boolean;
+    settings: Record<string, unknown>;
+    error?: string;
+  }>;
   platform: string;
   isElectron: boolean;
 }

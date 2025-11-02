@@ -1,27 +1,73 @@
-"use client";
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { BarChart2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Circle } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { TopNavigation } from "@/components/ui/top-navigation";
-import { BottomNavigation } from "@/components/ui/bottom-navigation";
+'use client';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Eye, Receipt as ReceiptIcon } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { TopNavigation } from '@/components/ui/top-navigation';
+import { BottomNavigation } from '@/components/ui/bottom-navigation';
+import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { TransactionSummaryTable } from '@/components/ui/transaction-summary-table';
+import { DateSelector } from '@/components/ui/date-selector';
 
-function formatShortDate(date: Date) {
-  return date.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
+// Demo data based on the sketch
+const demoSummary = {
+  Receipts: 41,
+  Vehicles: 3,
+  Total: 48873,
+  Operations: 98873,
+  Loans: 18830,
+};
 
-function formatLongDate(date: Date) {
-  return date.toLocaleDateString(undefined, {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
+const demoReceipts = [
+  {
+    id: 1,
+    receiptNumber: 'RCE181',
+    date: '2024-10-31',
+    details: 'Morning Collection',
+    status: 'view details',
+    amount: 15200,
+  },
+  {
+    id: 2,
+    receiptNumber: 'RCE142',
+    date: '2024-10-31',
+    details: 'Evening Collection',
+    status: 'view receipt',
+    amount: 18500,
+  },
+  {
+    id: 3,
+    receiptNumber: 'RCE145',
+    date: '2024-10-31',
+    details: 'Afternoon Collection',
+    status: 'view',
+    amount: 9800,
+  },
+  {
+    id: 4,
+    receiptNumber: 'RCE146',
+    date: '2024-10-31',
+    details: 'Special Route',
+    status: 'view',
+    amount: 5373,
+  },
+  {
+    id: 5,
+    receiptNumber: 'RCE147',
+    date: '2024-10-31',
+    details: 'Late Collection',
+    status: 'pending',
+    amount: 0,
+  },
+];
 
 export default function Reports() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -31,77 +77,140 @@ export default function Reports() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="min-h-screen bg-gradient-to-b from-purple-50 to-white"
+      className="min-h-screen bg-gray-50"
     >
-      {/* Top navigation for md+ screens (since bottom nav hides) */}
-      <TopNavigation />
-  <div className="mx-auto px-4 pt-6 pb-24 max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-4xl">
-        {/* Title */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-md bg-indigo-100 text-indigo-600">
-              <BarChart2 className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold text-gray-800 leading-none">Vehicle Reports</h1>
-              <p className="text-xs text-gray-500">Collection summary by vehicle</p>
-            </div>
-          </div>
-          {/* <div className="flex items-center gap-1 px-3 py-1 rounded-full border border-blue-400 text-blue-500 text-xs font-semibold bg-white">
-            <Circle className="w-3 h-3 fill-blue-400 text-blue-400" />
-            Live
-          </div> */}
-        </div>
+      {/* Top navigation - hidden on small screens */}
+      <div className="hidden md:block">
+        <TopNavigation />
+      </div>
 
-        {/* Select Date */}
-  <Card className="rounded-2xl p-4 md:p-6 shadow-sm mb-8">
-          <div className="text-xs font-semibold text-gray-700 flex items-center gap-2 mb-3">
-            <CalendarIcon className="w-4 h-4 text-purple-700" />
-            SELECT DATE
-          </div>
+      <div className="container mx-auto px-4 py-4 pb-20 md:pb-6 space-y-4 max-w-screen-xl">
+        {/* Date Navigation */}
+        <DateSelector selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
-          <div className="flex items-center justify-between">
-            <button
-              className="rounded-full p-2 bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors"
-              onClick={() => setSelectedDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1))}
-              aria-label="Previous day"
+        {/* Summary Card */}
+        <TransactionSummaryTable
+          title="Daily Summary"
+          data={[
+            { label: 'Receipts', value: demoSummary.Receipts },
+            { label: 'Vehicles', value: demoSummary.Vehicles },
+            { label: 'Operations', value: `Ksh ${demoSummary.Operations.toLocaleString()}` },
+            { label: 'Loans', value: `Ksh ${demoSummary.Loans.toLocaleString()}` },
+            { label: 'Total', value: `Ksh ${demoSummary.Total.toLocaleString()}` },
+          ]}
+        />
+
+        {/* Receipts List */}
+        <div className="space-y-3">
+          <h3 className="text-xl font-semibold text-gray-700 px-2">Recent Receipts</h3>
+
+          {/* Desktop Table View */}
+          <Card className="hidden md:block rounded-2xl shadow-md overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-purple-50 hover:bg-purple-50">
+                  <TableHead className="font-semibold text-purple-900 text-xl">#</TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-xl">
+                    Receipt Number
+                  </TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-xl">Details</TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-xl">Date</TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-right text-xl">
+                    Amount
+                  </TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-right text-xl">
+                    Actions
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {demoReceipts.map((receipt, index) => (
+                  <TableRow key={receipt.id} className="hover:bg-gray-50">
+                    <TableCell className="font-medium text-gray-600">
+                      <div className="w-10 h-10 rounded-full  flex items-center justify-center  font-semibold text-xl">
+                        {index + 1}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-bold text-gray-800 text-2xl">
+                      {receipt.receiptNumber}
+                    </TableCell>
+                    <TableCell className="text-gray-600 text-xl">{receipt.details}</TableCell>
+                    <TableCell className="text-xl text-gray-600">{receipt.date}</TableCell>
+                    <TableCell className="text-right font-bold text-black text-2xl">
+                      {receipt.amount > 0 ? `Ksh ${receipt.amount.toLocaleString()}` : '-'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xl"
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          View
+                        </Button>
+                        <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-xl">
+                          <ReceiptIcon className="w-4 h-4 mr-1" />
+                          Receipt
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+
+          {/* Mobile Card View */}
+          {demoReceipts.map((receipt, index) => (
+            <Card
+              key={receipt.id}
+              className="md:hidden rounded-xl p-4 shadow-sm bg-white border-2 border-gray-200 hover:shadow-md transition-all"
             >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-
-            <div className="rounded-xl px-4 py-3 min-w-[12rem] md:min-w-[18rem] flex items-center justify-between gap-4 bg-purple-100 border-2 border-purple-400">
-              <div>
-                <div className="text-purple-700 text-sm font-semibold">Today</div>
-                <div className="text-gray-700 text-xs leading-tight">{formatLongDate(selectedDate)}</div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-semibold text-sm">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800">{receipt.receiptNumber}</h4>
+                    <p className="text-xs text-gray-500">{receipt.details}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-purple-600">
+                    {receipt.amount > 0 ? `${receipt.amount.toLocaleString()}` : '-'}
+                  </p>
+                </div>
               </div>
-              <CalendarIcon className="w-5 h-5 text-purple-700" />
-            </div>
 
-            <button
-              className="rounded-full p-2 bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors"
-              onClick={() => setSelectedDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1))}
-              aria-label="Next day"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </Card>
-
-        {/* Empty State */}
-        <div className="flex flex-col items-center text-center mt-12 md:mt-16">
-          <div className="w-40 h-40 md:w-48 md:h-48 rounded-full border-2 border-dashed border-purple-300 flex items-center justify-center mb-6">
-            {/* car icon substitute */}
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 text-purple-400"><path d="M5 11l1-3a3 3 0 012.83-2h6.34A3 3 0 0118 8l1 3h1a1 1 0 010 2h-1v3a2 2 0 01-2 2h-1a1 1 0 01-1-1v-1H9v1a1 1 0 01-1 1H7a2 2 0 01-2-2v-3H4a1 1 0 010-2h1zm3.17-3a1 1 0 00-.95.68L6.6 11h10.8l-.62-2.32a1 1 0 00-.95-.68H8.17zM7 15a1 1 0 100-2 1 1 0 000 2zm10 0a1 1 0 100-2 1 1 0 000 2z"/></svg>
-          </div>
-          <h3 className="text-base font-semibold text-gray-800 mb-2">No Vehicle Data</h3>
-          <p className="text-xs text-gray-500 max-w-xs">
-            No vehicle collection data available for {formatShortDate(selectedDate)}. Reports will appear here once vehicles record collections.
-          </p>
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-lg border-2 border-purple-600 text-purple-600 hover:bg-purple-50 text-xs font-semibold"
+                >
+                  <Eye className="w-3 h-3 mr-1" />
+                  {receipt.status === 'view details' ? 'View Details' : 'View'}
+                </Button>
+                <Button
+                  size="sm"
+                  className="rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold"
+                >
+                  <ReceiptIcon className="w-3 h-3 mr-1" />
+                  {receipt.status === 'view receipt' ? 'View Receipt' : 'Receipt'}
+                </Button>
+              </div>
+            </Card>
+          ))}
         </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <BottomNavigation />
+      {/* Bottom Navigation - Mobile only */}
+      <div className="md:hidden">
+        <BottomNavigation />
+      </div>
     </motion.div>
   );
 }

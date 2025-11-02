@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 type Printer = { id: string; name: string } | null;
 
@@ -28,8 +28,8 @@ export const useAppStore = create<AppState>()(
       selectedPrinter: null,
       setSelectedPrinter: (printer) => set({ selectedPrinter: printer }),
       viewPreferences: {
-        tableSearch: "",
-        visibleColumns: ["id", "plateNumber"],
+        tableSearch: '',
+        visibleColumns: ['id', 'plateNumber'],
       },
       setViewPreferences: (partial) =>
         set((state) => ({ viewPreferences: { ...state.viewPreferences, ...partial } })),
@@ -37,17 +37,17 @@ export const useAppStore = create<AppState>()(
         set({
           selectedVehicleId: null,
           selectedPrinter: null,
-          viewPreferences: { tableSearch: "", visibleColumns: ["id", "plateNumber"] },
+          viewPreferences: { tableSearch: '', visibleColumns: ['id', 'plateNumber'] },
         }),
     }),
     {
-      name: "app-store",
+      name: 'app-store',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         selectedVehicleId: state.selectedVehicleId,
         selectedPrinter: state.selectedPrinter,
         viewPreferences: state.viewPreferences,
       }),
-    }
-  )
+    },
+  ),
 );

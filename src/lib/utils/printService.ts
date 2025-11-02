@@ -1,17 +1,17 @@
 /**
  * Print Result Interface
- * 
+ *
  * Returned by all print methods to indicate success or failure.
  */
 export interface PrintResult {
-  success: boolean;   // Whether the print operation was successful
-  printer?: string;   // Name of the printer used (if available)
-  error?: string;     // Error message (if operation failed)
+  success: boolean; // Whether the print operation was successful
+  printer?: string; // Name of the printer used (if available)
+  error?: string; // Error message (if operation failed)
 }
 
 /**
  * Print Service Class
- * 
+ *
  * Handles receipt printing for both web browsers and Electron desktop app.
  * Provides one main method:
  * - printReceiptText() - Prints pre-formatted text from API (RECOMMENDED)
@@ -21,19 +21,17 @@ export class PrintService {
 
   /**
    * Constructor
-   * 
+   *
    * Detects if the app is running in Electron or web browser.
    */
   constructor() {
     this.isElectron =
-      typeof window !== "undefined" &&
-      "electronAPI" in window &&
-      window.electronAPI?.isElectron;
+      typeof window !== 'undefined' && 'electronAPI' in window && window.electronAPI?.isElectron;
   }
 
   /**
    * Print Receipt Text (RECOMMENDED)
-   * 
+   *
    * Prints a pre-formatted receipt text string from the API.
    * The API returns a fully formatted receipt with all data including:
    * - Company name and phone
@@ -43,22 +41,22 @@ export class PrintService {
    * - Terms and conditions
    * - User, stage, date/time
    * - Footer
-   * 
+   *
    * @param receiptText - Pre-formatted receipt text from API response
    * @returns Promise<PrintResult> - Result of the print operation
-   * 
+   *
    * @example
    * const result = await printService.printReceiptText(apiResponse.data.receipt_text);
    */
   async printReceiptText(
     receiptText: string,
-    options?: { overrideDateTime?: string | Date }
+    options?: { overrideDateTime?: string | Date },
   ): Promise<PrintResult> {
     try {
       // Open a new browser window for printing
-      const printWindow = window.open("", "_blank");
+      const printWindow = window.open('', '_blank');
       if (!printWindow) {
-        throw new Error("Could not open print window");
+        throw new Error('Could not open print window');
       }
 
       // Apply optional overrides (e.g., replace server time with local time)
@@ -73,39 +71,39 @@ export class PrintService {
       return new Promise((resolve) => {
         printWindow.onload = () => {
           printWindow.print();
-          
+
           // Close the print window after a short delay
           // This gives time for the print dialog to appear
           setTimeout(() => {
             printWindow.close();
-            resolve({ success: true, printer: "Browser Print Dialog" });
+            resolve({ success: true, printer: 'Browser Print Dialog' });
           }, 1000);
         };
       });
     } catch (error) {
-      return { 
-        success: false, 
-        error: (error as Error).message 
+      return {
+        success: false,
+        error: (error as Error).message,
       };
     }
   }
 
   /**
    * Generate Receipt Text HTML (Private Method - RECOMMENDED)
-   * 
+   *
    * Generates HTML markup to display pre-formatted receipt text from the API.
    * This is the preferred method because:
    * 1. The API formats the receipt with all correct data
    * 2. Ensures consistency with backend formatting
    * 3. Includes phone number and all other details from the API
    * 4. Less maintenance - formatting is handled by API
-   * 
+   *
    * The receipt text comes formatted with line breaks (\n) and spacing,
    * so we use 'pre-wrap' to preserve the formatting.
-   * 
+   *
    * @param receiptText - Pre-formatted receipt text from API (from receipt_text field)
    * @returns HTML string ready for printing
-   * 
+   *
    * @example
    * API returns receipt_text like:
    * "TYST COMPANY NAME\n0712345678\n----\nKAS-26\nInsurance 200.00\n..."
@@ -182,7 +180,7 @@ export class PrintService {
    */
   private applyOverrides(
     receiptText: string,
-    options?: { overrideDateTime?: string | Date }
+    options?: { overrideDateTime?: string | Date },
   ): string {
     if (!options?.overrideDateTime) return receiptText;
 
@@ -191,11 +189,11 @@ export class PrintService {
     if (options.overrideDateTime instanceof Date) {
       const d = options.overrideDateTime;
       const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      const h = String(d.getHours()).padStart(2, "0");
-      const min = String(d.getMinutes()).padStart(2, "0");
-      const s = String(d.getSeconds()).padStart(2, "0");
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const h = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      const s = String(d.getSeconds()).padStart(2, '0');
       overrideStr = `${y}-${m}-${day} ${h}:${min}:${s}`;
     } else {
       overrideStr = options.overrideDateTime;
@@ -211,6 +209,6 @@ export class PrintService {
       }
     }
 
-    return lines.join("\n");
+    return lines.join('\n');
   }
 }

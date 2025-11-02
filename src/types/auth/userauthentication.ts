@@ -32,7 +32,7 @@ export interface AuthResponse {
   access_expires_at: string;
   refresh_token: string;
   refresh_expires_at: string;
-  company_template?: import("@/types/company-template").CompanyTemplateResponse;
+  company_template?: import('@/types/company-template').CompanyTemplateResponse;
   role: string;
   user: User;
 }
@@ -62,11 +62,11 @@ export interface NextAuthUser {
   company: CompanyDetails;
   stage: StageDetails;
   printer: PrinterDetails;
-  company_template?: import("@/types/company-template").CompanyTemplateResponse;
+  company_template?: import('@/types/company-template').CompanyTemplateResponse;
 }
 
 // Extend NextAuth types
-declare module "next-auth" {
+declare module 'next-auth' {
   interface User {
     id: string;
     user_id: string;
@@ -77,7 +77,7 @@ declare module "next-auth" {
     company: CompanyDetails;
     stage: StageDetails;
     printer: PrinterDetails;
-    company_template?: import("@/types/company-template").CompanyTemplateResponse;
+    company_template?: import('@/types/company-template').CompanyTemplateResponse;
   }
 
   interface Session {
@@ -92,11 +92,11 @@ declare module "next-auth" {
       stage: StageDetails;
       printer: PrinterDetails;
     };
-    company_template?: import("@/types/company-template").CompanyTemplateResponse;
+    company_template?: import('@/types/company-template').CompanyTemplateResponse;
   }
 }
 
-declare module "next-auth/jwt" {
+declare module 'next-auth/jwt' {
   interface JWT {
     user_id: string;
     role: string;
@@ -109,6 +109,6 @@ declare module "next-auth/jwt" {
     expiresAt?: number;
     refreshExpiresAt?: number;
     lastActivity?: number;
-    company_template?: import("@/types/company-template").CompanyTemplateResponse;
+    company_template?: import('@/types/company-template').CompanyTemplateResponse;
   }
 }
