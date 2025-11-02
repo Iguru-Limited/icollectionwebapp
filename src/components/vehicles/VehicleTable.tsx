@@ -64,7 +64,7 @@ export function VehicleTable({ vehicles, isLoading = false, variant = 'card' }: 
                 <TableCell className="font-large text-gray-600 text-2xl">{index + 1}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Car className="w-6 h-6 text-purple-600" />
+                    <Car className="w-6 h-6 text-black-600" />
                     <span className="font-bold text-2xl text-gray-800 uppercase">
                       {vehicle.number_plate}
                     </span>

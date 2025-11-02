@@ -24,21 +24,15 @@ import { TopNavigation } from '@/components/ui/top-navigation';
 import { RiSendPlaneFill } from 'react-icons/ri';
 import { IoWalletOutline } from 'react-icons/io5';
 import { useReportByVehicleDate } from '@/hooks/report/useReportByVehicleDate';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface AdditionalCollection {
   id: string;
   collectionType: string;
   amount: string;
 }
+
+type PaymentMethod = 'cash' | 'mpesa' | 'mpesa_prompt';
 
 export default function CollectionPage() {
   const router = useRouter();
@@ -48,6 +42,9 @@ export default function CollectionPage() {
 
   const [additionalCollections, setAdditionalCollections] = useState<AdditionalCollection[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
+  const [mpesaRef, setMpesaRef] = useState('');
+  const [mpesaPhone, setMpesaPhone] = useState('');
   // UI local state
 
   // Initialize the save receipt hook
@@ -166,6 +163,14 @@ export default function CollectionPage() {
           number_plate: selectedVehicle?.number_plate || '',
           receipt_no: '',
           trip_date: tripDate,
+          // include optional payment metadata
+          payment_method: paymentMethod,
+          ...(paymentMethod === 'mpesa' && mpesaRef
+            ? { mpesa_reference: mpesaRef.trim().toUpperCase() }
+            : {}),
+          ...(paymentMethod === 'mpesa_prompt' && mpesaPhone
+            ? { mpesa_phone: mpesaPhone.trim() }
+            : {}),
         },
         slugs,
       };
@@ -179,7 +184,7 @@ export default function CollectionPage() {
         return;
       }
 
-      // Update loading message
+  // Update loading message
       toast.dismiss(toastId);
       const printToastId = toast.loading('Printing receipt...');
 
@@ -209,6 +214,9 @@ export default function CollectionPage() {
 
         // Clear collections after successful print
         setAdditionalCollections([]);
+        setPaymentMethod('cash');
+        setMpesaRef('');
+        setMpesaPhone('');
 
         // Navigate back to user page
         setTimeout(() => {
@@ -387,59 +395,124 @@ export default function CollectionPage() {
               </Card>
             )}
             {/* Bottom primary action with confirmation dialog */}
-            <div className="mt-4">
-              <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-                <DialogTrigger asChild>
-                  <Button className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12">
-                    <RiSendPlaneFill className="w-5 h-5 mr-2" />
-                    PRINT RECEIPT
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Confirm Print</DialogTitle>
-                    <DialogDescription>
-                      You are about to print a receipt for{' '}
-                      <span className="font-semibold">
-                        {selectedVehicle?.number_plate || 'vehicle'}
-                      </span>{' '}
-                      with total amount{' '}
-                      <span className="font-semibold">Ksh {totalAmount.toFixed(2)}</span>. Please
-                      confirm to continue.
-                    </DialogDescription>
-                  </DialogHeader>
-                  {/* Optional quick summary */}
-                  {additionalCollections.length > 0 && (
-                    <div className="mt-2 max-h-48 overflow-auto rounded-md border p-2 text-xl">
-                      {additionalCollections.map((c, i) => (
-                        <div key={c.id} className="flex items-center justify-between py-1">
-                          <span className="text-gray-600">
-                            #{i + 1} {c.collectionType || 'Type'}
-                          </span>
-                          <span className="font-medium">
-                            Ksh {Number(c.amount || 0).toLocaleString()}
-                          </span>
-                        </div>
-                      ))}
+            {/* Payment Method Selection (appears only after adding at least one collection) */}
+            {additionalCollections.length > 0 && (
+              <div className="mt-6 space-y-3">
+                <h3 className="text-lg font-semibold text-gray-800">Payment Method</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <Select value={paymentMethod} onValueChange={(v: string) => setPaymentMethod(v as PaymentMethod)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select payment method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cash">Cash</SelectItem>
+                      <SelectItem value="mpesa">M-Pesa (Reference)</SelectItem>
+                      <SelectItem value="mpesa_prompt">M-Pesa Prompt (STK)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {paymentMethod === 'mpesa' && (
+                    <div className="md:col-span-2 flex items-center gap-2">
+                      <Input
+                        value={mpesaRef}
+                        onChange={(e) => setMpesaRef(e.target.value)}
+                        onBlur={() => {
+                          const ref = mpesaRef.trim();
+                          const valid = /^[A-Za-z0-9]{7,12}$/.test(ref);
+                          if (ref.length > 0) {
+                            if (valid) toast.success('M-Pesa reference recorded');
+                            else toast.error('Invalid M-Pesa reference');
+                          }
+                        }}
+                        placeholder="Enter M-Pesa reference (e.g., QF91XYZ123)"
+                      />
                     </div>
                   )}
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setConfirmOpen(false)}>
-                      Cancel
-                    </Button>
+                  {paymentMethod === 'mpesa_prompt' && (
+                    <div className="md:col-span-2 flex items-center gap-2">
+                      <Input
+                        value={mpesaPhone}
+                        onChange={(e) => setMpesaPhone(e.target.value)}
+                        placeholder="Phone (e.g., 07XXXXXXXX or +2547XXXXXXXX)"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          const phone = mpesaPhone.replace(/\s+/g, '');
+                          const valid = /^(\+254|0)7\d{8}$/.test(phone);
+                          if (!valid) {
+                            toast.error('Enter a valid Safaricom number');
+                            return;
+                          }
+                          toast.success(`Prompt sent to ${phone}`);
+                        }}
+                      >
+                        Send Prompt
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Bottom primary action with confirmation dialog (only for Cash) */}
+            {paymentMethod === 'cash' && additionalCollections.length > 0 && (
+              <div className="mt-4">
+                <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+                  <div>
                     <Button
-                      className="bg-purple-700 hover:bg-purple-800"
-                      onClick={async () => {
-                        setConfirmOpen(false);
-                        await handleProcessCollection();
-                      }}
+                      className="w-full bg-purple-700 hover:bg-purple-800 text-white rounded-xl h-12"
+                      onClick={() => setConfirmOpen(true)}
                     >
-                      Confirm & Print
+                      <RiSendPlaneFill className="w-5 h-5 mr-2" />
+                      PRINT RECEIPT
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
+                  </div>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Confirm Print</DialogTitle>
+                      <DialogDescription>
+                        You are about to print a receipt for{' '}
+                        <span className="font-semibold">
+                          {selectedVehicle?.number_plate || 'vehicle'}
+                        </span>{' '}
+                        with total amount{' '}
+                        <span className="font-semibold">Ksh {totalAmount.toFixed(2)}</span>.
+                      </DialogDescription>
+                    </DialogHeader>
+                    {/* Optional quick summary */}
+                    {additionalCollections.length > 0 && (
+                      <div className="mt-2 max-h-48 overflow-auto rounded-md border p-2 text-xl">
+                        {additionalCollections.map((c, i) => (
+                          <div key={c.id} className="flex items-center justify-between py-1">
+                            <span className="text-gray-600">
+                              #{i + 1} {c.collectionType || 'Type'}
+                            </span>
+                            <span className="font-medium">
+                              Ksh {Number(c.amount || 0).toLocaleString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button
+                        className="bg-purple-700 hover:bg-purple-800"
+                        onClick={async () => {
+                          setConfirmOpen(false);
+                          await handleProcessCollection();
+                        }}
+                      >
+                        Confirm & Print
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            )}
           </div>
         </div>
       </div>

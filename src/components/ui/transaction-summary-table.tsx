@@ -13,7 +13,7 @@ export function TransactionSummaryTable({ data, title }: TransactionSummaryTable
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white rounded-xl border text-xl">
           <thead>
-            <tr className="bg-purple-50 text-purple-900">
+            <tr className="bg-purple-50 text-black">
               <th className="py-3 px-4 text-left font-semibold">Metric</th>
               <th className="py-3 px-4 text-left font-semibold">Value</th>
             </tr>
@@ -24,8 +24,8 @@ export function TransactionSummaryTable({ data, title }: TransactionSummaryTable
                 key={row.label}
                 className={
                   idx === data.length - 1
-                    ? 'bg-purple-100 text-purple-800 font-bold text-2xl'
-                    : 'border-b hover:bg-purple-50 text-purple-700'
+                    ? 'bg-purple-100 text-black-800 font-bold text-2xl'
+                    : 'border-b hover:bg-black-50 text-black-700'
                 }
               >
                 <td className="py-3 px-4 font-medium">{row.label}</td>
