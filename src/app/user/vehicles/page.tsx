@@ -69,15 +69,8 @@ export default function VehiclesPage() {
           />
         </div>
 
-        {/* Desktop Table View */}
-        <div className="hidden md:block">
-          <VehicleTable vehicles={filteredVehicles} isLoading={!hasHydrated} variant="table" />
-        </div>
-
-        {/* Mobile Card View */}
-        <div className="md:hidden">
-          <VehicleTable vehicles={filteredVehicles} isLoading={!hasHydrated} variant="card" />
-        </div>
+        {/* Vehicle List */}
+        <VehicleTable vehicles={filteredVehicles} isLoading={!hasHydrated} />
       </div>
 
       {/* Bottom Navigation - Mobile only */}

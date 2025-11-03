@@ -195,20 +195,20 @@ export default function VehicleReportPage() {
           <Card className="rounded-xl p-4 text-center text-sm text-red-600">{error}</Card>
         )}
 
-        {/* Desktop Table View */}
+        {/* Receipt List Table */}
         {!isLoading && !error && status === 'authenticated' && filteredRows.length > 0 && (
-          <Card className="hidden md:block rounded-2xl shadow-md overflow-hidden">
+          <Card className="rounded-2xl shadow-md overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-purple-50 hover:bg-purple-50 text-xl">
                   <TableHead className="font-semibold text-purple-900">#</TableHead>
                   <TableHead className="font-semibold text-purple-900">Receipt Number</TableHead>
-                  <TableHead className="font-semibold text-purple-900">Vehicle</TableHead>
+                  <TableHead className="font-semibold text-purple-900 hidden sm:table-cell">Vehicle</TableHead>
                   <TableHead className="font-semibold text-purple-900 text-right">Amount</TableHead>
-                  <TableHead className="font-semibold text-purple-900 text-center">
+                  <TableHead className="font-semibold text-purple-900 text-center hidden md:table-cell">
                     Collections
                   </TableHead>
-                  <TableHead className="font-semibold text-purple-900">Created</TableHead>
+                  <TableHead className="font-semibold text-purple-900 hidden lg:table-cell">Created</TableHead>
                   <TableHead className="font-semibold text-purple-900 text-right">
                     Actions
                   </TableHead>
@@ -225,7 +225,7 @@ export default function VehicleReportPage() {
                         <TableCell className="font-bold text-gray-800">
                           #{row.receipt_number}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           <span className="px-2 py-1 rounded-full bg-purple-100 text-purple-700">
                             {row.number_plate}
                           </span>
@@ -233,8 +233,8 @@ export default function VehicleReportPage() {
                         <TableCell className="text-right font-bold text-gray-900">
                           Ksh {Number(row.total_amount).toLocaleString()}
                         </TableCell>
-                        <TableCell className="text-center text-gray-700">{slugCount}</TableCell>
-                        <TableCell className="text-gray-600">
+                        <TableCell className="text-center text-gray-700 hidden md:table-cell">{slugCount}</TableCell>
+                        <TableCell className="text-gray-600 hidden lg:table-cell">
                           {formatDateTime(row.created_at)}
                         </TableCell>
                         <TableCell className="text-right">
@@ -247,15 +247,15 @@ export default function VehicleReportPage() {
                               }
                             >
                               {isOpen ? (
-                                <ChevronUp className="w-3 h-3 mr-1" />
+                                <ChevronUp className="w-3 h-3 md:mr-1" />
                               ) : (
-                                <ChevronDown className="w-3 h-3 mr-1" />
+                                <ChevronDown className="w-3 h-3 md:mr-1" />
                               )}
-                              {isOpen ? 'Hide' : 'Details'}
+                              <span className="hidden md:inline">{isOpen ? 'Hide' : 'Details'}</span>
                             </Button>
                             <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
-                              <Printer className="w-3 h-3 mr-1" />
-                              Reprint
+                              <Printer className="w-3 h-3 md:mr-1" />
+                              <span className="hidden md:inline">Reprint</span>
                             </Button>
                           </div>
                         </TableCell>
@@ -267,7 +267,7 @@ export default function VehicleReportPage() {
                               <p className="text-xs font-semibold text-purple-900 mb-2">
                                 Breakdown:
                               </p>
-                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                                 {Object.entries(row.payload?.slugs ?? {}).map(([label, amount]) => (
                                   <div
                                     key={label}
@@ -293,77 +293,6 @@ export default function VehicleReportPage() {
             </Table>
           </Card>
         )}
-
-        {/* Mobile Card View */}
-        {!isLoading &&
-          !error &&
-          status === 'authenticated' &&
-          filteredRows.map((row) => {
-            const slugCount = Object.keys(row.payload?.slugs ?? {}).length;
-            const isOpen = !!expanded[row.id];
-            return (
-              <Card key={row.id} className="md:hidden rounded-2xl p-4 shadow-sm">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                  <div className="text-sm font-semibold text-gray-900">#{row.receipt_number}</div>
-                  <div className="text-[11px] px-2 py-1 rounded-full bg-purple-100 text-purple-700">
-                    {row.number_plate}
-                  </div>
-                </div>
-
-                {/* Amount and collection count */}
-                <div className="mt-3 rounded-xl border bg-gray-50 p-4 text-center">
-                  <div className="text-[11px] tracking-wide text-gray-600">TOTAL AMOUNT</div>
-                  <div className="text-2xl font-extrabold text-gray-900">
-                    Ksh {Number(row.total_amount).toLocaleString()}
-                  </div>
-                  <div className="mt-1 text-[11px] text-gray-600">
-                    {slugCount} {slugCount === 1 ? 'collection' : 'collections'}
-                  </div>
-                </div>
-
-                {/* Toggle breakdown */}
-                <div className="mt-2">
-                  <button
-                    className="text-sm text-purple-700 font-medium"
-                    onClick={() => setExpanded((prev) => ({ ...prev, [row.id]: !isOpen }))}
-                  >
-                    {isOpen ? 'Hide Breakdown' : 'Show Breakdown'}
-                  </button>
-                </div>
-
-                {/* Breakdown */}
-                {isOpen && (
-                  <div className="mt-3 space-y-2">
-                    {Object.entries(row.payload?.slugs ?? {}).map(([label, amount]) => (
-                      <div
-                        key={label}
-                        className="flex items-center justify-between rounded-lg bg-purple-50 text-purple-800 px-3 py-2"
-                      >
-                        <span className="text-sm font-medium">{label}</span>
-                        <span className="text-sm font-semibold">
-                          Ksh {Number(amount).toLocaleString()}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Created at */}
-                <div className="mt-4 flex items-center gap-2 text-xs text-gray-600">
-                  <span>Created:</span>
-                  <span>{formatDateTime(row.created_at)}</span>
-                </div>
-
-                {/* Reprint button placeholder */}
-                <div className="mt-3">
-                  <Button className="w-full bg-purple-700 hover:bg-purple-800">
-                    Reprint Receipt
-                  </Button>
-                </div>
-              </Card>
-            );
-          })}
       </div>
       {/* Bottom Navigation - Mobile only */}
       <div className="md:hidden">

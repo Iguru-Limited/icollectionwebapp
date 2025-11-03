@@ -100,53 +100,8 @@ export default function AccountPage() {
           ]}
         />
 
-        {/* Account Details */}
-        {/* <Card className="rounded-2xl shadow-md p-6">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">
-            Account Details
-          </h2>
-          <div className="space-y-3">
-            <div className="flex justify-between py-2 border-b border-gray-100">
-              <span className="text-gray-600">Username</span>
-              <span className="font-semibold text-gray-800">
-                {session?.user?.username || "N/A"}
-              </span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-gray-100">
-              <span className="text-gray-600">Stage</span>
-              <span className="font-semibold text-gray-800">
-                {session?.user?.stage?.stage_name || "N/A"}
-              </span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-gray-100">
-              <span className="text-gray-600">Company</span>
-              <span className="font-semibold text-gray-800">
-                {session?.user?.company?.company_name || "N/A"}
-              </span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-gray-600">Total Vehicles</span>
-              <span className="font-semibold text-gray-800">
-                {summaryData.vehicles}
-              </span>
-            </div>
-          </div>
-        </Card> */}
-
-        {/* Logout Button - Desktop */}
-        {/* <div className="hidden md:block">
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            className="w-full rounded-xl h-12 border-2 border-red-200 text-red-600 hover:bg-red-50"
-          >
-            <LogOut className="w-5 h-5 mr-2" />
-            Logout
-          </Button>
-        </div> */}
-
-        {/* Logout Button - Mobile */}
-        <div className="md:hidden">
+        {/* Logout Button */}
+        <div>
           <Button
             onClick={handleLogout}
             variant="outline"

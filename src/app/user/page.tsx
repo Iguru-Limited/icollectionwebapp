@@ -51,27 +51,10 @@ export default function UserPage() {
           />
         </div>
 
-        {/* Desktop Table View */}
-        <div className="hidden md:block">
-          <VehicleTable vehicles={filteredVehicles} isLoading={!hasHydrated} variant="table" />
-        </div>
+        {/* Vehicle List */}
+        <VehicleTable vehicles={filteredVehicles} isLoading={!hasHydrated} />
 
-        {/* Mobile Card View */}
-        <div className="md:hidden">
-          <VehicleTable vehicles={filteredVehicles} isLoading={!hasHydrated} variant="card" />
-        </div>
-
-        {/* Mobile logout button */}
-        <div className="md:hidden mt-6">
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            className="w-full rounded-xl h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50"
-          >
-            <LogOut className="w-5 h-5 mr-2" />
-            Logout
-          </Button>
-        </div>
+       
       </div>
 
       {/* Bottom Navigation - Mobile only */}
