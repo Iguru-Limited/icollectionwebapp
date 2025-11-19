@@ -1,26 +1,43 @@
 "use client";
-import { useEffect, useState } from 'react';
 import { PageContainer, PageHeader } from '@/components/layout';
-import { CrewProfile, type Crew } from '@/components/crews';
+import { CrewProfile } from '@/components/crews';
+import { useCrew } from '@/hooks/crew';
+import { Spinner } from '@/components/ui/spinner';
 
 interface CrewProfilePageProps { params: { id: string } }
 
 export default function CrewProfilePage({ params }: CrewProfilePageProps) {
-  const [crew, setCrew] = useState<Crew | null>(null);
+  const { crew, isLoading, error } = useCrew(params.id);
 
-  useEffect(() => {
-    (async () => {
-      const res = await fetch(`/api/crews/${params.id}`);
-      const json = await res.json();
-      setCrew(json.data ?? null);
-    })();
-  }, [params.id]);
+  if (isLoading) {
+    return (
+      <PageContainer>
+        <PageHeader title="Crew Profile" backHref="/user/crews" />
+        <div className="flex items-center justify-center h-96">
+          <Spinner />
+        </div>
+      </PageContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageContainer>
+        <PageHeader title="Crew Profile" backHref="/user/crews" />
+        <div className="flex items-center justify-center h-96 text-red-600">
+          Error loading crew: {error.message}
+        </div>
+      </PageContainer>
+    );
+  }
 
   if (!crew) {
     return (
       <PageContainer>
         <PageHeader title="Crew Profile" backHref="/user/crews" />
-        <div className="flex items-center justify-center h-screen">Loading...</div>
+        <div className="flex items-center justify-center h-96 text-gray-500">
+          Crew member not found
+        </div>
       </PageContainer>
     );
   }
@@ -28,7 +45,7 @@ export default function CrewProfilePage({ params }: CrewProfilePageProps) {
   return (
     <PageContainer>
       <PageHeader title="Crew Profile" backHref="/user/crews" />
-      <main className="px-4 pb-24 max-w-sm mx-auto">
+      <main className="px-4 pb-24 max-w-2xl mx-auto">
         <CrewProfile crew={crew} />
       </main>
     </PageContainer>

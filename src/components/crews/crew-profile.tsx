@@ -1,45 +1,86 @@
 import Link from 'next/link';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { THEME_COLORS } from '@/lib/utils/constants';
-import { Crew } from './crew-card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Mail, Phone, CreditCard, Calendar, User, IdCard } from 'lucide-react';
+import type { Crew } from '@/types/crew';
 
 interface CrewProfileProps {
   crew: Crew;
 }
 
 export function CrewProfile({ crew }: CrewProfileProps) {
-  const expired = crew.badgeExpiry ? new Date(crew.badgeExpiry) < new Date() : false;
-  const expiryStr = crew.badgeExpiry ? new Date(crew.badgeExpiry).toLocaleDateString() : '-';
+  const expired = crew.badge_expiry ? new Date(crew.badge_expiry) < new Date() : false;
+  const expiryStr = crew.badge_expiry ? new Date(crew.badge_expiry).toLocaleDateString() : '-';
   const initials = crew.name?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'C';
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl p-4 text-center" style={{ backgroundColor: THEME_COLORS.SURFACE }}>
-        <Avatar className="h-20 w-20 mx-auto mb-3">
-          <AvatarFallback className="text-xl">{initials}</AvatarFallback>
-        </Avatar>
-        <div className="text-base font-semibold mb-1" style={{ color: THEME_COLORS.TEXT }}>
-          {crew.name}
-        </div>
-        <div className="text-sm" style={{ color: THEME_COLORS.TEXT_LIGHT }}>
-          {crew.role}
-        </div>
-      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center">
+            <Avatar className="h-24 w-24 mx-auto mb-4">
+              <AvatarFallback className="text-2xl bg-blue-100 text-blue-700">{initials}</AvatarFallback>
+            </Avatar>
+            <h2 className="text-xl font-bold text-gray-900 mb-1">
+              {crew.name}
+            </h2>
+            <Badge variant="secondary" className="mb-3">
+              {crew.role_name}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="rounded-xl p-4 space-y-3" style={{ backgroundColor: THEME_COLORS.SURFACE }}>
-        <InfoRow label="Phone" value={crew.phone ?? '-'} />
-        <InfoRow label="Employee No." value={crew.employeeNo ?? '-'} />
-        <InfoRow label="Badge No." value={crew.badgeNo ?? '-'} />
-        <InfoRow 
-          label="Badge Expiry" 
-          value={expiryStr}
-          valueColor={expired ? THEME_COLORS.ACCENT : THEME_COLORS.TEXT}
-          valueClassName={expired ? 'font-semibold' : ''}
-        />
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Contact Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <InfoRow 
+            icon={<Phone className="h-4 w-4" />}
+            label="Phone" 
+            value={crew.phone ?? '-'} 
+          />
+          <InfoRow 
+            icon={<Mail className="h-4 w-4" />}
+            label="Email" 
+            value={crew.email ?? '-'} 
+          />
+        </CardContent>
+      </Card>
 
-      <Link href={`/user/crews/${crew.id}/edit`}>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Employment Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <InfoRow 
+            icon={<User className="h-4 w-4" />}
+            label="Employee No." 
+            value={crew.employee_no ?? '-'} 
+          />
+          <InfoRow 
+            icon={<IdCard className="h-4 w-4" />}
+            label="ID Number" 
+            value={crew.id_number ?? '-'} 
+          />
+          <InfoRow 
+            icon={<CreditCard className="h-4 w-4" />}
+            label="Badge No." 
+            value={crew.badge_number ?? '-'} 
+          />
+          <InfoRow 
+            icon={<Calendar className="h-4 w-4" />}
+            label="Badge Expiry" 
+            value={expiryStr}
+            valueClassName={expired ? 'text-red-600 font-semibold' : ''}
+          />
+        </CardContent>
+      </Card>
+
+      <Link href={`/user/crews/${crew.crew_id}/edit`}>
         <Button className="w-full">Edit Crew</Button>
       </Link>
     </div>
@@ -47,22 +88,20 @@ export function CrewProfile({ crew }: CrewProfileProps) {
 }
 
 interface InfoRowProps {
+  icon: React.ReactNode;
   label: string;
   value: string;
-  valueColor?: string;
   valueClassName?: string;
 }
 
-function InfoRow({ label, value, valueColor, valueClassName = '' }: InfoRowProps) {
+function InfoRow({ icon, label, value, valueClassName = '' }: InfoRowProps) {
   return (
-    <div className="flex justify-between items-center">
-      <span className="text-xs" style={{ color: THEME_COLORS.TEXT_LIGHT }}>
-        {label}
-      </span>
-      <span 
-        className={`text-sm ${valueClassName}`}
-        style={{ color: valueColor ?? THEME_COLORS.TEXT }}
-      >
+    <div className="flex items-center justify-between py-2">
+      <div className="flex items-center gap-2 text-sm text-gray-600">
+        {icon}
+        <span>{label}</span>
+      </div>
+      <span className={`text-sm font-medium text-gray-900 ${valueClassName}`}>
         {value}
       </span>
     </div>

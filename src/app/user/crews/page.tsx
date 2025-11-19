@@ -1,26 +1,23 @@
 "use client";
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { UserPlus } from 'lucide-react';
 import { PageContainer, PageHeader, SearchBar, FloatingActionButton } from '@/components/layout';
-import { CrewList, CrewTabs, type Crew, type CrewTab } from '@/components/crews';
+import { CrewList, CrewTabs, type CrewTab } from '@/components/crews';
+import { useCrews } from '@/hooks/crew';
 
 export default function CrewsListPage() {
   const [q, setQ] = useState('');
   const [active, setActive] = useState<CrewTab>('All');
-  const [crews, setCrews] = useState<Crew[]>([]);
-
-  useEffect(() => {
-    (async () => {
-      const res = await fetch('/api/crews');
-      const json = await res.json();
-      setCrews(json.data ?? []);
-    })();
-  }, []);
+  
+  const { data: crewsResponse, isLoading, error } = useCrews();
+  const crews = crewsResponse?.data ?? [];
 
   const filtered = useMemo(() => {
     return crews.filter(c =>
-      (active === 'All' || c.role?.toLowerCase() === active.toLowerCase().slice(0, -1)) &&
-      (c.name?.toLowerCase().includes(q.toLowerCase()) || c.badgeNo?.toLowerCase().includes(q.toLowerCase())),
+      (active === 'All' || c.role_name?.toUpperCase() === active) &&
+      (c.name?.toLowerCase().includes(q.toLowerCase()) || 
+       c.badge_number?.toLowerCase().includes(q.toLowerCase()) ||
+       c.phone?.toLowerCase().includes(q.toLowerCase())),
     );
   }, [crews, q, active]);
 
@@ -28,16 +25,22 @@ export default function CrewsListPage() {
     <PageContainer>
       <PageHeader title="Crew List" />
 
-      <main className="px-4 pb-24 max-w-sm mx-auto">
+      <main className="px-4 pb-24 max-w-4xl mx-auto">
         <SearchBar 
           value={q} 
           onChange={setQ} 
-          placeholder="Search by Name or Badge No..." 
+          placeholder="Search by Name, Badge No, or Phone..." 
         />
 
         <CrewTabs activeTab={active} onTabChange={setActive} />
 
-        <CrewList crews={filtered} />
+        {error ? (
+          <div className="text-center text-red-600 py-8">
+            Error loading crews: {error.message}
+          </div>
+        ) : (
+          <CrewList crews={filtered} isLoading={isLoading} />
+        )}
 
         <FloatingActionButton href="/user/crews/add" icon={UserPlus} label="Add crew" />
       </main>

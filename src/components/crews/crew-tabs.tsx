@@ -1,6 +1,6 @@
-import { THEME_COLORS } from '@/lib/utils/constants';
+import { Button } from '@/components/ui/button';
 
-const tabs = ['All', 'Drivers', 'Conductors'] as const;
+const tabs = ['All', 'DRIVER', 'CONDUCTOR'] as const;
 export type CrewTab = (typeof tabs)[number];
 
 interface CrewTabsProps {
@@ -9,21 +9,23 @@ interface CrewTabsProps {
 }
 
 export function CrewTabs({ activeTab, onTabChange }: CrewTabsProps) {
+  const getTabLabel = (tab: CrewTab) => {
+    if (tab === 'All') return 'All';
+    return tab.charAt(0) + tab.slice(1).toLowerCase() + 's';
+  };
+
   return (
-    <div className="flex gap-2 mb-3">
+    <div className="flex gap-2 mb-4">
       {tabs.map((tab) => (
-        <button
+        <Button
           key={tab}
           onClick={() => onTabChange(tab)}
-          className={`px-3 py-1.5 text-xs rounded-full border ${activeTab === tab ? 'font-medium' : ''}`}
-          style={{
-            backgroundColor: activeTab === tab ? THEME_COLORS.SURFACE : THEME_COLORS.BACKGROUND,
-            borderColor: THEME_COLORS.BORDER,
-            color: activeTab === tab ? THEME_COLORS.TEXT : THEME_COLORS.TEXT_LIGHT,
-          }}
+          variant={activeTab === tab ? 'default' : 'outline'}
+          size="sm"
+          className="rounded-full"
         >
-          {tab}
-        </button>
+          {getTabLabel(tab)}
+        </Button>
       ))}
     </div>
   );

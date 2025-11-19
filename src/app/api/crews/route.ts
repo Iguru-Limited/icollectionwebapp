@@ -31,14 +31,14 @@ export async function GET(request: NextRequest) {
     console.log('=== CREW LIST API REQUEST ===');
     console.log('API URL:', apiUrl);
     console.log('Company ID:', companyId);
+    console.log('Token:', session.user.token ? 'Present' : 'Missing');
     console.log('=============================');
 
     const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        // Authorization can be added if needed
-        // "Authorization": `Bearer ${session.user.token}`,
+        'Authorization': `Bearer ${session.user.token}`,
       },
     });
 
