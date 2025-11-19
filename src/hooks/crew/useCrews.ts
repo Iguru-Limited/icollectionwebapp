@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
-import type { GetCrewsResponse, UpdateCrewRequest, UpdateCrewResponse } from '@/types/crew';
+import type { GetCrewsResponse, GetCrewRolesResponse, UpdateCrewRequest, UpdateCrewResponse } from '@/types/crew';
 
 interface UseCrewsOptions {
   companyId?: number;
@@ -100,5 +100,29 @@ export function useUpdateCrew(options?: UseUpdateCrewOptions) {
     onError: (error: Error) => {
       options?.onError?.(error);
     },
+  });
+}
+
+/**
+ * Hook to fetch crew roles
+ */
+export function useCrewRoles() {
+  const { data: session } = useSession();
+
+  return useQuery<GetCrewRolesResponse, Error>({
+    queryKey: ['crew-roles'],
+    queryFn: async () => {
+      const response = await fetch('/api/crew-roles');
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to fetch crew roles');
+      }
+
+      return response.json();
+    },
+    enabled: !!session,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 }

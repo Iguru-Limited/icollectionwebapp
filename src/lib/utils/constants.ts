@@ -6,6 +6,7 @@ export const API_ENDPOINTS = {
   URL_1: 'https://iguru.co.ke/iCollections/endpoints/api/routing/',
   LIST_CREW:'/api/crew-detail/list.php',
   UPDATE_CREW:'/api/crew-detail/manage.php',
+  LIST_CREW_ROLE:'/api/app-roles/list.php',
 } as const;
 
 export const APP_CONFIG = {

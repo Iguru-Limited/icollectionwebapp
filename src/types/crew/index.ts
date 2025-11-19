@@ -1,7 +1,8 @@
 // Crew related types
 export interface CrewRole {
-  crew_role_id: string;
+  role_id: string;
   role_name: string;
+  role_description: string;
 }
 
 export interface Crew {
@@ -44,4 +45,10 @@ export interface UpdateCrewResponse {
   success: boolean;
   message: string;
   data?: Crew;
+}
+
+export interface GetCrewRolesResponse {
+  success: boolean;
+  data: CrewRole[];
+  message?: string;
 }

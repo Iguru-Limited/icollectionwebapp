@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUpdateCrew } from '@/hooks/crew';
+import { useUpdateCrew, useCrewRoles } from '@/hooks/crew';
 import { toast } from 'sonner';
 import type { Crew } from '@/types/crew';
+import { Spinner } from '@/components/ui/spinner';
 
 interface CrewFormProps {
   crew?: Crew;
@@ -28,6 +29,8 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
   const [email, setEmail] = useState(crew?.email ?? '');
   const [employeeNo, setEmployeeNo] = useState(crew?.employee_no ?? '');
   const [idNumber, setIdNumber] = useState(crew?.id_number ?? '');
+
+  const { data: rolesResponse, isLoading: rolesLoading } = useCrewRoles();
 
   const updateCrewMutation = useUpdateCrew({
     onSuccess: (data) => {
@@ -103,13 +106,27 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="role">Role *</Label>
-            <Select value={crewRoleId} onValueChange={setCrewRoleId} required>
+            <Select value={crewRoleId} onValueChange={setCrewRoleId} required disabled={rolesLoading}>
               <SelectTrigger id="role">
-                <SelectValue placeholder="Select role" />
+                <SelectValue placeholder={rolesLoading ? "Loading roles..." : "Select role"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="11">Driver</SelectItem>
-                <SelectItem value="12">Conductor</SelectItem>
+                {rolesLoading ? (
+                  <SelectItem value="" disabled>
+                    <div className="flex items-center gap-2">
+                      <Spinner className="w-4 h-4" />
+                      <span>Loading...</span>
+                    </div>
+                  </SelectItem>
+                ) : rolesResponse?.success && rolesResponse.data ? (
+                  rolesResponse.data.map((role) => (
+                    <SelectItem key={role.role_id} value={role.role_id.toString()}>
+                      {role.role_name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="" disabled>No roles available</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
