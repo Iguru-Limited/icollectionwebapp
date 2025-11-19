@@ -53,10 +53,8 @@ export default function CollectionPage() {
   const [mpesaRef, setMpesaRef] = useState('');
   const [mpesaPhone, setMpesaPhone] = useState('');
   const [promptSent, setPromptSent] = useState(false);
-  // Always start with no vehicle selected on this route so table shows first
-  useEffect(() => {
-    setSelectedVehicleId(null);
-  }, [setSelectedVehicleId]);
+  // Note: Do not auto-clear selected vehicle here to allow proceeding
+  // from the VehicleTable to the collection form on this same route.
 
   // Populate template store if empty
   useEffect(() => {
@@ -98,10 +96,10 @@ export default function CollectionPage() {
             </Button>
             <h1 className="text-3xl font-bold text-gray-700">Select Vehicle for Collection</h1>
           </div>
-          {tplError ? (
-            <Card className="p-8 text-center text-red-600">Failed to load vehicles</Card>
-          ) : template ? (
+          {template ? (
             <VehicleTable vehicles={vehicles} />
+          ) : tplError ? (
+            <Card className="p-8 text-center text-red-600">Failed to load vehicles</Card>
           ) : (
             <Card className="p-8 text-center text-gray-500">
               <div className="animate-pulse">{tplLoading ? 'Loading vehicles...' : 'Preparing vehicles...'}</div>
