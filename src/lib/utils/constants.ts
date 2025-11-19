@@ -8,7 +8,7 @@ export const API_ENDPOINTS = {
   UPDATE_CREW:'/api/crew-detail/manage.php',
   LIST_CREW_ROLE:'/api/app-roles/list.php',
   DASHBOARD_STATS:'/api/dashboards/list.php',
-  CREW_HISTORY:'',
+  CREW_HISTORY:'/api/crew-assignment-history/list.php',
 } as const;
 
 export const APP_CONFIG = {

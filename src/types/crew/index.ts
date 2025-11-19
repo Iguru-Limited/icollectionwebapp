@@ -52,3 +52,21 @@ export interface GetCrewRolesResponse {
   data: CrewRole[];
   message?: string;
 }
+
+// Crew assignment history types
+export interface CrewAssignmentHistoryEntry {
+  history_id: string;
+  crew_id: string;
+  crew_name: string;
+  crew_phone: string;
+  vehicle_id: string;
+  number_plate: string;
+  assigned_at: string;
+  unassigned_at: string | null;
+}
+
+export interface GetCrewHistoryResponse {
+  success: boolean;
+  data: CrewAssignmentHistoryEntry[];
+  message?: string;
+}

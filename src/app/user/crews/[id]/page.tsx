@@ -56,6 +56,7 @@ export default function CrewProfilePage({ params }: CrewProfilePageProps) {
           active={'bio'}
           onSelect={(key) => {
             if (key === 'bio') router.push(`/user/crews/${crew.crew_id}/bio`);
+            if (key === 'history') router.push(`/user/crews/${crew.crew_id}/history`);
           }}
         />
       </main>
