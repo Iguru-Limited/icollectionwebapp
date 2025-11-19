@@ -19,12 +19,19 @@ export interface PrinterDetails {
   name: string;
 }
 
+export interface UserRight {
+  right_id: string;
+  right_name: string;
+  right_description: string;
+}
+
 export interface User {
   user_id: string;
   username: string;
   company: CompanyDetails;
   stage: StageDetails;
   printer: PrinterDetails;
+  rights?: UserRight[];
 }
 
 export interface AuthResponse {
@@ -63,6 +70,7 @@ export interface NextAuthUser {
   stage: StageDetails;
   printer: PrinterDetails;
   company_template?: import('@/types/company-template').CompanyTemplateResponse;
+  rights?: UserRight[];
 }
 
 // Extend NextAuth types
@@ -78,6 +86,7 @@ declare module 'next-auth' {
     stage: StageDetails;
     printer: PrinterDetails;
     company_template?: import('@/types/company-template').CompanyTemplateResponse;
+    rights?: UserRight[];
   }
 
   interface Session {
@@ -91,6 +100,7 @@ declare module 'next-auth' {
       company: CompanyDetails;
       stage: StageDetails;
       printer: PrinterDetails;
+      rights?: UserRight[];
     };
     company_template?: import('@/types/company-template').CompanyTemplateResponse;
   }
@@ -110,5 +120,6 @@ declare module 'next-auth/jwt' {
     refreshExpiresAt?: number;
     lastActivity?: number;
     company_template?: import('@/types/company-template').CompanyTemplateResponse;
+    rights?: UserRight[];
   }
 }

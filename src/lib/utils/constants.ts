@@ -1,9 +1,12 @@
 // src/lib/constants.ts
 export const API_ENDPOINTS = {
   BASE_URL: process.env.API_BASE_URL ?? 'https://iguru.co.ke/iCollections/endpoints',
-  TOKEN_REFRESH: '/auth/refresh.php',
+  TOKEN_REFRESH: '/api/auth/refresh.php',
   LOGIN: '/api/auth/login.php',
   URL_1: 'https://iguru.co.ke/iCollections/endpoints/api/routing/',
+  LIST_CREW:'/api/crew-detail/list.php',
+  UPDATE_CREW:'/api/crew-detail/manage.php',
+  LIST_CREW_ROLE:'/api/app-roles/list.php',
 } as const;
 
 export const APP_CONFIG = {
