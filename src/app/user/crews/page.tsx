@@ -2,19 +2,21 @@
 import { useMemo, useState } from 'react';
 import { UserPlus } from 'lucide-react';
 import { PageContainer, PageHeader, SearchBar, FloatingActionButton } from '@/components/layout';
-import { CrewList, CrewTabs, type CrewTab } from '@/components/crews';
-import { useCrews } from '@/hooks/crew';
+import { CrewList, CrewTabs } from '@/components/crews';
+import { useCrews, useCrewRoles } from '@/hooks/crew';
 
 export default function CrewsListPage() {
   const [q, setQ] = useState('');
-  const [active, setActive] = useState<CrewTab>('All');
+  const [active, setActive] = useState<string>('All');
   
   const { data: crewsResponse, isLoading, error } = useCrews();
+  const { data: rolesResponse, isLoading: rolesLoading } = useCrewRoles();
   const crews = crewsResponse?.data ?? [];
+  const roles = rolesResponse?.data ?? [];
 
   const filtered = useMemo(() => {
     return crews.filter(c =>
-      (active === 'All' || c.role_name?.toUpperCase() === active) &&
+      (active === 'All' || c.role_name?.toUpperCase() === active.toUpperCase()) &&
       (c.name?.toLowerCase().includes(q.toLowerCase()) || 
        c.badge_number?.toLowerCase().includes(q.toLowerCase()) ||
        c.phone?.toLowerCase().includes(q.toLowerCase())),
@@ -32,7 +34,12 @@ export default function CrewsListPage() {
           placeholder="Search by Name, Badge No, or Phone..." 
         />
 
-        <CrewTabs activeTab={active} onTabChange={setActive} />
+        <CrewTabs 
+          activeTab={active} 
+          onTabChange={setActive} 
+          roles={roles}
+          isLoading={rolesLoading}
+        />
 
         {error ? (
           <div className="text-center text-red-600 py-8">
