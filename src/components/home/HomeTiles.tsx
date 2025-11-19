@@ -30,14 +30,14 @@ export default function HomeTiles() {
       href: '/user/crews',
       icon: <Users className="w-6 h-6 text-white" />,
       bgClass: 'bg-red-600',
-      rightName: 'manage_crew',
+      rightName: 'assign_crew', // Uses assign_crew right since it manages crew assignments
     },
     {
       title: 'Assign Vehicle',
       href: '/user/assign',
       icon: <BookOpenCheck className="w-6 h-6 text-white" />,
       bgClass: 'bg-green-600',
-      rightName: 'assign_crew',
+      rightName: 'assign_crew', // Same right - can assign vehicles to crew
     },
     {
       title: 'Vehicle',
