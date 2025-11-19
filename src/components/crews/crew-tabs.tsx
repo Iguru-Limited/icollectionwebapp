@@ -6,9 +6,11 @@ interface CrewTabsProps {
   onTabChange: (tab: string) => void;
   roles: CrewRole[];
   isLoading?: boolean;
+  roleCounts?: Record<string, number>;
+  allCount?: number;
 }
 
-export function CrewTabs({ activeTab, onTabChange, roles, isLoading }: CrewTabsProps) {
+export function CrewTabs({ activeTab, onTabChange, roles, isLoading, roleCounts, allCount }: CrewTabsProps) {
   const getTabLabel = (roleName: string) => {
     if (roleName === 'All') return 'All';
     // Pluralize: DRIVER -> Drivers, CONDUCTOR -> Conductors
@@ -33,19 +35,22 @@ export function CrewTabs({ activeTab, onTabChange, roles, isLoading }: CrewTabsP
         size="sm"
         className="rounded-full"
       >
-        All
+        {`All${typeof allCount === 'number' ? ` (${allCount})` : ''}`}
       </Button>
-      {roles.map((role) => (
-        <Button
-          key={role.role_id}
-          onClick={() => onTabChange(role.role_name)}
-          variant={activeTab.toUpperCase() === role.role_name.toUpperCase() ? 'default' : 'outline'}
-          size="sm"
-          className="rounded-full"
-        >
-          {getTabLabel(role.role_name)}
-        </Button>
-      ))}
+      {roles.map((role) => {
+        const count = roleCounts?.[role.role_name] ?? 0;
+        return (
+          <Button
+            key={role.role_id}
+            onClick={() => onTabChange(role.role_name)}
+            variant={activeTab.toUpperCase() === role.role_name.toUpperCase() ? 'default' : 'outline'}
+            size="sm"
+            className="rounded-full"
+          >
+            {`${getTabLabel(role.role_name)} (${count})`}
+          </Button>
+        );
+      })}
     </div>
   );
 }
