@@ -1,13 +1,15 @@
 "use client";
+import { use } from 'react';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { CrewProfile } from '@/components/crews';
 import { useCrew } from '@/hooks/crew';
 import { Spinner } from '@/components/ui/spinner';
 
-interface CrewProfilePageProps { params: { id: string } }
+interface CrewProfilePageProps { params: Promise<{ id: string }> }
 
 export default function CrewProfilePage({ params }: CrewProfilePageProps) {
-  const { crew, isLoading, error } = useCrew(params.id);
+  const { id } = use(params);
+  const { crew, isLoading, error } = useCrew(id);
 
   if (isLoading) {
     return (

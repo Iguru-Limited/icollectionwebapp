@@ -112,20 +112,18 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
               </SelectTrigger>
               <SelectContent>
                 {rolesLoading ? (
-                  <SelectItem value="" disabled>
-                    <div className="flex items-center gap-2">
-                      <Spinner className="w-4 h-4" />
-                      <span>Loading...</span>
-                    </div>
-                  </SelectItem>
-                ) : rolesResponse?.success && rolesResponse.data ? (
+                  <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground">
+                    <Spinner className="w-4 h-4" />
+                    <span>Loading roles...</span>
+                  </div>
+                ) : rolesResponse?.success && rolesResponse.data && rolesResponse.data.length > 0 ? (
                   rolesResponse.data.map((role) => (
                     <SelectItem key={role.role_id} value={role.role_id.toString()}>
                       {role.role_name}
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="" disabled>No roles available</SelectItem>
+                  <div className="py-2 text-sm text-center text-muted-foreground">No roles available</div>
                 )}
               </SelectContent>
             </Select>
