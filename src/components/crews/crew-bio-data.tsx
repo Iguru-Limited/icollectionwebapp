@@ -1,3 +1,5 @@
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, Phone, CreditCard, Calendar, User, IdCard } from 'lucide-react';
 import type { Crew } from '@/types/crew';
@@ -9,9 +11,22 @@ interface CrewBioDataProps {
 export function CrewBioData({ crew }: CrewBioDataProps) {
   const expired = crew.badge_expiry ? new Date(crew.badge_expiry) < new Date() : false;
   const expiryStr = crew.badge_expiry ? new Date(crew.badge_expiry).toLocaleDateString() : '-';
+  const initials = crew.name?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'C';
 
   return (
     <div className="space-y-4">
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center">
+            <Avatar className="h-24 w-24 mx-auto mb-4">
+              <AvatarFallback className="text-2xl bg-blue-100 text-blue-700">{initials}</AvatarFallback>
+            </Avatar>
+            <h2 className="text-xl font-bold text-gray-900 mb-1">{crew.name}</h2>
+            <Badge variant="secondary" className="mb-1">{crew.role_name}</Badge>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Contact Information</CardTitle>
@@ -36,6 +51,17 @@ export function CrewBioData({ crew }: CrewBioDataProps) {
             value={expiryStr}
             valueClassName={expired ? 'text-red-600 font-semibold' : ''}
           />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Identifiers</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <InfoRow icon={<IdCard className="h-4 w-4" />} label="Crew ID" value={crew.crew_id} />
+          <InfoRow icon={<IdCard className="h-4 w-4" />} label="Role ID" value={crew.crew_role_id?.toString?.() ?? '-'} />
+          <InfoRow icon={<User className="h-4 w-4" />} label="Record Type" value={crew.type} />
         </CardContent>
       </Card>
     </div>
