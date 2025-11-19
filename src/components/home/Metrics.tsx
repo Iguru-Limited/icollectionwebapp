@@ -2,6 +2,7 @@
 import { Bus, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
 import { Spinner } from '@/components/ui/spinner';
 import { useDashboardStats } from '@/hooks/dashboard/useDashboardStats';
 
@@ -29,6 +30,7 @@ const cardVariants = {
 };
 
 export default function Metrics() {
+  const router = useRouter();
   const { data: stats, isLoading, error } = useDashboardStats();
 
   return (
@@ -74,7 +76,10 @@ export default function Metrics() {
 
         {/* Crew Total Card (from API) */}
         <motion.div variants={cardVariants}>
-          <Card className="border border-gray-200 rounded-none">
+          <Card className="border border-gray-200 rounded-none cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => router.push('/user/crews')}
+            aria-label="View crew"
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
