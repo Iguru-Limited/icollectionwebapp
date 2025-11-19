@@ -1,4 +1,3 @@
-import { THEME_COLORS } from '@/lib/utils/constants';
 import { Assignment, AssignmentCard } from './assignment-card';
 import { Crew, Vehicle } from './assignment-form';
 
@@ -11,7 +10,7 @@ interface AssignmentListProps {
 export function AssignmentList({ assignments, crews, vehicles }: AssignmentListProps) {
   return (
     <section>
-      <h2 className="text-sm mb-2" style={{ color: THEME_COLORS.TEXT }}>
+      <h2 className="text-sm mb-2 text-gray-900 font-medium">
         Recent Assignments
       </h2>
       <ul className="space-y-2">

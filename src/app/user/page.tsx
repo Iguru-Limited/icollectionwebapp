@@ -1,5 +1,5 @@
 'use client';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession} from 'next-auth/react';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { useEffect } from 'react';
 import { BottomNavigation } from '@/components/ui/bottom-navigation';
@@ -19,10 +19,6 @@ export default function UserPage() {
       setTemplate(session.company_template);
     }
   }, [hasHydrated, template, session, setTemplate]);
-
-  const handleLogout = async () => {
-    await signOut({ callbackUrl: '/login' });
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">

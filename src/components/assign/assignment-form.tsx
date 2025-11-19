@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { THEME_COLORS } from '@/lib/utils/constants';
+import { Card } from '@/components/ui/card';
 
 export interface Crew {
   id: string;
@@ -42,7 +42,8 @@ export function AssignmentForm({ crews, vehicles, onAssign }: AssignmentFormProp
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-xl p-4 space-y-4" style={{ backgroundColor: THEME_COLORS.SURFACE }}>
+    <Card className="rounded-xl p-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1">
         <Label className="text-xs">Crew</Label>
         <Select value={crewId} onValueChange={setCrewId}>
@@ -78,6 +79,7 @@ export function AssignmentForm({ crews, vehicles, onAssign }: AssignmentFormProp
       <Button type="submit" className="w-full" disabled={saving || !crewId || !vehicleId}>
         Create Assignment
       </Button>
-    </form>
+      </form>
+    </Card>
   );
 }

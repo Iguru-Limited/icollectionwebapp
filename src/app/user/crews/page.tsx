@@ -11,17 +11,17 @@ export default function CrewsListPage() {
   
   const { data: crewsResponse, isLoading, error } = useCrews();
   const { data: rolesResponse, isLoading: rolesLoading } = useCrewRoles();
-  const crews = crewsResponse?.data ?? [];
   const roles = rolesResponse?.data ?? [];
 
   const filtered = useMemo(() => {
+    const crews = crewsResponse?.data ?? [];
     return crews.filter(c =>
       (active === 'All' || c.role_name?.toUpperCase() === active.toUpperCase()) &&
       (c.name?.toLowerCase().includes(q.toLowerCase()) || 
        c.badge_number?.toLowerCase().includes(q.toLowerCase()) ||
        c.phone?.toLowerCase().includes(q.toLowerCase())),
     );
-  }, [crews, q, active]);
+  }, [crewsResponse?.data, q, active]);
 
   return (
     <PageContainer>

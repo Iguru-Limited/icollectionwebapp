@@ -1,4 +1,4 @@
-import { THEME_COLORS } from '@/lib/utils/constants';
+import { Card } from '@/components/ui/card';
 
 export interface Assignment {
   id: string;
@@ -13,15 +13,15 @@ interface AssignmentCardProps {
   vehiclePlate?: string;
 }
 
-export function AssignmentCard({ assignment, crewName, crewRole, vehiclePlate }: AssignmentCardProps) {
+export function AssignmentCard({ crewName, crewRole, vehiclePlate }: AssignmentCardProps) {
   return (
-    <div className="rounded-xl p-3" style={{ backgroundColor: THEME_COLORS.SURFACE }}>
-      <div className="text-sm" style={{ color: THEME_COLORS.TEXT }}>
+    <Card className="rounded-xl p-3">
+      <div className="text-sm text-gray-900">
         {crewName ?? '—'} → {vehiclePlate ?? '—'}
       </div>
-      <div className="text-xs" style={{ color: THEME_COLORS.TEXT_LIGHT }}>
+      <div className="text-xs text-gray-500">
         {crewRole ?? ''}
       </div>
-    </div>
+    </Card>
   );
 }

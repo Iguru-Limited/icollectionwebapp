@@ -1,6 +1,5 @@
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { THEME_COLORS } from '@/lib/utils/constants';
 
 interface SearchBarProps {
   value: string;
@@ -12,9 +11,8 @@ export function SearchBar({ value, onChange, placeholder = 'Search...' }: Search
   return (
     <div className="relative mb-3">
       <Search 
-        className="absolute left-3 top-1/2 -translate-y-1/2" 
+        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" 
         size={16} 
-        style={{ color: THEME_COLORS.TEXT_LIGHT }} 
       />
       <Input 
         value={value} 
