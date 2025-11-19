@@ -54,16 +54,7 @@ export function CrewBioData({ crew }: CrewBioDataProps) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Identifiers</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <InfoRow icon={<IdCard className="h-4 w-4" />} label="Crew ID" value={crew.crew_id} />
-          <InfoRow icon={<IdCard className="h-4 w-4" />} label="Role ID" value={crew.crew_role_id?.toString?.() ?? '-'} />
-          <InfoRow icon={<User className="h-4 w-4" />} label="Record Type" value={crew.type} />
-        </CardContent>
-      </Card>
+      {/* Removed Identifiers card per request */}
     </div>
   );
 }
