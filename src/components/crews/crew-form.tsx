@@ -1,11 +1,15 @@
+'use client';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { THEME_COLORS } from '@/lib/utils/constants';
-import { Crew } from './crew-card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useUpdateCrew } from '@/hooks/crew';
+import { toast } from 'sonner';
+import type { Crew } from '@/types/crew';
 
 interface CrewFormProps {
   crew?: Crew;
@@ -16,104 +20,161 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
   const router = useRouter();
   const [name, setName] = useState(crew?.name ?? '');
   const [phone, setPhone] = useState(crew?.phone ?? '');
-  const [badgeNo, setBadgeNo] = useState(crew?.badgeNo ?? '');
-  const [badgeExpiry, setBadgeExpiry] = useState(crew?.badgeExpiry?.split('T')[0] ?? '');
-  const [employeeNo, setEmployeeNo] = useState(crew?.employeeNo ?? '');
-  const [role, setRole] = useState(crew?.role ?? '');
-  const [saving, setSaving] = useState(false);
+  const [badgeNumber, setBadgeNumber] = useState(crew?.badge_number ?? '');
+  const [crewRoleId, setCrewRoleId] = useState(crew?.crew_role_id ?? '');
+  const [badgeExpiry, setBadgeExpiry] = useState(
+    crew?.badge_expiry ? crew.badge_expiry.split('T')[0] : ''
+  );
+  const [email, setEmail] = useState(crew?.email ?? '');
+  const [employeeNo, setEmployeeNo] = useState(crew?.employee_no ?? '');
+  const [idNumber, setIdNumber] = useState(crew?.id_number ?? '');
+
+  const updateCrewMutation = useUpdateCrew({
+    onSuccess: (data) => {
+      toast.success(data.message || 'Crew updated successfully');
+      router.push('/user/crews');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update crew');
+    },
+  });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true);
-    try {
-      const body = { name, phone, badgeNo, badgeExpiry, employeeNo, role };
-      const url = mode === 'create' ? '/api/crews' : `/api/crews/${crew?.id}`;
-      const method = mode === 'create' ? 'POST' : 'PUT';
-      
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+    
+    if (mode === 'edit' && crew) {
+      updateCrewMutation.mutate({
+        crew_id: Number(crew.crew_id),
+        name,
+        crew_role_id: Number(crewRoleId),
+        phone,
+        badge_number: badgeNumber,
+        badge_expiry: badgeExpiry || null,
+        email: email || null,
+        employee_no: employeeNo || null,
+        id_number: idNumber || null,
       });
-      
-      if (res.ok) {
-        router.push('/crews');
-      }
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleDelete() {
-    if (!confirm('Delete this crew member?')) return;
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/crews/${crew?.id}`, { method: 'DELETE' });
-      if (res.ok) {
-        router.push('/crews');
-      }
-    } finally {
-      setSaving(false);
+    } else {
+      // TODO: Implement create crew functionality
+      toast.error('Create crew not yet implemented');
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="rounded-xl p-4 space-y-3" style={{ backgroundColor: THEME_COLORS.SURFACE }}>
-        <div className="space-y-1">
-          <Label className="text-xs">Name</Label>
-          <Input value={name} onChange={(e) => setName(e.target.value)} required />
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{mode === 'create' ? 'Add New Crew' : 'Edit Crew Details'}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name *</Label>
+            <Input 
+              id="name"
+              value={name} 
+              onChange={(e) => setName(e.target.value)} 
+              required 
+              placeholder="Enter crew member name"
+            />
+          </div>
 
-        <div className="space-y-1">
-          <Label className="text-xs">Phone</Label>
-          <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone *</Label>
+            <Input 
+              id="phone"
+              type="tel" 
+              value={phone} 
+              onChange={(e) => setPhone(e.target.value)} 
+              required
+              placeholder="0712345678"
+            />
+          </div>
 
-        <div className="space-y-1">
-          <Label className="text-xs">Badge Number</Label>
-          <Input value={badgeNo} onChange={(e) => setBadgeNo(e.target.value)} />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="badge">Badge Number *</Label>
+            <Input 
+              id="badge"
+              value={badgeNumber} 
+              onChange={(e) => setBadgeNumber(e.target.value)} 
+              required
+              placeholder="BDG-0001"
+            />
+          </div>
 
-        <div className="space-y-1">
-          <Label className="text-xs">Badge Expiry</Label>
-          <Input type="date" value={badgeExpiry} onChange={(e) => setBadgeExpiry(e.target.value)} />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="role">Role *</Label>
+            <Select value={crewRoleId} onValueChange={setCrewRoleId} required>
+              <SelectTrigger id="role">
+                <SelectValue placeholder="Select role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="11">Driver</SelectItem>
+                <SelectItem value="12">Conductor</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className="space-y-1">
-          <Label className="text-xs">Employee Number</Label>
-          <Input value={employeeNo} onChange={(e) => setEmployeeNo(e.target.value)} />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input 
+              id="email"
+              type="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              placeholder="email@example.com"
+            />
+          </div>
 
-        <div className="space-y-1">
-          <Label className="text-xs">Role</Label>
-          <Select value={role} onValueChange={setRole}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="driver">Driver</SelectItem>
-              <SelectItem value="conductor">Conductor</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+          <div className="space-y-2">
+            <Label htmlFor="employeeNo">Employee Number</Label>
+            <Input 
+              id="employeeNo"
+              value={employeeNo} 
+              onChange={(e) => setEmployeeNo(e.target.value)} 
+              placeholder="EMP-0001"
+            />
+          </div>
 
-      <Button type="submit" className="w-full" disabled={saving}>
-        {mode === 'create' ? 'Add Crew' : 'Save Changes'}
-      </Button>
+          <div className="space-y-2">
+            <Label htmlFor="idNumber">ID Number</Label>
+            <Input 
+              id="idNumber"
+              value={idNumber} 
+              onChange={(e) => setIdNumber(e.target.value)} 
+              placeholder="National ID Number"
+            />
+          </div>
 
-      {mode === 'edit' && (
-        <Button
-          type="button"
-          variant="destructive"
-          className="w-full"
-          onClick={handleDelete}
-          disabled={saving}
+          <div className="space-y-2">
+            <Label htmlFor="badgeExpiry">Badge Expiry Date</Label>
+            <Input 
+              id="badgeExpiry"
+              type="date" 
+              value={badgeExpiry} 
+              onChange={(e) => setBadgeExpiry(e.target.value)} 
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex gap-3">
+        <Button 
+          type="button" 
+          variant="outline" 
+          className="flex-1"
+          onClick={() => router.back()}
+          disabled={updateCrewMutation.isPending}
         >
-          Delete Crew
+          Cancel
         </Button>
-      )}
+        <Button 
+          type="submit" 
+          className="flex-1" 
+          disabled={updateCrewMutation.isPending}
+        >
+          {updateCrewMutation.isPending ? 'Saving...' : mode === 'create' ? 'Add Crew' : 'Save Changes'}
+        </Button>
+      </div>
     </form>
   );
 }

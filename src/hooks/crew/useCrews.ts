@@ -1,8 +1,8 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
-import type { GetCrewsResponse } from '@/types/crew';
+import type { GetCrewsResponse, UpdateCrewRequest, UpdateCrewResponse } from '@/types/crew';
 
 interface UseCrewsOptions {
   companyId?: number;
@@ -59,4 +59,46 @@ export function useCrew(crewId: string, options?: UseCrewsOptions) {
     data: crew,
     crew,
   };
+}
+
+interface UseUpdateCrewOptions {
+  onSuccess?: (data: UpdateCrewResponse) => void;
+  onError?: (error: Error) => void;
+}
+
+/**
+ * Hook to update crew details
+ * Automatically invalidates crew list cache on success
+ */
+export function useUpdateCrew(options?: UseUpdateCrewOptions) {
+  const queryClient = useQueryClient();
+  const { data: session } = useSession();
+
+  return useMutation({
+    mutationFn: async (payload: UpdateCrewRequest): Promise<UpdateCrewResponse> => {
+      const response = await fetch('/api/crews', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update crew');
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Invalidate crew list to refetch with updated data
+      const companyId = session?.user?.company?.company_id;
+      queryClient.invalidateQueries({ queryKey: ['crews', companyId] });
+      options?.onSuccess?.(data);
+    },
+    onError: (error: Error) => {
+      options?.onError?.(error);
+    },
+  });
 }

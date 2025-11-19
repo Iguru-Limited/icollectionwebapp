@@ -1,1 +1,1 @@
-export { useCrews, useCrew } from './useCrews';
+export { useCrews, useCrew, useUpdateCrew } from './useCrews';

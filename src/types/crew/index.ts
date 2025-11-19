@@ -27,3 +27,21 @@ export interface GetCrewsResponse {
   data: Crew[];
   message?: string;
 }
+
+export interface UpdateCrewRequest {
+  crew_id: number;
+  name: string;
+  crew_role_id: number;
+  phone: string;
+  badge_number: string;
+  badge_expiry?: string | null;
+  email?: string | null;
+  employee_no?: string | null;
+  id_number?: string | null;
+}
+
+export interface UpdateCrewResponse {
+  success: boolean;
+  message: string;
+  data?: Crew;
+}
