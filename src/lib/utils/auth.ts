@@ -70,6 +70,7 @@ export const authOptions: NextAuthOptions = {
             stage: data.user.stage,
             printer: data.user.printer,
             company_template: data.company_template,
+            rights: data.user.rights,
           };
         } catch (error) {
           console.error('Authentication error:', error);
@@ -117,6 +118,7 @@ export const authOptions: NextAuthOptions = {
         token.printer = user.printer;
         token.username = user.username;
         token.company_template = user.company_template;
+        token.rights = user.rights;
         // Set token expiry to 1 hour from now (shorter for security)
         token.expiresAt = Date.now() + 60 * 60 * 1000;
         // Set refresh token expiry to 7 days
@@ -158,6 +160,7 @@ export const authOptions: NextAuthOptions = {
         session.user.stage = token.stage;
         session.user.printer = token.printer;
         session.user.username = token.username || '';
+        session.user.rights = token.rights;
         // expose company template at the top-level session (not in user)
         if (token.company_template) {
           (session as unknown as { company_template?: CompanyTemplateResponse }).company_template =

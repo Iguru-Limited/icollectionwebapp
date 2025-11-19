@@ -1,45 +1,61 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, Users, Car,  BookOpenCheck } from 'lucide-react';
+import { Wallet, Users, Car, BookOpenCheck } from 'lucide-react';
 
 type Tile = {
   title: string;
   href: string;
   icon: React.ReactNode;
-  bgClass: string; // Tailwind background color for the icon circle
+  bgClass: string;
+  rightName: string; // Maps to right_name from API
 };
 
 export default function HomeTiles() {
   const router = useRouter();
+  const { data: session } = useSession();
 
-  const tiles: Tile[] = [
+  const allTiles: Tile[] = [
     {
       title: 'Collection',
       href: '/user/collection',
       icon: <Wallet className="w-6 h-6 text-white" />,
-      bgClass: 'bg-purple-700', // project uses purple accents
+      bgClass: 'bg-purple-700',
+      rightName: 'collection',
     },
     {
       title: 'Crew',
       href: '/user/crews',
       icon: <Users className="w-6 h-6 text-white" />,
       bgClass: 'bg-red-600',
+      rightName: 'manage_crew',
     },
     {
       title: 'Assign Vehicle',
       href: '/user/assign',
       icon: <BookOpenCheck className="w-6 h-6 text-white" />,
       bgClass: 'bg-green-600',
+      rightName: 'assign_crew',
     },
     {
       title: 'Vehicle',
       href: '/user/vehicles',
       icon: <Car className="w-6 h-6 text-white" />,
       bgClass: 'bg-yellow-500',
+      rightName: 'view_vehicles',
     },
   ];
+
+  // Filter tiles based on user rights
+  const tiles = allTiles.filter((tile) => {
+    const userRights = session?.user?.rights;
+    // If no rights array exists, show all tiles (backward compatibility)
+    if (!userRights || userRights.length === 0) return true;
+    // Check if the user has the required right_name
+    return userRights.some((right) => right.right_name === tile.rightName);
+  });
 
   return (
     <section>
