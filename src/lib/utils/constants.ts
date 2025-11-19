@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
   LIST_CREW:'/api/crew-detail/list.php',
   UPDATE_CREW:'/api/crew-detail/manage.php',
   LIST_CREW_ROLE:'/api/app-roles/list.php',
+  DASHBOARD_STATS:'/api/dashboards/list.php',
 } as const;
 
 export const APP_CONFIG = {
