@@ -1,0 +1,29 @@
+// Crew related types
+export interface CrewRole {
+  crew_role_id: string;
+  role_name: string;
+}
+
+export interface Crew {
+  crew_id: string;
+  name: string;
+  phone: string;
+  badge_number: string;
+  crew_role_id: string;
+  role_name: string;
+  badge_expiry: string | null;
+  email: string | null;
+  employee_no: string | null;
+  id_number: string | null;
+  type: 'crew';
+}
+
+export interface GetCrewsRequest {
+  company_id: number;
+}
+
+export interface GetCrewsResponse {
+  success: boolean;
+  data: Crew[];
+  message?: string;
+}
