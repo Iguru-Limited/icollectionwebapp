@@ -41,7 +41,6 @@ export default function CollectionPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const selectedVehicleId = useAppStore((s) => s.selectedVehicleId);
-  const setSelectedVehicleId = useAppStore((s) => s.setSelectedVehicleId);
   const template = useCompanyTemplateStore((s) => s.template);
   const setTemplate = useCompanyTemplateStore((s) => s.setTemplate);
   const { data: tplData, isLoading: tplLoading, error: tplError } = useCompanyTemplate();
@@ -76,14 +75,40 @@ export default function CollectionPage() {
   // Get the selected vehicle
   const selectedVehicle = template?.vehicles.find((v) => v.vehicle_id === selectedVehicleId);
 
-  // If no vehicle selected, show the vehicle table for selection
+  // Pre-compute collection defaults & types so hooks stay top-level
+  const collectionDefaults = template?.company_collection_defaults || [];
+  const collectionTypes = Array.from(
+    new Set(collectionDefaults.map((field) => field.collection.title)),
+  );
+
+  // Fetch today's collections total for this vehicle ONCE per (vehicleId, companyId, date)
+  const lastFetchKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    const companyId = session?.user?.company?.company_id;
+    if (!selectedVehicleId || !companyId) return;
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    const ymd = `${y}-${m}-${d}`;
+    const key = `${selectedVehicleId}-${companyId}-${ymd}`;
+    if (lastFetchKeyRef.current === key) return; // prevent duplicate calls
+    lastFetchKeyRef.current = key;
+    fetchReport(Number(selectedVehicleId), ymd);
+  }, [selectedVehicleId, session?.user?.company?.company_id, fetchReport]);
+
+  const todaysTotal = useMemo(() => {
+    const rows = reportData?.data?.rows ?? [];
+    return rows.reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0);
+  }, [reportData]);
+
+  // If no vehicle selected, show the vehicle table for selection (non-conditional hooks above)
   if (!selectedVehicle) {
     const vehicles = (template?.vehicles || []).map((v) => ({
       vehicle_id: v.vehicle_id,
       number_plate: v.number_plate,
       seats: v.seats,
     }));
-
     return (
       <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
         <div className="hidden md:block">
@@ -91,7 +116,12 @@ export default function CollectionPage() {
         </div>
         <div className="container mx-auto px-4 py-4 pb-24 max-w-screen-xl">
           <div className="flex items-center mb-6">
-            <Button variant="ghost" size="icon" onClick={() => router.push('/user')} className="mr-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push('/user')}
+              className="mr-3"
+            >
               <ArrowLeft className="w-5 h-5 text-gray-700" />
             </Button>
             <h1 className="text-3xl font-bold text-gray-700">Select Vehicle for Collection</h1>
@@ -102,7 +132,9 @@ export default function CollectionPage() {
             <Card className="p-8 text-center text-red-600">Failed to load vehicles</Card>
           ) : (
             <Card className="p-8 text-center text-gray-500">
-              <div className="animate-pulse">{tplLoading ? 'Loading vehicles...' : 'Preparing vehicles...'}</div>
+              <div className="animate-pulse">
+                {tplLoading ? 'Loading vehicles...' : 'Preparing vehicles...'}
+              </div>
             </Card>
           )}
         </div>
@@ -113,13 +145,6 @@ export default function CollectionPage() {
     );
   }
 
-  // Get company collection defaults for the popup
-  const collectionDefaults = template?.company_collection_defaults || [];
-
-  // Group collection defaults by collection title
-  const collectionTypes = Array.from(
-    new Set(collectionDefaults.map((field) => field.collection.title)),
-  );
 
   const addCollection = () => {
     const newCollection: AdditionalCollection = {
@@ -145,26 +170,6 @@ export default function CollectionPage() {
     0,
   );
 
-  // Fetch today's collections total for this vehicle ONCE per (vehicleId, companyId, date)
-  const lastFetchKeyRef = useRef<string | null>(null);
-  useEffect(() => {
-    const companyId = session?.user?.company?.company_id;
-    if (!selectedVehicleId || !companyId) return;
-    const today = new Date();
-    const y = today.getFullYear();
-    const m = String(today.getMonth() + 1).padStart(2, '0');
-    const d = String(today.getDate()).padStart(2, '0');
-    const ymd = `${y}-${m}-${d}`;
-    const key = `${selectedVehicleId}-${companyId}-${ymd}`;
-    if (lastFetchKeyRef.current === key) return; // prevent duplicate calls
-    lastFetchKeyRef.current = key;
-    fetchReport(Number(selectedVehicleId), ymd);
-  }, [selectedVehicleId, session?.user?.company?.company_id, fetchReport]);
-
-  const todaysTotal = useMemo(() => {
-    const rows = reportData?.data?.rows ?? [];
-    return rows.reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0);
-  }, [reportData]);
 
   const handleProcessCollection = async (shouldPrint: boolean = true) => {
     // Validate session

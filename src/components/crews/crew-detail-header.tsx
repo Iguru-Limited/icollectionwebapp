@@ -24,25 +24,25 @@ export function CrewDetailHeader({ crew, active, onSelect }: CrewDetailHeaderPro
         </div>
       </div>
 
-      <div className="mt-6 w-full max-w-xs flex justify-center">
+      <div className="mt-6 w-full max-w-md grid grid-cols-3 gap-3">
         <Button
           onClick={() => onSelect('bio')}
-          className={`rounded-2xl px-8 w-40 bg-purple-700 hover:bg-purple-800 text-white`}
+          aria-current={active === 'bio'}
+          className={`rounded-2xl px-4 py-6 text-sm font-semibold transition-colors ${active === 'bio' ? 'bg-purple-700 text-white hover:bg-purple-800' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}
         >
           Bio data
         </Button>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-4 w-full max-w-md">
         <Button
           onClick={() => onSelect('actions')}
-          className="rounded-2xl bg-purple-700 hover:bg-purple-800 text-white"
+          aria-current={active === 'actions'}
+          className={`rounded-2xl px-4 py-6 text-sm font-semibold transition-colors ${active === 'actions' ? 'bg-purple-700 text-white hover:bg-purple-800' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}
         >
           Actions
         </Button>
         <Button
           onClick={() => onSelect('history')}
-          className="rounded-2xl bg-purple-700 hover:bg-purple-800 text-white"
+          aria-current={active === 'history'}
+          className={`rounded-2xl px-4 py-6 text-sm font-semibold transition-colors ${active === 'history' ? 'bg-purple-700 text-white hover:bg-purple-800' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}
         >
           History
         </Button>
