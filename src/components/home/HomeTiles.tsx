@@ -49,7 +49,7 @@ export default function HomeTiles() {
     },
     {
       title: 'Vehicle',
-      href: '/user/vehicles',
+      href: '',
       icon: <TruckIcon className="w-6 h-6 text-white" />,
       bgClass: 'bg-yellow-500',
       rightName: 'view_vehicles',

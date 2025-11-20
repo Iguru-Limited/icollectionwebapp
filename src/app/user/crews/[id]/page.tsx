@@ -1,7 +1,7 @@
 "use client";
 import { use, useState } from 'react';
 import { PageContainer, PageHeader } from '@/components/layout';
-import { CrewDetailHeader } from '@/components/crews';
+import { CrewDetailHeader, CrewBioData } from '@/components/crews';
 import { useCrew, useCrewHistory } from '@/hooks/crew';
 import { Spinner } from '@/components/ui/spinner';
 import { Card } from '@/components/ui/card';
@@ -56,10 +56,7 @@ export default function CrewProfilePage({ params }: CrewProfilePageProps) {
           crew={crew}
           active={activeSection}
           onSelect={(key) => {
-            if (key === 'bio') {
-              window.location.href = `/user/crews/${crew.crew_id}/bio`;
-              return;
-            }
+            // Show sections inline on this page
             setActiveSection(key);
             if (key === 'history') {
               // Force a fresh fetch every click, even if already active
@@ -69,11 +66,7 @@ export default function CrewProfilePage({ params }: CrewProfilePageProps) {
         />
 
         <div className="mt-6">
-          {activeSection === 'bio' && (
-            <div className="text-center text-gray-500 py-10">
-              Click Bio data button to view full details
-            </div>
-          )}
+          {activeSection === 'bio' && <CrewBioData crew={crew} />}
           {activeSection === 'actions' && (
             <div className="text-center text-gray-500 py-10">
               Actions will appear here
