@@ -46,6 +46,24 @@ export default function CrewCategoriesPage() {
               </Card>
             );
           })}
+          {/* Search card */}
+          <Card
+            role="button"
+            tabIndex={0}
+            onClick={() => router.push('/user/crews/search')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                router.push('/user/crews/search');
+              }
+            }}
+            className="cursor-pointer rounded-full border-dashed border-gray-300 hover:border-gray-400 hover:shadow-sm transition"
+          >
+            <CardContent className="py-4 px-6 flex items-center justify-between">
+              <span className="font-semibold text-gray-700 text-lg">Search</span>
+              <span className="text-sm text-gray-400">Open</span>
+            </CardContent>
+          </Card>
           {roleStats.length === 0 && (
             <div className="text-center text-gray-500 py-12">No crew role statistics available.</div>
           )}
