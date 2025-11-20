@@ -70,3 +70,14 @@ export interface GetCrewHistoryResponse {
   data: CrewAssignmentHistoryEntry[];
   message?: string;
 }
+
+// Assign vehicle types
+export type AssignVehiclePayload = {
+  vehicle_id: number;
+  crew_id: number | number[];
+};
+
+export interface AssignVehicleResponse {
+  message: string;
+  success?: boolean;
+}
