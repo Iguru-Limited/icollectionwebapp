@@ -13,7 +13,7 @@ export default function CrewProfilePage({ params }: CrewProfilePageProps) {
   const { id } = use(params);
   const { crew, isLoading, error } = useCrew(id);
   const [activeSection, setActiveSection] = useState<'bio' | 'actions' | 'history'>('bio');
-  const { data: historyData, isLoading: historyLoading } = useCrewHistory(id, activeSection === 'history');
+  const { data: historyData, isLoading: historyLoading, refetch: refetchHistory } = useCrewHistory(id, activeSection === 'history');
 
   if (isLoading) {
     return (
@@ -58,8 +58,12 @@ export default function CrewProfilePage({ params }: CrewProfilePageProps) {
           onSelect={(key) => {
             if (key === 'bio') {
               window.location.href = `/user/crews/${crew.crew_id}/bio`;
-            } else {
-              setActiveSection(key);
+              return;
+            }
+            setActiveSection(key);
+            if (key === 'history') {
+              // Force a fresh fetch every click, even if already active
+              refetchHistory();
             }
           }}
         />
