@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -196,21 +196,22 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={handleDialogClose}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleAssign}
-                disabled={assignMutation.isPending || !selectedCrewId}
-              >
-                {assignMutation.isPending ? 'Assigning...' : 'Assign'}
-              </Button>
-            </div>
           </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={handleDialogClose}
+              disabled={assignMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAssign}
+              disabled={assignMutation.isPending || !selectedCrewId}
+            >
+              {assignMutation.isPending ? 'Assigning...' : 'Assign'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
