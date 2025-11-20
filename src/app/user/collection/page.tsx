@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { PrintService } from '@/lib/utils/printService';
 import { toast } from 'sonner';
 import { useSaveReceipt } from '@/hooks/receipt/useSaveReceipt';
@@ -39,8 +39,10 @@ type PaymentMethod = 'cash' | 'mpesa' | 'mpesa_prompt';
 
 export default function CollectionPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const selectedVehicleId = useAppStore((s) => s.selectedVehicleId);
+  const setSelectedVehicleId = useAppStore((s) => s.setSelectedVehicleId);
   const template = useCompanyTemplateStore((s) => s.template);
   const setTemplate = useCompanyTemplateStore((s) => s.setTemplate);
   const { data: tplData, isLoading: tplLoading, error: tplError } = useCompanyTemplate();
@@ -61,6 +63,16 @@ export default function CollectionPage() {
       setTemplate(tplData);
     }
   }, [template, tplData, setTemplate]);
+
+  // If coming from HomeTiles with clear flag, reset selected vehicle
+  useEffect(() => {
+    const clearFlag = searchParams.get('clear');
+    if (clearFlag === '1') {
+      setSelectedVehicleId(null);
+    }
+    // Run only on mount for initial URL
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Reset helper flags when switching method
   useEffect(() => {

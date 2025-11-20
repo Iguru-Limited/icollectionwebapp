@@ -28,7 +28,7 @@ export default function HomeTiles() {
   const allTiles: Tile[] = [
     {
       title: 'Collection',
-      href: '/user/collection',
+      href: '/user/collection?clear=1',
       icon: <WalletIcon className="w-6 h-6 text-white" />,
       bgClass: 'bg-purple-700',
       rightName: 'collection',
