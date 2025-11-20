@@ -141,12 +141,31 @@ export default function AssignPage() {
                     value={query}
                     onChange={(e) => {
                       const val = e.target.value;
-                      setCrewQueries(prev => prev.map((q, i) => i === idx ? val : q));
-                      setSelectedCrewIds(prev => prev.map((id, i) => i === idx ? '' : id));
-                      setCrewMenusOpen(prev => prev.map((open, i) => i === idx ? true : open));
+                      const newQueries = [...crewQueries];
+                      newQueries[idx] = val;
+                      setCrewQueries(newQueries);
+                      
+                      // Only clear selection if user is actually typing (not just selecting)
+                      const newIds = [...selectedCrewIds];
+                      newIds[idx] = '';
+                      setSelectedCrewIds(newIds);
+                      
+                      const newMenus = [...crewMenusOpen];
+                      newMenus[idx] = true;
+                      setCrewMenusOpen(newMenus);
                     }}
-                    onFocus={() => setCrewMenusOpen(prev => prev.map((open, i) => i === idx ? true : open))}
-                    onBlur={() => setTimeout(() => setCrewMenusOpen(prev => prev.map((open, i) => i === idx ? false : open)), 120)}
+                    onFocus={() => {
+                      const newMenus = [...crewMenusOpen];
+                      newMenus[idx] = true;
+                      setCrewMenusOpen(newMenus);
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => {
+                        const newMenus = [...crewMenusOpen];
+                        newMenus[idx] = false;
+                        setCrewMenusOpen(newMenus);
+                      }, 150);
+                    }}
                     placeholder="search by name"
                     className="h-12 rounded-full pl-4 pr-4 text-base md:text-lg placeholder:text-black"
                   />
@@ -163,9 +182,21 @@ export default function AssignPage() {
                           className="px-3 py-2 cursor-pointer hover:bg-purple-50 flex justify-between"
                           onMouseDown={(e) => {
                             e.preventDefault();
-                            setSelectedCrewIds(prev => prev.map((id, i) => i === idx ? c.crew_id : id));
-                            setCrewQueries(prev => prev.map((q, i) => i === idx ? c.name : q));
-                            setCrewMenusOpen(prev => prev.map((open, i) => i === idx ? false : open));
+                            
+                            // Update selected crew ID
+                            const newIds = [...selectedCrewIds];
+                            newIds[idx] = c.crew_id;
+                            setSelectedCrewIds(newIds);
+                            
+                            // Update query with crew name
+                            const newQueries = [...crewQueries];
+                            newQueries[idx] = c.name;
+                            setCrewQueries(newQueries);
+                            
+                            // Close menu
+                            const newMenus = [...crewMenusOpen];
+                            newMenus[idx] = false;
+                            setCrewMenusOpen(newMenus);
                           }}
                         >
                           <span className="font-medium">{c.name}</span>
