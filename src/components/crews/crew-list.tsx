@@ -2,7 +2,6 @@ import type { Crew } from '@/types/crew';
 import { useRouter } from 'next/navigation';
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface CrewListProps {
@@ -52,12 +51,9 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[60px]"></TableHead>
+            <TableHead className="w-[60px]">Thumbnail</TableHead>
             <TableHead>Name</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Phone</TableHead>
             <TableHead>Badge No.</TableHead>
-            <TableHead>Employee No.</TableHead>
             <TableHead>Badge Expiry</TableHead>
           </TableRow>
         </TableHeader>
@@ -76,12 +72,7 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
                 </Avatar>
               </TableCell>
               <TableCell className="font-medium">{crew.name}</TableCell>
-              <TableCell>
-                <Badge variant="secondary">{crew.role_name}</Badge>
-              </TableCell>
-              <TableCell className="text-gray-600">{crew.phone || '-'}</TableCell>
               <TableCell className="font-mono text-sm">{crew.badge_number || '-'}</TableCell>
-              <TableCell className="text-gray-600">{crew.employee_no || '-'}</TableCell>
               <TableCell>
                 <span className={isExpired(crew.badge_expiry) ? 'text-red-600 font-semibold' : 'text-gray-900'}>
                   {formatDate(crew.badge_expiry)}

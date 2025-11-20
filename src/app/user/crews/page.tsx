@@ -13,6 +13,16 @@ export default function CrewsListPage() {
   const { data: rolesResponse, isLoading: rolesLoading } = useCrewRoles();
   const roles = rolesResponse?.data ?? [];
 
+  const allCount = crewsResponse?.data?.length ?? 0;
+  const roleCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    (crewsResponse?.data ?? []).forEach((c) => {
+      const key = c.role_name || 'UNKNOWN';
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    return counts;
+  }, [crewsResponse?.data]);
+
   const filtered = useMemo(() => {
     const crews = crewsResponse?.data ?? [];
     return crews.filter(c =>
@@ -39,6 +49,8 @@ export default function CrewsListPage() {
           onTabChange={setActive} 
           roles={roles}
           isLoading={rolesLoading}
+          roleCounts={roleCounts}
+          allCount={allCount}
         />
 
         {error ? (
