@@ -36,9 +36,11 @@ export default function AssignPage() {
   // Form state
   const [vehicleQuery, setVehicleQuery] = useState('');
   const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
+  const [vehicleMenuOpen, setVehicleMenuOpen] = useState(false);
 
   const [crewQueries, setCrewQueries] = useState<string[]>(['']);
   const [selectedCrewIds, setSelectedCrewIds] = useState<string[]>(['']);
+  const [crewMenusOpen, setCrewMenusOpen] = useState<boolean[]>([false]);
 
   const { mutateAsync: assignVehicle, isPending } = useAssignVehicle({
     onSuccess: (data) => {
@@ -94,19 +96,29 @@ export default function AssignPage() {
                 onChange={(e) => {
                   setVehicleQuery(e.target.value);
                   setSelectedVehicleId(null);
+                  setVehicleMenuOpen(true);
                 }}
+                onFocus={() => setVehicleMenuOpen(true)}
+                onBlur={() => setTimeout(() => setVehicleMenuOpen(false), 120)}
                 placeholder="search by name"
                 className="h-12 rounded-full pl-4 pr-4 text-base md:text-lg placeholder:text-black"
               />
-              {vehicleQuery && filteredVehicles.length > 0 && (
+              {selectedVehicleId && (
+                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs md:text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                  selected
+                </span>
+              )}
+              {vehicleMenuOpen && vehicleQuery && filteredVehicles.length > 0 && (
                 <ul className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-sm max-h-56 overflow-auto text-sm">
                   {filteredVehicles.map(v => (
                     <li
                       key={v.vehicle_id}
                       className="px-3 py-2 cursor-pointer hover:bg-purple-50 flex justify-between"
-                      onClick={() => {
+                      onMouseDown={(e) => {
+                        e.preventDefault();
                         setSelectedVehicleId(v.vehicle_id);
                         setVehicleQuery(v.number_plate);
+                        setVehicleMenuOpen(false);
                       }}
                     >
                       <span className="font-medium uppercase">{v.number_plate}</span>
@@ -116,9 +128,7 @@ export default function AssignPage() {
                 </ul>
               )}
             </div>
-            {selectedVehicleId && (
-              <div className="text-[11px] text-green-600">Vehicle selected.</div>
-            )}
+            {/* moved selected indicator into the input above */}
           </div>
 
           {/* Crew Selection */}
@@ -133,19 +143,29 @@ export default function AssignPage() {
                       const val = e.target.value;
                       setCrewQueries(prev => prev.map((q, i) => i === idx ? val : q));
                       setSelectedCrewIds(prev => prev.map((id, i) => i === idx ? '' : id));
+                      setCrewMenusOpen(prev => prev.map((open, i) => i === idx ? true : open));
                     }}
+                    onFocus={() => setCrewMenusOpen(prev => prev.map((open, i) => i === idx ? true : open))}
+                    onBlur={() => setTimeout(() => setCrewMenusOpen(prev => prev.map((open, i) => i === idx ? false : open)), 120)}
                     placeholder="search by name"
                     className="h-12 rounded-full pl-4 pr-4 text-base md:text-lg placeholder:text-black"
                   />
-                  {query && filteredCrews(idx).length > 0 && (
+                  {selectedCrewIds[idx] && (
+                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs md:text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                      selected
+                    </span>
+                  )}
+                  {crewMenusOpen[idx] && query && filteredCrews(idx).length > 0 && (
                     <ul className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-sm max-h-56 overflow-auto text-sm">
                       {filteredCrews(idx).map(c => (
                         <li
                           key={c.crew_id}
                           className="px-3 py-2 cursor-pointer hover:bg-purple-50 flex justify-between"
-                          onClick={() => {
+                          onMouseDown={(e) => {
+                            e.preventDefault();
                             setSelectedCrewIds(prev => prev.map((id, i) => i === idx ? c.crew_id : id));
                             setCrewQueries(prev => prev.map((q, i) => i === idx ? c.name : q));
+                            setCrewMenusOpen(prev => prev.map((open, i) => i === idx ? false : open));
                           }}
                         >
                           <span className="font-medium">{c.name}</span>
@@ -155,9 +175,7 @@ export default function AssignPage() {
                     </ul>
                   )}
                 </div>
-                {selectedCrewIds[idx] && (
-                  <div className="text-[11px] text-green-600">Crew selected.</div>
-                )}
+                {/* moved selected indicator into the input above */}
               </div>
             ))}
             <div className="flex justify-center">
@@ -169,6 +187,7 @@ export default function AssignPage() {
                   if (canAddAnotherCrew) {
                     setCrewQueries(prev => [...prev, '']);
                     setSelectedCrewIds(prev => [...prev, '']);
+                    setCrewMenusOpen(prev => [...prev, false]);
                   }
                 }}
                 disabled={!canAddAnotherCrew}
