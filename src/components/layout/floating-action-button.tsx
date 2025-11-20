@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import { LucideIcon } from 'lucide-react';
+import type { ComponentType, SVGProps } from 'react';
 
 interface FloatingActionButtonProps {
   href: string;
-  icon: LucideIcon;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
   label?: string;
 }
 
@@ -14,7 +14,7 @@ export function FloatingActionButton({ href, icon: Icon, label }: FloatingAction
       className="fixed right-4 bottom-24 rounded-full p-4 shadow-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors" 
       aria-label={label}
     >
-      <Icon size={18} />
+      <Icon className="w-5 h-5" />
     </Link>
   );
 }

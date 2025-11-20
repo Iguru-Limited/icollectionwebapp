@@ -1,4 +1,4 @@
-import { GalleryVerticalEnd } from 'lucide-react';
+import { PhotoIcon } from '@heroicons/react/24/outline';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ export function OTPForm({ className, ...props }: React.ComponentProps<'div'>) {
           <div className="flex flex-col items-center gap-2 text-center">
             <a href="#" className="flex flex-col items-center gap-2 font-medium">
               <div className="flex size-8 items-center justify-center rounded-md">
-                <GalleryVerticalEnd className="size-6" />
+                <PhotoIcon className="size-6" />
               </div>
               <span className="sr-only">Acme Inc.</span>
             </a>

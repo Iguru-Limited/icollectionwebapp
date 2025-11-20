@@ -4,13 +4,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft,
-  Search,
-  FileText,
-  Printer,
-  ChevronDown,
-  ChevronUp,
-} from 'lucide-react';
+  ArrowLeftIcon,
+  MagnifyingGlassIcon,
+  DocumentTextIcon,
+  PrinterIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -126,7 +126,7 @@ export default function VehicleReportPage() {
                 onClick={() => router.back()}
                 aria-label="Back"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeftIcon className="w-5 h-5" />
               </Button>
             </div>
             <div className="justify-self-center">
@@ -145,7 +145,7 @@ export default function VehicleReportPage() {
         {/* Collections Summary */}
         <Card className="rounded-2xl p-4 shadow-sm">
           <div className="flex items-center gap-2 text-gray-800 font-semibold text-xl mb-3">
-            <FileText className="w-4 h-4 text-purple-700" />
+            <DocumentTextIcon className="w-4 h-4 text-purple-700" />
             Collections Summary
           </div>
           <Separator className="my-2" />
@@ -164,9 +164,9 @@ export default function VehicleReportPage() {
         </Card>
 
         {/* Search */}
-        <InputGroup className="rounded-full border-purple-400 shadow-sm">
+          <InputGroup className="rounded-full border-purple-400 shadow-sm">
           <InputGroupAddon>
-            <Search className="text-purple-700" />
+            <MagnifyingGlassIcon className="w-4 h-4 text-purple-700" />
           </InputGroupAddon>
           <InputGroupInput
             placeholder="Search by receipt number or type..."
@@ -247,14 +247,14 @@ export default function VehicleReportPage() {
                               }
                             >
                               {isOpen ? (
-                                <ChevronUp className="w-3 h-3 md:mr-1" />
+                                <ChevronUpIcon className="w-3 h-3 md:mr-1" />
                               ) : (
-                                <ChevronDown className="w-3 h-3 md:mr-1" />
+                                <ChevronDownIcon className="w-3 h-3 md:mr-1" />
                               )}
                               <span className="hidden md:inline">{isOpen ? 'Hide' : 'Details'}</span>
                             </Button>
                             <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
-                              <Printer className="w-3 h-3 md:mr-1" />
+                              <PrinterIcon className="w-3 h-3 md:mr-1" />
                               <span className="hidden md:inline">Reprint</span>
                             </Button>
                           </div>

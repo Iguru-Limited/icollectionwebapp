@@ -1,6 +1,12 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Home, PieChart, Car, User, LogOut } from 'lucide-react';
+import {
+  HomeIcon,
+  ChartPieIcon,
+  TruckIcon,
+  UserIcon,
+  ArrowRightStartOnRectangleIcon,
+} from '@heroicons/react/24/outline';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 
@@ -9,10 +15,10 @@ export function TopNavigation() {
   const pathname = usePathname();
 
   const navItems = [
-    { icon: Home, label: 'Home', href: '/user' },
-    { icon: PieChart, label: 'Report', href: '/user/reports' },
-    { icon: Car, label: 'Vehicle', href: '/user/vehicles' },
-    { icon: User, label: 'Account', href: '/user/account' },
+    { icon: HomeIcon, label: 'Home', href: '/user' },
+    { icon: ChartPieIcon, label: 'Report', href: '/user/reports' },
+    { icon: TruckIcon, label: 'Vehicle', href: '/user/vehicles' },
+    { icon: UserIcon, label: 'Account', href: '/user/account' },
   ];
 
   const handleLogout = async () => {
@@ -63,7 +69,7 @@ export function TopNavigation() {
             whileTap={{ scale: 0.95 }}
             title="Logout"
           >
-            <LogOut className="w-5 h-5 md:w-6 md:h-6" />
+            <ArrowRightStartOnRectangleIcon className="w-5 h-5 md:w-6 md:h-6" />
             <span className="text-xs md:text-sm font-medium">Logout</span>
           </motion.button>
         </div>

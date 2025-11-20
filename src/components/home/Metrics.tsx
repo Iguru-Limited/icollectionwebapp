@@ -1,5 +1,5 @@
 'use client';
-import { Bus, Users } from 'lucide-react';
+import { TruckIcon, UsersIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -56,7 +56,7 @@ export default function Metrics() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
-                    <Bus className="w-6 h-6 text-white" />
+                    <TruckIcon className="w-6 h-6 text-white" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Vehicles</p>
@@ -84,7 +84,7 @@ export default function Metrics() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center">
-                    <Users className="w-6 h-6 text-white" />
+                    <UsersIcon className="w-6 h-6 text-white" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Crew</p>

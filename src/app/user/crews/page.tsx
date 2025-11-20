@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from 'react';
-import { UserPlus } from 'lucide-react';
+import { UserPlusIcon } from '@heroicons/react/24/outline';
 import { PageContainer, PageHeader, SearchBar, FloatingActionButton } from '@/components/layout';
 import { CrewList, CrewTabs } from '@/components/crews';
 import { useCrews, useCrewRoles } from '@/hooks/crew';
@@ -61,7 +61,7 @@ export default function CrewsListPage() {
           <CrewList crews={filtered} isLoading={isLoading} />
         )}
 
-        <FloatingActionButton href="/user/crews/add" icon={UserPlus} label="Add crew" />
+        <FloatingActionButton href="/user/crews/add" icon={UserPlusIcon} label="Add crew" />
       </main>
     </PageContainer>
   );

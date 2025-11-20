@@ -3,7 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, Users, Car, BookOpenCheck } from 'lucide-react';
+import {
+  WalletIcon,
+  UsersIcon,
+  TruckIcon,
+  BookOpenIcon,
+} from '@heroicons/react/24/outline';
 
 type Tile = {
   title: string;
@@ -21,28 +26,28 @@ export default function HomeTiles() {
     {
       title: 'Collection',
       href: '/user/collection',
-      icon: <Wallet className="w-6 h-6 text-white" />,
+      icon: <WalletIcon className="w-6 h-6 text-white" />,
       bgClass: 'bg-purple-700',
       rightName: 'collection',
     },
     {
       title: 'Crew',
       href: '/user/crews',
-      icon: <Users className="w-6 h-6 text-white" />,
+      icon: <UsersIcon className="w-6 h-6 text-white" />,
       bgClass: 'bg-red-600',
       rightName: 'assign_crew', // Uses assign_crew right since it manages crew assignments
     },
     {
       title: 'Assign Vehicle',
       href: '/user/assign',
-      icon: <BookOpenCheck className="w-6 h-6 text-white" />,
+      icon: <BookOpenIcon className="w-6 h-6 text-white" />,
       bgClass: 'bg-green-600',
       rightName: 'assign_crew', // Same right - can assign vehicles to crew
     },
     {
       title: 'Vehicle',
       href: '/user/vehicles',
-      icon: <Car className="w-6 h-6 text-white" />,
+      icon: <TruckIcon className="w-6 h-6 text-white" />,
       bgClass: 'bg-yellow-500',
       rightName: 'view_vehicles',
     },

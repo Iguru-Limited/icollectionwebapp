@@ -1,5 +1,5 @@
 'use client';
-import { Car, FileText, SquarePen } from 'lucide-react';
+import { TruckIcon, DocumentTextIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -62,7 +62,7 @@ export function VehicleTable({ vehicles, isLoading = false }: VehicleTableProps)
               <TableCell className="font-large text-gray-600 text-xl md:text-2xl">{index + 1}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Car className="w-5 h-5 md:w-6 md:h-6 text-black-600" />
+                  <TruckIcon className="w-5 h-5 md:w-6 md:h-6 text-black-600" />
                   <span className="font-bold text-xl md:text-2xl text-gray-800 uppercase">
                     {vehicle.number_plate}
                   </span>
@@ -82,7 +82,7 @@ export function VehicleTable({ vehicles, isLoading = false }: VehicleTableProps)
                       router.push('/user/collection');
                     }}
                   >
-                    <SquarePen className="w-4 h-4 md:w-5 md:h-5 md:mr-1" />
+                    <PencilSquareIcon className="w-4 h-4 md:w-5 md:h-5 md:mr-1" />
                     <span className="hidden md:inline">Receipt</span>
                   </Button>
                   <Button
@@ -90,7 +90,7 @@ export function VehicleTable({ vehicles, isLoading = false }: VehicleTableProps)
                     className="bg-purple-600 hover:bg-purple-700 text-base md:text-2xl"
                     onClick={() => router.push(`/user/report/${vehicle.vehicle_id}`)}
                   >
-                    <FileText className="w-4 h-4 md:w-5 md:h-5 md:mr-1" />
+                    <DocumentTextIcon className="w-4 h-4 md:w-5 md:h-5 md:mr-1" />
                     <span className="hidden md:inline">Transactions</span>
                   </Button>
                 </div>

@@ -1,13 +1,13 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Home, PieChart, Car, User } from 'lucide-react';
+import { HomeIcon, ChartPieIcon, TruckIcon, UserIcon } from '@heroicons/react/24/outline';
 import { useRouter, usePathname } from 'next/navigation';
 
 const navItems = [
-  { icon: Home, label: 'Home', href: '/user' },
-  { icon: PieChart, label: 'Report', href: '/user/reports' },
-  { icon: Car, label: 'Vehicle', href: '/user/vehicles' },
-  { icon: User, label: 'Account', href: '/user/account' },
+  { icon: HomeIcon, label: 'Home', href: '/user' },
+  { icon: ChartPieIcon, label: 'Report', href: '/user/reports' },
+  { icon: TruckIcon, label: 'Vehicle', href: '/user/vehicles' },
+  { icon: UserIcon, label: 'Account', href: '/user/account' },
 ];
 
 export function BottomNavigation() {
