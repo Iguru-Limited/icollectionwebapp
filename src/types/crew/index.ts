@@ -11,12 +11,15 @@ export interface Crew {
   phone: string;
   badge_number: string;
   crew_role_id: string;
-  role_name: string;
+  role_name: string | null;
   badge_expiry: string | null;
   email: string | null;
   employee_no: string | null;
   id_number: string | null;
   type: 'crew';
+  vehicle_id: string | null;
+  vehicle_plate: string | null;
+  vehicle_type_name: string | null;
 }
 
 export interface GetCrewsRequest {
@@ -69,4 +72,15 @@ export interface GetCrewHistoryResponse {
   success: boolean;
   data: CrewAssignmentHistoryEntry[];
   message?: string;
+}
+
+// Assign vehicle types
+export type AssignVehiclePayload = {
+  vehicle_id: number;
+  crew_id: number | number[];
+};
+
+export interface AssignVehicleResponse {
+  message: string;
+  success?: boolean;
 }

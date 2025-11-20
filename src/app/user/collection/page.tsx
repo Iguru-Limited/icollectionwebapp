@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useAppStore } from '@/store/appStore';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { useCompanyTemplate } from '@/hooks/useCompanyTemplate';
-import { ArrowLeft, Plus, X } from 'lucide-react';
+import { ArrowLeftIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { IoReceiptOutline } from 'react-icons/io5';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { PrintService } from '@/lib/utils/printService';
 import { toast } from 'sonner';
 import { useSaveReceipt } from '@/hooks/receipt/useSaveReceipt';
@@ -39,8 +39,10 @@ type PaymentMethod = 'cash' | 'mpesa' | 'mpesa_prompt';
 
 export default function CollectionPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const selectedVehicleId = useAppStore((s) => s.selectedVehicleId);
+  const setSelectedVehicleId = useAppStore((s) => s.setSelectedVehicleId);
   const template = useCompanyTemplateStore((s) => s.template);
   const setTemplate = useCompanyTemplateStore((s) => s.setTemplate);
   const { data: tplData, isLoading: tplLoading, error: tplError } = useCompanyTemplate();
@@ -61,6 +63,16 @@ export default function CollectionPage() {
       setTemplate(tplData);
     }
   }, [template, tplData, setTemplate]);
+
+  // If coming from HomeTiles with clear flag, reset selected vehicle
+  useEffect(() => {
+    const clearFlag = searchParams.get('clear');
+    if (clearFlag === '1') {
+      setSelectedVehicleId(null);
+    }
+    // Run only on mount for initial URL
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Reset helper flags when switching method
   useEffect(() => {
@@ -122,7 +134,7 @@ export default function CollectionPage() {
               onClick={() => router.push('/user')}
               className="mr-3"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
+              <ArrowLeftIcon className="w-5 h-5 text-gray-700" />
             </Button>
             <h1 className="text-3xl font-bold text-gray-700">Select Vehicle for Collection</h1>
           </div>
@@ -334,7 +346,7 @@ export default function CollectionPage() {
         {/* Header */}
         <div className="flex items-center mb-6">
           <Button variant="ghost" size="icon" onClick={() => router.push('/user')} className="mr-3">
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
+            <ArrowLeftIcon className="w-5 h-5 text-gray-700" />
           </Button>
           <h1 className="text-3xl font-bold text-gray-700">
             {selectedVehicle?.number_plate || 'Vehicle'} NEW COLLECTION
@@ -390,7 +402,7 @@ export default function CollectionPage() {
                     className="rounded-full w-12 h-12 bg-purple-600 text-white hover:bg-purple-700"
                     onClick={addCollection}
                   >
-                    <Plus className="w-6 h-6" />
+                    <PlusIcon className="w-6 h-6" />
                   </Button>
                 </div>
                 <h3 className="text-md font-medium text-gray-700 mb-1">No collections added</h3>
@@ -407,7 +419,7 @@ export default function CollectionPage() {
                     onClick={addCollection}
                     aria-label="Add collection"
                   >
-                    <Plus className="w-6 h-6" />
+                    <PlusIcon className="w-6 h-6" />
                   </Button>
                 </div>
                 {/* Table-like header */}
@@ -463,7 +475,7 @@ export default function CollectionPage() {
                           className="text-purple-700 hover:text-purple-800 hover:bg-purple-50"
                           aria-label="Remove"
                         >
-                          <X className="w-9 h-9" />
+                          <XMarkIcon className="w-9 h-9" />
                         </Button>
                       </div>
                     </div>

@@ -5,7 +5,6 @@ import { useEffect } from 'react';
 import { BottomNavigation } from '@/components/ui/bottom-navigation';
 import { TopNavigation } from '@/components/ui/top-navigation';
 import HomeTiles from '@/components/home/HomeTiles';
-import Metrics from '@/components/home/Metrics';
 
 export default function UserPage() {
   const { data: session } = useSession();
@@ -28,9 +27,7 @@ export default function UserPage() {
         <TopNavigation />
       </div>
 
-      <div className="container mx-auto px-4 py-6 pb-20 md:pb-6 space-y-6 max-w-screen-xl">
-        {/* Dashboard metrics */}
-        <Metrics />
+      <div className="container mx-auto px-4 py-6 pb-20 md:pb-6 space-y-6 max-w-screen-xl">    
 
         {/* Quick Actions tiles */}
         <HomeTiles />

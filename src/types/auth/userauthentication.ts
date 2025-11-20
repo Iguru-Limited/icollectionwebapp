@@ -40,6 +40,7 @@ export interface AuthResponse {
   refresh_token: string;
   refresh_expires_at: string;
   company_template?: import('@/types/company-template').CompanyTemplateResponse;
+  stats?: AuthStats; // newly added stats from login response
   role: string;
   user: User;
 }
@@ -71,6 +72,34 @@ export interface NextAuthUser {
   printer: PrinterDetails;
   company_template?: import('@/types/company-template').CompanyTemplateResponse;
   rights?: UserRight[];
+  stats?: AuthStats;
+}
+
+// Stats types from login response
+export interface VehicleTypeStat {
+  type_name: string;
+  count: string | number;
+}
+
+export interface VehicleStats {
+  total_vehicles: number;
+  types: VehicleTypeStat[];
+}
+
+export interface CrewRoleStat {
+  crew_role_id: string;
+  role_name: string;
+  count: string | number;
+}
+
+export interface CrewStats {
+  total_crew: number;
+  roles: CrewRoleStat[];
+}
+
+export interface AuthStats {
+  vehicles: VehicleStats;
+  crew: CrewStats;
 }
 
 // Extend NextAuth types
@@ -103,6 +132,7 @@ declare module 'next-auth' {
       rights?: UserRight[];
     };
     company_template?: import('@/types/company-template').CompanyTemplateResponse;
+    stats?: AuthStats;
   }
 }
 
@@ -121,5 +151,6 @@ declare module 'next-auth/jwt' {
     lastActivity?: number;
     company_template?: import('@/types/company-template').CompanyTemplateResponse;
     rights?: UserRight[];
+    stats?: AuthStats;
   }
 }

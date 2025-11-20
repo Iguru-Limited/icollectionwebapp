@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
-import { Search, Car } from 'lucide-react';
+import { MagnifyingGlassIcon, TruckIcon } from '@heroicons/react/24/outline';
 import { Input } from '@/components/ui/input';
 import { TopNavigation } from '@/components/ui/top-navigation';
 import { BottomNavigation } from '@/components/ui/bottom-navigation';
@@ -46,7 +46,7 @@ export default function VehiclesPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-purple-100 text-black-600">
-              <Car className="w-5 h-5" />
+              <TruckIcon className="w-5 h-5" />
             </div>
             <div>
               <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Vehicle Fleet</h1>
@@ -60,7 +60,7 @@ export default function VehiclesPage() {
 
         {/* Search Bar */}
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
           <Input
             placeholder="Search by plate ..."
             value={searchQuery}

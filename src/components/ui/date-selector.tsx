@@ -1,6 +1,5 @@
 'use client';
-
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -64,7 +63,7 @@ export function DateSelector({ selectedDate, onDateChange, className }: DateSele
           className="rounded-full hover:bg-purple-50"
           onClick={goToPreviousDay}
         >
-          <ChevronLeft className="w-5 h-5 text-purple-600" />
+          <ChevronLeftIcon className="w-5 h-5 text-purple-600" />
         </Button>
 
         <div className="flex-1 text-center">
@@ -80,7 +79,7 @@ export function DateSelector({ selectedDate, onDateChange, className }: DateSele
           className="rounded-full hover:bg-purple-50"
           onClick={goToNextDay}
         >
-          <ChevronRight className="w-5 h-5 text-purple-600" />
+          <ChevronRightIcon className="w-5 h-5 text-purple-600" />
         </Button>
       </div>
     </Card>

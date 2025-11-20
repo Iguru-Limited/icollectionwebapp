@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, Receipt as ReceiptIcon } from 'lucide-react';
+import { EyeIcon, ReceiptPercentIcon } from '@heroicons/react/24/outline';
 import { Card } from '@/components/ui/card';
 import { TopNavigation } from '@/components/ui/top-navigation';
 import { BottomNavigation } from '@/components/ui/bottom-navigation';
@@ -146,11 +146,11 @@ export default function Reports() {
                           size="sm"
                           className="text-xl"
                         >
-                          <Eye className="w-4 h-4 md:mr-1" />
+                          <EyeIcon className="w-4 h-4 md:mr-1" />
                           <span className="hidden md:inline">View</span>
                         </Button>
                         <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-xl">
-                          <ReceiptIcon className="w-4 h-4 md:mr-1" />
+                          <ReceiptPercentIcon className="w-4 h-4 md:mr-1" />
                           <span className="hidden md:inline">Receipt</span>
                         </Button>
                       </div>

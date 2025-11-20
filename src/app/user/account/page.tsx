@@ -1,7 +1,7 @@
 'use client';
 import { useSession, signOut } from 'next-auth/react';
 import { motion } from 'framer-motion';
-import { User, LogOut } from 'lucide-react';
+import { UserIcon, ArrowRightStartOnRectangleIcon } from '@heroicons/react/24/outline';
 import { Card } from '@/components/ui/card';
 import { TransactionSummaryTable } from '@/components/ui/transaction-summary-table';
 import { Button } from '@/components/ui/button';
@@ -57,7 +57,7 @@ export default function AccountPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-                <User className="w-8 h-8 text-white" />
+                <UserIcon className="w-8 h-8 text-white" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">
@@ -107,7 +107,7 @@ export default function AccountPage() {
             variant="outline"
             className="w-full rounded-xl h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50"
           >
-            <LogOut className="w-5 h-5 mr-2" />
+            <ArrowRightStartOnRectangleIcon className="w-5 h-5 mr-2" />
             Logout
           </Button>
         </div>

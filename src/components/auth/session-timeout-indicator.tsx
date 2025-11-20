@@ -2,7 +2,7 @@
 
 import { useSessionTimeout } from '@/hooks/auth/useSessionTimeout';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertTriangle, Clock } from 'lucide-react';
+import { ExclamationTriangleIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { useEffect } from 'react';
 
@@ -45,9 +45,9 @@ export function SessionTimeoutIndicator() {
       <CardContent className="p-3">
         <div className="flex items-center gap-2 text-sm">
           {showWarning ? (
-            <AlertTriangle className="h-4 w-4 text-orange-600" />
+            <ExclamationTriangleIcon className="h-4 w-4 text-orange-600" />
           ) : (
-            <Clock className="h-4 w-4 text-green-600" />
+            <ClockIcon className="h-4 w-4 text-green-600" />
           )}
           <span className={showWarning ? 'text-orange-800' : 'text-green-800'}>
             Session expires in: <strong>{timeRemaining}</strong>

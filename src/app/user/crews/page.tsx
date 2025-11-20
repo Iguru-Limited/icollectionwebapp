@@ -1,67 +1,73 @@
 "use client";
-import { useMemo, useState } from 'react';
-import { UserPlus } from 'lucide-react';
-import { PageContainer, PageHeader, SearchBar, FloatingActionButton } from '@/components/layout';
-import { CrewList, CrewTabs } from '@/components/crews';
-import { useCrews, useCrewRoles } from '@/hooks/crew';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { PageContainer, PageHeader } from '@/components/layout';
+import { Card, CardContent } from '@/components/ui/card';
 
-export default function CrewsListPage() {
-  const [q, setQ] = useState('');
-  const [active, setActive] = useState<string>('All');
-  
-  const { data: crewsResponse, isLoading, error } = useCrews();
-  const { data: rolesResponse, isLoading: rolesLoading } = useCrewRoles();
-  const roles = rolesResponse?.data ?? [];
+// Categories landing page showing counts per crew role from session.stats
+export default function CrewCategoriesPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
 
-  const allCount = crewsResponse?.data?.length ?? 0;
-  const roleCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    (crewsResponse?.data ?? []).forEach((c) => {
-      const key = c.role_name || 'UNKNOWN';
-      counts[key] = (counts[key] || 0) + 1;
-    });
-    return counts;
-  }, [crewsResponse?.data]);
+  const roleStats = session?.stats?.crew?.roles || [];
 
-  const filtered = useMemo(() => {
-    const crews = crewsResponse?.data ?? [];
-    return crews.filter(c =>
-      (active === 'All' || c.role_name?.toUpperCase() === active.toUpperCase()) &&
-      (c.name?.toLowerCase().includes(q.toLowerCase()) || 
-       c.badge_number?.toLowerCase().includes(q.toLowerCase()) ||
-       c.phone?.toLowerCase().includes(q.toLowerCase())),
-    );
-  }, [crewsResponse?.data, q, active]);
+  const toPlural = (roleName: string) => {
+    const proper = roleName.charAt(0) + roleName.slice(1).toLowerCase();
+    // Simple plural: add s if count != 1
+    return proper + 's';
+  };
 
   return (
     <PageContainer>
-      <PageHeader title="Crew List" />
-
-      <main className="px-4 pb-24 max-w-4xl mx-auto">
-        <SearchBar 
-          value={q} 
-          onChange={setQ} 
-          placeholder="Search by Name, Badge No, or Phone..." 
-        />
-
-        <CrewTabs 
-          activeTab={active} 
-          onTabChange={setActive} 
-          roles={roles}
-          isLoading={rolesLoading}
-          roleCounts={roleCounts}
-          allCount={allCount}
-        />
-
-        {error ? (
-          <div className="text-center text-red-600 py-8">
-            Error loading crews: {error.message}
-          </div>
-        ) : (
-          <CrewList crews={filtered} isLoading={isLoading} />
-        )}
-
-        <FloatingActionButton href="/user/crews/add" icon={UserPlus} label="Add crew" />
+      <PageHeader title="Crew" />
+      <main className="px-4 pb-24 max-w-md mx-auto">
+        <div className="grid grid-cols-1 gap-4">
+          {roleStats.map((r) => {
+            const count = parseInt(String(r.count), 10) || 0;
+            const slug = r.role_name.toLowerCase(); // e.g. CONDUCTOR -> conductor
+            return (
+              <Card
+                key={r.crew_role_id}
+                role="button"
+                tabIndex={0}
+                onClick={() => router.push(`/user/crews/roles/${slug}`)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    router.push(`/user/crews/roles/${slug}`);
+                  }
+                }}
+                className="cursor-pointer rounded-full border-gray-200 hover:shadow-md transition-shadow"
+              >
+                <CardContent className="py-4 px-6 flex items-center justify-between">
+                  <span className="font-semibold text-gray-800 text-lg">{`${toPlural(r.role_name)} (${count})`}</span>
+                  <span className="text-sm text-gray-500">View</span>
+                </CardContent>
+              </Card>
+            );
+          })}
+          {/* Search card */}
+          <Card
+            role="button"
+            tabIndex={0}
+            onClick={() => router.push('/user/crews/search')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                router.push('/user/crews/search');
+              }
+            }}
+            className="cursor-pointer rounded-full border-dashed border-gray-300 hover:border-gray-400 hover:shadow-sm transition"
+          >
+            <CardContent className="py-4 px-6 flex items-center justify-between">
+              <span className="font-semibold text-gray-700 text-lg">Search</span>
+              <span className="text-sm text-gray-400">Open</span>
+            </CardContent>
+          </Card>
+          {roleStats.length === 0 && (
+            <div className="text-center text-gray-500 py-12">No crew role statistics available.</div>
+          )}
+        </div>
       </main>
     </PageContainer>
   );

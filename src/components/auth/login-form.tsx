@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { User, Lock, Eye, EyeOff } from 'lucide-react';
+import { UserIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
   const [username, setUsername] = useState('');
@@ -79,7 +79,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         <div className="space-y-4">
           {/* Username Input */}
           <div className="relative">
-            <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-300 w-6 h-6" />
+            <UserIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-300 w-6 h-6" />
             <Input
               id="username"
               type="text"
@@ -94,7 +94,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 
           {/* Password Input */}
           <div className="relative">
-            <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-300 w-6 h-6" />
+            <LockClosedIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-300 w-6 h-6" />
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
@@ -110,7 +110,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-4 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-purple-500"
             >
-              {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
+              {showPassword ? <EyeSlashIcon className="w-6 h-6" /> : <EyeIcon className="w-6 h-6" />}
             </button>
           </div>
 
