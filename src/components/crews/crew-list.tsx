@@ -23,7 +23,7 @@ interface CrewListProps {
 export function CrewList({ crews, isLoading }: CrewListProps) {
   const router = useRouter();
   const { data: session } = useSession();
-  const template = useCompanyTemplateStore((s) => s.template);
+  // template not needed here; dialog fetches vehicles directly
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [activeCrew, setActiveCrew] = useState<Crew | null>(null);
@@ -66,14 +66,7 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
     return name?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'C';
   };
 
-  const isExpired = (expiryDate: string | null) => {
-    return expiryDate ? new Date(expiryDate) < new Date() : false;
-  };
-
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString();
-  };
+  // removed unused helpers (expiry, date formatting)
 
   return (
     <div className="rounded-lg border bg-white shadow-sm">

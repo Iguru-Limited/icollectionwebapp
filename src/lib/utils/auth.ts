@@ -1,6 +1,6 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { AuthResponse } from '@/types/auth/userauthentication';
+import { AuthResponse, AuthStats } from '@/types/auth/userauthentication';
 import type { CompanyTemplateResponse } from '@/types/company-template';
 import { API_ENDPOINTS } from '@/lib/utils/constants';
 
@@ -120,8 +120,9 @@ export const authOptions: NextAuthOptions = {
         token.username = user.username;
         token.company_template = user.company_template;
         token.rights = user.rights;
-        if ((user as any).stats) {
-          token.stats = (user as any).stats; // persist stats in JWT token
+        const maybeStats = (user as unknown as { stats?: AuthStats }).stats;
+        if (maybeStats) {
+          token.stats = maybeStats; // persist stats in JWT token
         }
         // Set token expiry to 1 hour from now (shorter for security)
         token.expiresAt = Date.now() + 60 * 60 * 1000;

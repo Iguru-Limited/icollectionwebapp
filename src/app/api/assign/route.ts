@@ -4,10 +4,11 @@ import { authOptions } from '@/lib/utils/auth';
 import { API_ENDPOINTS } from '@/lib/utils/constants';
 import type { AssignVehiclePayload, AssignVehicleResponse } from '@/types/crew';
 
-function isValidPayload(payload: any): payload is AssignVehiclePayload {
+function isValidPayload(payload: unknown): payload is AssignVehiclePayload {
   if (!payload || typeof payload !== 'object') return false;
-  if (typeof payload.vehicle_id !== 'number') return false;
-  const cid = payload.crew_id;
+  const obj = payload as Record<string, unknown>;
+  if (typeof obj.vehicle_id !== 'number') return false;
+  const cid = obj.crew_id as unknown;
   if (typeof cid === 'number') return Number.isFinite(cid);
   if (Array.isArray(cid)) return cid.every((n) => typeof n === 'number' && Number.isFinite(n));
   return false;
