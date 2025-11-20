@@ -38,7 +38,7 @@ export default function AssignPage() {
   const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
 
   const [crewQueries, setCrewQueries] = useState<string[]>(['']);
-  const [selectedCrewIds, setSelectedCrewIds] = useState<string[]>([]);
+  const [selectedCrewIds, setSelectedCrewIds] = useState<string[]>(['']);
 
   const { mutateAsync: assignVehicle, isPending } = useAssignVehicle({
     onSuccess: (data) => {
@@ -67,15 +67,16 @@ export default function AssignPage() {
     return crews.filter(c => c.name.toLowerCase().includes(q) || c.badge_number.toLowerCase().includes(q)).slice(0, 8);
   };
 
-  const canAddAnotherCrew = crewQueries.length === 1;
-  const showCrewError = selectedCrewIds.length === 0 && crewQueries.some(q => q.length > 0);
+  const canAddAnotherCrew = crewQueries.length < 2;
+  const showCrewError = selectedCrewIds.filter(Boolean).length === 0 && crewQueries.some(q => q.length > 0);
 
   async function handleAssign() {
-    if (!selectedVehicleId || selectedCrewIds.length === 0) {
+    const picked = selectedCrewIds.filter(Boolean);
+    if (!selectedVehicleId || picked.length === 0) {
       toast.error('Select vehicle and at least one crew');
       return;
     }
-    const crewIdPayload = selectedCrewIds.length === 1 ? Number(selectedCrewIds[0]) : selectedCrewIds.map(id => Number(id));
+    const crewIdPayload = picked.length === 1 ? Number(picked[0]) : picked.map(id => Number(id));
     await assignVehicle({ vehicle_id: selectedVehicleId, crew_id: crewIdPayload });
   }
 
@@ -121,7 +122,7 @@ export default function AssignPage() {
           </div>
 
           {/* Crew Selection */}
-          <div className="space-y-4">
+          <div className="space-y-5">
             {crewQueries.map((query, idx) => (
               <div key={idx} className="space-y-2">
                 {idx === 0 && <div className="text-xs font-medium text-gray-600">select crew</div>}
@@ -131,7 +132,7 @@ export default function AssignPage() {
                     onChange={(e) => {
                       const val = e.target.value;
                       setCrewQueries(prev => prev.map((q, i) => i === idx ? val : q));
-                      setSelectedCrewIds(prev => prev.filter(id => id !== selectedCrewIds[idx]));
+                      setSelectedCrewIds(prev => prev.map((id, i) => i === idx ? '' : id));
                     }}
                     placeholder="search by name"
                     className="h-12 rounded-full pl-4 pr-4 text-sm"
@@ -143,11 +144,7 @@ export default function AssignPage() {
                           key={c.crew_id}
                           className="px-3 py-2 cursor-pointer hover:bg-purple-50 flex justify-between"
                           onClick={() => {
-                            setSelectedCrewIds(prev => {
-                              const copy = [...prev];
-                              copy[idx] = c.crew_id;
-                              return copy.filter(Boolean);
-                            });
+                            setSelectedCrewIds(prev => prev.map((id, i) => i === idx ? c.crew_id : id));
                             setCrewQueries(prev => prev.map((q, i) => i === idx ? c.name : q));
                           }}
                         >
@@ -163,16 +160,22 @@ export default function AssignPage() {
                 )}
               </div>
             ))}
-            {canAddAnotherCrew && (
+            <div className="flex justify-center">
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-full h-12 bg-purple-700 hover:bg-purple-800 text-white"
-                onClick={() => setCrewQueries(prev => [...prev, ''])}
+                className="rounded-full h-12 px-6 bg-purple-700 hover:bg-purple-800 text-white"
+                onClick={() => {
+                  if (canAddAnotherCrew) {
+                    setCrewQueries(prev => [...prev, '']);
+                    setSelectedCrewIds(prev => [...prev, '']);
+                  }
+                }}
+                disabled={!canAddAnotherCrew}
               >
                 add another
               </Button>
-            )}
+            </div>
             {showCrewError && (
               <div className="text-[11px] text-red-600">Select a crew from the list.</div>
             )}
@@ -182,7 +185,7 @@ export default function AssignPage() {
           <div>
             <Button
               type="button"
-              disabled={isPending || !selectedVehicleId || selectedCrewIds.length === 0}
+              disabled={isPending || !selectedVehicleId || selectedCrewIds.filter(Boolean).length === 0}
               onClick={handleAssign}
               className="w-full h-12 rounded-full bg-purple-700 hover:bg-purple-800 text-white"
             >
