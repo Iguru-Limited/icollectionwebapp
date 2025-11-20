@@ -24,6 +24,8 @@ export default function HomeTiles() {
 
   const totalCrew = session?.stats?.crew?.total_crew;
   const totalVehicles = session?.stats?.vehicles?.total_vehicles;
+  const assignedVehicles = session?.stats?.vehicles?.assignment?.assigned;
+  const unassignedVehicles = session?.stats?.vehicles?.assignment?.unassigned;
 
   const allTiles: Tile[] = [
     {
@@ -49,7 +51,7 @@ export default function HomeTiles() {
     },
     {
       title: 'Vehicle',
-      href: '',
+      href: '/user/vehicles',
       icon: <TruckIcon className="w-6 h-6 text-white" />,
       bgClass: 'bg-yellow-500',
       rightName: 'view_vehicles',
@@ -92,6 +94,16 @@ export default function HomeTiles() {
               )}
               {t.title === 'Vehicle' && typeof totalVehicles === 'number' && (
                 <div className="text-xl font-semibold text-gray-900">{totalVehicles}</div>
+              )}
+              {t.title === 'Assign Vehicle' && typeof assignedVehicles === 'number' && typeof unassignedVehicles === 'number' && (
+                <div className="text-center space-y-1">
+                  <div className="text-sm text-gray-600">
+                    Assignments <span className="font-semibold text-green-700">{assignedVehicles}</span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Pending <span className="font-semibold text-orange-600">{unassignedVehicles}</span>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
