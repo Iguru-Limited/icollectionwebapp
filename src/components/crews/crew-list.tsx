@@ -51,15 +51,16 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[60px]">Thumbnail</TableHead>
+            <TableHead className="w-[60px]">Avatar</TableHead>
             <TableHead>Name</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Vehicle</TableHead>
             <TableHead>Badge No.</TableHead>
-            <TableHead>Badge Expiry</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {crews.map((crew) => (
-            <TableRow 
+            <TableRow
               key={crew.crew_id}
               className="cursor-pointer"
               onClick={() => router.push(`/user/crews/${crew.crew_id}`)}
@@ -72,12 +73,9 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
                 </Avatar>
               </TableCell>
               <TableCell className="font-medium">{crew.name}</TableCell>
+              <TableCell>{crew.role_name ? crew.role_name.charAt(0) + crew.role_name.slice(1).toLowerCase() : '-'}</TableCell>
+              <TableCell className="font-mono text-sm">{crew.vehicle_plate || '-'}</TableCell>
               <TableCell className="font-mono text-sm">{crew.badge_number || '-'}</TableCell>
-              <TableCell>
-                <span className={isExpired(crew.badge_expiry) ? 'text-red-600 font-semibold' : 'text-gray-900'}>
-                  {formatDate(crew.badge_expiry)}
-                </span>
-              </TableCell>
             </TableRow>
           ))}
         </TableBody>
