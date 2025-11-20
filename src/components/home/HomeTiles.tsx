@@ -22,6 +22,9 @@ export default function HomeTiles() {
   const router = useRouter();
   const { data: session } = useSession();
 
+  const totalCrew = session?.stats?.crew?.total_crew;
+  const totalVehicles = session?.stats?.vehicles?.total_vehicles;
+
   const allTiles: Tile[] = [
     {
       title: 'Collection',
@@ -79,11 +82,17 @@ export default function HomeTiles() {
             }}
             className="cursor-pointer transition-shadow hover:shadow-md rounded-2xl border-gray-200"
           >
-            <CardContent className="p-5 flex flex-col items-center justify-center gap-3">
+            <CardContent className="p-5 flex flex-col items-center justify-center gap-2">
               <div className={`w-12 h-12 ${t.bgClass} rounded-full flex items-center justify-center shadow-sm`}>
                 {t.icon}
               </div>
               <div className="text-center text-gray-800 font-medium tracking-wide">{t.title}</div>
+              {t.title === 'Crew' && typeof totalCrew === 'number' && (
+                <div className="text-xl font-semibold text-gray-900">{totalCrew}</div>
+              )}
+              {t.title === 'Vehicle' && typeof totalVehicles === 'number' && (
+                <div className="text-xl font-semibold text-gray-900">{totalVehicles}</div>
+              )}
             </CardContent>
           </Card>
         ))}

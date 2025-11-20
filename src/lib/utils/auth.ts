@@ -71,6 +71,7 @@ export const authOptions: NextAuthOptions = {
             printer: data.user.printer,
             company_template: data.company_template,
             rights: data.user.rights,
+            stats: data.stats, // include stats in user object so jwt callback can access
           };
         } catch (error) {
           console.error('Authentication error:', error);
@@ -119,6 +120,9 @@ export const authOptions: NextAuthOptions = {
         token.username = user.username;
         token.company_template = user.company_template;
         token.rights = user.rights;
+        if ((user as any).stats) {
+          token.stats = (user as any).stats; // persist stats in JWT token
+        }
         // Set token expiry to 1 hour from now (shorter for security)
         token.expiresAt = Date.now() + 60 * 60 * 1000;
         // Set refresh token expiry to 7 days
@@ -165,6 +169,9 @@ export const authOptions: NextAuthOptions = {
         if (token.company_template) {
           (session as unknown as { company_template?: CompanyTemplateResponse }).company_template =
             token.company_template as CompanyTemplateResponse;
+        }
+        if (token.stats) {
+          (session as unknown as { stats?: unknown }).stats = token.stats;
         }
       }
       return session;
