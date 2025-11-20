@@ -87,7 +87,7 @@ export default function AssignPage() {
         <Card className="p-6 rounded-2xl space-y-6 border-gray-200">
           {/* Vehicle Selection */}
           <div className="space-y-2">
-            <div className="text-xs font-medium text-gray-600">select vehicle</div>
+            <div className="text-sm md:text-base font-semibold text-gray-900">select vehicle</div>
             <div className="relative">
               <Input
                 value={vehicleQuery}
@@ -96,7 +96,7 @@ export default function AssignPage() {
                   setSelectedVehicleId(null);
                 }}
                 placeholder="search by name"
-                className="h-12 rounded-full pl-4 pr-4 text-sm"
+                className="h-12 rounded-full pl-4 pr-4 text-base md:text-lg placeholder:text-black"
               />
               {vehicleQuery && filteredVehicles.length > 0 && (
                 <ul className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-sm max-h-56 overflow-auto text-sm">
@@ -125,7 +125,7 @@ export default function AssignPage() {
           <div className="space-y-5">
             {crewQueries.map((query, idx) => (
               <div key={idx} className="space-y-2">
-                {idx === 0 && <div className="text-xs font-medium text-gray-600">select crew</div>}
+                {idx === 0 && <div className="text-sm md:text-base font-semibold text-gray-900">select crew</div>}
                 <div className="relative">
                   <Input
                     value={query}
@@ -135,7 +135,7 @@ export default function AssignPage() {
                       setSelectedCrewIds(prev => prev.map((id, i) => i === idx ? '' : id));
                     }}
                     placeholder="search by name"
-                    className="h-12 rounded-full pl-4 pr-4 text-sm"
+                    className="h-12 rounded-full pl-4 pr-4 text-base md:text-lg placeholder:text-black"
                   />
                   {query && filteredCrews(idx).length > 0 && (
                     <ul className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-sm max-h-56 overflow-auto text-sm">
