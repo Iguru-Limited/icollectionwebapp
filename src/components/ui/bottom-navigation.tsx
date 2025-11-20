@@ -2,17 +2,27 @@
 import { motion } from 'framer-motion';
 import { HomeIcon, ChartPieIcon, TruckIcon, UserIcon } from '@heroicons/react/24/outline';
 import { useRouter, usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
-const navItems = [
-  { icon: HomeIcon, label: 'Home', href: '/user' },
-  { icon: ChartPieIcon, label: 'Report', href: '/user/reports' },
-  { icon: TruckIcon, label: 'Vehicle', href: '/user/vehicles' },
-  { icon: UserIcon, label: 'Account', href: '/user/account' },
+const allNavItems = [
+  { icon: HomeIcon, label: 'Home', href: '/user', rightName: null },
+  { icon: ChartPieIcon, label: 'Report', href: '/user/reports', rightName: 'collection' },
+  { icon: TruckIcon, label: 'Vehicle', href: '/user/vehicles', rightName: null },
+  { icon: UserIcon, label: 'Account', href: '/user/account', rightName: null },
 ];
 
 export function BottomNavigation() {
   const router = useRouter();
   const pathname = usePathname();
+  const { data: session } = useSession();
+
+  // Filter navigation items based on user rights
+  const navItems = allNavItems.filter((item) => {
+    if (!item.rightName) return true; // Show items without permission requirement
+    const userRights = session?.user?.rights;
+    if (!userRights || userRights.length === 0) return true; // Backward compatibility
+    return userRights.some((right) => right.right_name === item.rightName);
+  });
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 md:hidden">

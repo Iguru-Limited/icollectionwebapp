@@ -8,18 +8,27 @@ import {
   ArrowRightStartOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 import { usePathname, useRouter } from 'next/navigation';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 
 export function TopNavigation() {
   const router = useRouter();
   const pathname = usePathname();
+  const { data: session } = useSession();
 
-  const navItems = [
-    { icon: HomeIcon, label: 'Home', href: '/user' },
-    { icon: ChartPieIcon, label: 'Report', href: '/user/reports' },
-    { icon: TruckIcon, label: 'Vehicle', href: '/user/vehicles' },
-    { icon: UserIcon, label: 'Account', href: '/user/account' },
+  const allNavItems = [
+    { icon: HomeIcon, label: 'Home', href: '/user', rightName: null },
+    { icon: ChartPieIcon, label: 'Report', href: '/user/reports', rightName: 'collection' },
+    { icon: TruckIcon, label: 'Vehicle', href: '/user/vehicles', rightName: null },
+    { icon: UserIcon, label: 'Account', href: '/user/account', rightName: null },
   ];
+
+  // Filter navigation items based on user rights
+  const navItems = allNavItems.filter((item) => {
+    if (!item.rightName) return true; // Show items without permission requirement
+    const userRights = session?.user?.rights;
+    if (!userRights || userRights.length === 0) return true; // Backward compatibility
+    return userRights.some((right) => right.right_name === item.rightName);
+  });
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/login' });
