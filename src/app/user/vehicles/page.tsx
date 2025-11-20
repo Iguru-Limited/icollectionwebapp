@@ -1,32 +1,19 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MagnifyingGlassIcon, TruckIcon } from '@heroicons/react/24/outline';
 import { Input } from '@/components/ui/input';
 import { TopNavigation } from '@/components/ui/top-navigation';
 import { BottomNavigation } from '@/components/ui/bottom-navigation';
 import { Badge } from '@/components/ui/badge';
-import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { VehicleTable } from '@/components/vehicles/VehicleTable';
+import { useVehicleBasics } from '@/hooks/vehicle/useVehicles';
 
 export default function VehiclesPage() {
-  const { data: session } = useSession();
   const [searchQuery, setSearchQuery] = useState('');
-
-  const template = useCompanyTemplateStore((s) => s.template);
-  const setTemplate = useCompanyTemplateStore((s) => s.setTemplate);
-  const hasHydrated = useCompanyTemplateStore((s) => s._hasHydrated);
-
-  useEffect(() => {
-    if (!hasHydrated) return;
-    if (!template && session?.company_template) {
-      setTemplate(session.company_template);
-    }
-  }, [hasHydrated, template, session, setTemplate]);
-
-  const filteredVehicles = (template?.vehicles ?? []).filter((vehicle) =>
-    searchQuery ? vehicle.number_plate.toLowerCase().includes(searchQuery.toLowerCase()) : true,
+  const { vehicles, isLoading } = useVehicleBasics();
+  const filteredVehicles = vehicles.filter((v) =>
+    searchQuery ? v.number_plate.toLowerCase().includes(searchQuery.toLowerCase()) : true,
   );
 
   return (
@@ -70,7 +57,7 @@ export default function VehiclesPage() {
         </div>
 
         {/* Vehicle List */}
-        <VehicleTable vehicles={filteredVehicles} isLoading={!hasHydrated} />
+        <VehicleTable vehicles={filteredVehicles} isLoading={isLoading} />
       </div>
 
       {/* Bottom Navigation - Mobile only */}
