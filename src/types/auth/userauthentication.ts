@@ -76,6 +76,11 @@ export interface NextAuthUser {
 }
 
 // Stats types from login response
+export interface AssignmentStats {
+  assigned: number;
+  unassigned: number;
+}
+
 export interface VehicleTypeStat {
   type_name: string;
   count: string | number;
@@ -83,6 +88,7 @@ export interface VehicleTypeStat {
 
 export interface VehicleStats {
   total_vehicles: number;
+  assignment: AssignmentStats;
   types: VehicleTypeStat[];
 }
 
@@ -94,6 +100,7 @@ export interface CrewRoleStat {
 
 export interface CrewStats {
   total_crew: number;
+  assignment: AssignmentStats;
   roles: CrewRoleStat[];
 }
 
