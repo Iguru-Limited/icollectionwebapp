@@ -2,6 +2,8 @@ import { ReactNode } from 'react';
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/utils/auth';
+import { TopNavigation } from '@/components/ui/top-navigation';
+import { BottomNavigation } from '@/components/ui/bottom-navigation';
 
 export default async function UserLayout({ children }: { children: ReactNode }) {
   const session = await getServerSession(authOptions);
@@ -10,5 +12,11 @@ export default async function UserLayout({ children }: { children: ReactNode }) 
     redirect('/login');
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <TopNavigation />
+      {children}
+      <BottomNavigation />
+    </>
+  );
 }

@@ -1,14 +1,12 @@
 "use client";
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { PageContainer, PageHeader, SearchBar } from '@/components/layout';
 import { useCrews } from '@/hooks/crew';
 import { CrewList } from '@/components/crews';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useState, useMemo } from 'react';
 
 export default function CrewRolePage() {
   const params = useParams();
-  const router = useRouter();
   const roleParam = (params?.role as string)?.toUpperCase(); // e.g. CONDUCTOR
   const singular = roleParam?.charAt(0) + roleParam?.slice(1).toLowerCase();
   const pluralLabel = singular + 's';
@@ -29,12 +27,12 @@ export default function CrewRolePage() {
     <PageContainer>
       <PageHeader title={pluralLabel} />
       <main className="px-4 pb-24 max-w-3xl mx-auto space-y-4">
-        <button
+        {/* <button
           onClick={() => router.push('/user/crews')}
           className="flex items-center gap-2 text-sm text-purple-700 hover:text-purple-900 font-medium"
         >
           <ArrowLeftIcon className="w-4 h-4" /> Back to Categories
-        </button>
+        </button> */}
 
         <SearchBar
           value={q}

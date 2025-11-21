@@ -2,8 +2,6 @@
 "use client";
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
-import { TopNavigation } from '@/components/ui/top-navigation';
-import { BottomNavigation } from '@/components/ui/bottom-navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import { PageHeader, PageContainer } from '@/components/layout';
@@ -23,7 +21,7 @@ export default function VehiclesCategoriesPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Vehicles" />
+      <PageHeader title="Vehicles" backHref="/user"/>
       <main className="px-4 pb-24 max-w-md mx-auto">
         <div className="grid grid-cols-1 gap-4">
           {isLoading && (

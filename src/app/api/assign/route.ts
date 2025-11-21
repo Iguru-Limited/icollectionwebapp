@@ -41,6 +41,11 @@ export async function POST(request: Request) {
       try { return JSON.parse(text) as AssignVehicleResponse; } catch { return { message: text } as AssignVehicleResponse; }
     })();
 
+    // Handle 409 conflict or any response with pending_assignment_ids
+    if (upstream.status === 409 || (data.pending_assignment_ids && data.pending_assignment_ids.length > 0)) {
+      return NextResponse.json<AssignVehicleResponse>(data, { status: 200 });
+    }
+
     if (!upstream.ok) {
       return NextResponse.json({ error: data.message || 'Assignment failed' }, { status: upstream.status });
     }

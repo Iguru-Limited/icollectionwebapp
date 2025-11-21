@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
+import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
+import { AssignmentConflictDialog } from '@/components/assign/AssignmentConflictDialog';
 import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -28,13 +30,52 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
   const [open, setOpen] = useState(false);
   const [activeCrew, setActiveCrew] = useState<Crew | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+  const [conflictDialog, setConflictDialog] = useState<{
+    open: boolean;
+    error: string;
+    message: string;
+    pendingIds: string[];
+  }>({ open: false, error: '', message: '', pendingIds: [] });
 
-  const { mutate: assignVehicle, isPending } = useAssignVehicle({
-    onSuccess: () => {
-      toast?.success?.('Vehicle assigned successfully');
+  const confirmMutation = useConfirmAssignment({
+    onSuccess: (data) => {
+      toast?.success?.(data.message || 'Vehicle crew has been successfully reassigned');
+      setConflictDialog({ open: false, error: '', message: '', pendingIds: [] });
       setOpen(false);
       const companyId = session?.user?.company?.company_id;
       queryClient.invalidateQueries({ queryKey: ['crews', companyId] });
+    },
+    onError: (error) => {
+      toast?.error?.(error.message || 'Failed to confirm assignment');
+    },
+  });
+
+  const cancelMutation = useCancelAssignment({
+    onSuccess: (data) => {
+      toast?.success?.(data.message || 'Pending assignment request(s) cancelled successfully');
+      setConflictDialog({ open: false, error: '', message: '', pendingIds: [] });
+    },
+    onError: (error) => {
+      toast?.error?.(error.message || 'Failed to cancel assignment');
+    },
+  });
+
+  const { mutate: assignVehicle, isPending } = useAssignVehicle({
+    onSuccess: (data) => {
+      console.log('Assignment response:', data);
+      if (data.pending_assignment_ids && data.pending_assignment_ids.length > 0) {
+        setConflictDialog({
+          open: true,
+          error: data.error || '',
+          message: data.message || '',
+          pendingIds: data.pending_assignment_ids,
+        });
+      } else {
+        toast?.success?.('Vehicle assigned successfully');
+        setOpen(false);
+        const companyId = session?.user?.company?.company_id;
+        queryClient.invalidateQueries({ queryKey: ['crews', companyId] });
+      }
     },
     onError: (err) => {
       toast?.error?.(err.message || 'Failed to assign vehicle');
@@ -134,6 +175,21 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
             crew_id: Number(activeCrew.crew_id),
           });
         }}
+      />
+
+      <AssignmentConflictDialog
+        open={conflictDialog.open}
+        errorMessage={conflictDialog.error}
+        message={conflictDialog.message}
+        onConfirm={() => {
+          const pendingIds = conflictDialog.pendingIds.map(id => Number(id));
+          confirmMutation.mutate({ assignment_ids: pendingIds });
+        }}
+        onCancel={() => {
+          const pendingIds = conflictDialog.pendingIds.map(id => Number(id));
+          cancelMutation.mutate({ assignment_ids: pendingIds });
+        }}
+        isLoading={confirmMutation.isPending || cancelMutation.isPending}
       />
     </div>
   );

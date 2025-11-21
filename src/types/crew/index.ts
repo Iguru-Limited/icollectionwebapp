@@ -83,4 +83,15 @@ export type AssignVehiclePayload = {
 export interface AssignVehicleResponse {
   message: string;
   success?: boolean;
+  error?: string;
+  pending_assignment_ids?: string[];
+}
+
+export interface ConfirmAssignmentPayload {
+  assignment_ids: number[];
+}
+
+export interface ConfirmAssignmentResponse {
+  message: string;
+  success?: boolean;
 }

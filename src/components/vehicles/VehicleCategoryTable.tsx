@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
+import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
+import { AssignmentConflictDialog } from '@/components/assign/AssignmentConflictDialog';
 import { toast } from 'sonner';
 import type { VehicleItem } from '@/types/vehicle';
 
@@ -43,6 +45,12 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
   });
   const [selectedCrewId, setSelectedCrewId] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [conflictDialog, setConflictDialog] = useState<{
+    open: boolean;
+    error: string;
+    message: string;
+    pendingIds: string[];
+  }>({ open: false, error: '', message: '', pendingIds: [] });
   
   const { data: crewsData } = useCrews();
   const crews = crewsData?.data || [];
@@ -62,12 +70,43 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
            crew.badge_number?.toLowerCase().includes(query);
   });
 
-  const assignMutation = useAssignVehicle({
-    onSuccess: () => {
-      toast.success(`${assignDialog.role === 'driver' ? 'Driver' : 'Conductor'} assigned successfully`);
+  const confirmMutation = useConfirmAssignment({
+    onSuccess: (data) => {
+      toast.success(data.message || 'Vehicle crew has been successfully reassigned');
+      setConflictDialog({ open: false, error: '', message: '', pendingIds: [] });
       handleDialogClose();
-      // Refresh vehicles list
       window.location.reload();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to confirm assignment');
+    },
+  });
+
+  const cancelMutation = useCancelAssignment({
+    onSuccess: (data) => {
+      toast.success(data.message || 'Pending assignment request(s) cancelled successfully');
+      setConflictDialog({ open: false, error: '', message: '', pendingIds: [] });
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to cancel assignment');
+    },
+  });
+
+  const assignMutation = useAssignVehicle({
+    onSuccess: (data) => {
+      console.log('Assignment response:', data);
+      if (data.pending_assignment_ids && data.pending_assignment_ids.length > 0) {
+        setConflictDialog({
+          open: true,
+          error: data.error || '',
+          message: data.message || '',
+          pendingIds: data.pending_assignment_ids,
+        });
+      } else {
+        toast.success(`${assignDialog.role === 'driver' ? 'Driver' : 'Conductor'} assigned successfully`);
+        handleDialogClose();
+        window.location.reload();
+      }
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to assign crew');
@@ -214,6 +253,21 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AssignmentConflictDialog
+        open={conflictDialog.open}
+        errorMessage={conflictDialog.error}
+        message={conflictDialog.message}
+        onConfirm={() => {
+          const pendingIds = conflictDialog.pendingIds.map(id => Number(id));
+          confirmMutation.mutate({ assignment_ids: pendingIds });
+        }}
+        onCancel={() => {
+          const pendingIds = conflictDialog.pendingIds.map(id => Number(id));
+          cancelMutation.mutate({ assignment_ids: pendingIds });
+        }}
+        isLoading={confirmMutation.isPending || cancelMutation.isPending}
+      />
     </>
   );
 }

@@ -5,8 +5,6 @@ import { UserIcon, ArrowRightStartOnRectangleIcon } from '@heroicons/react/24/ou
 import { Card } from '@/components/ui/card';
 import { TransactionSummaryTable } from '@/components/ui/transaction-summary-table';
 import { Button } from '@/components/ui/button';
-import { TopNavigation } from '@/components/ui/top-navigation';
-import { BottomNavigation } from '@/components/ui/bottom-navigation';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { useEffect, useState } from 'react';
 import { DateSelector } from '@/components/ui/date-selector';
@@ -46,11 +44,6 @@ export default function AccountPage() {
       transition={{ duration: 0.4 }}
       className="min-h-screen bg-gray-50"
     >
-      {/* Top navigation - hidden on small screens */}
-      <div className="hidden md:block">
-        <TopNavigation />
-      </div>
-
       <div className="container mx-auto px-4 py-4 pb-20 md:pb-6 space-y-4 max-w-screen-xl">
         {/* User Info Card */}
         <Card className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl shadow-lg p-6">
@@ -111,11 +104,6 @@ export default function AccountPage() {
             Logout
           </Button>
         </div>
-      </div>
-
-      {/* Bottom Navigation - Mobile only */}
-      <div className="md:hidden">
-        <BottomNavigation />
       </div>
     </motion.div>
   );
