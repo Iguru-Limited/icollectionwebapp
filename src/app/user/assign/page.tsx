@@ -33,14 +33,22 @@ export default function AssignPage() {
     number_plate: v.number_plate,
   }));
 
+  // Get drivers and conductors
+  const drivers = crews.filter(c => c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER');
+  const conductors = crews.filter(c => c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR');
+
   // Form state
   const [vehicleQuery, setVehicleQuery] = useState('');
   const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
   const [vehicleMenuOpen, setVehicleMenuOpen] = useState(false);
 
-  const [crewQueries, setCrewQueries] = useState<string[]>(['']);
-  const [selectedCrewIds, setSelectedCrewIds] = useState<string[]>(['']);
-  const [crewMenusOpen, setCrewMenusOpen] = useState<boolean[]>([false]);
+  const [driverQuery, setDriverQuery] = useState('');
+  const [selectedDriverId, setSelectedDriverId] = useState<string>('');
+  const [driverMenuOpen, setDriverMenuOpen] = useState(false);
+
+  const [conductorQuery, setConductorQuery] = useState('');
+  const [selectedConductorId, setSelectedConductorId] = useState<string>('');
+  const [conductorMenuOpen, setConductorMenuOpen] = useState(false);
 
   const { mutateAsync: assignVehicle, isPending } = useAssignVehicle({
     onSuccess: (data) => {
@@ -48,8 +56,10 @@ export default function AssignPage() {
       // Reset form
       setSelectedVehicleId(null);
       setVehicleQuery('');
-      setSelectedCrewIds([]);
-      setCrewQueries(['']);
+      setSelectedDriverId('');
+      setDriverQuery('');
+      setSelectedConductorId('');
+      setConductorQuery('');
     },
     onError: (err) => {
       toast.error(err.message);
@@ -63,33 +73,36 @@ export default function AssignPage() {
     return vehicles.filter(v => v.number_plate.toLowerCase().includes(q)).slice(0, 8);
   }, [vehicleQuery, vehicles]);
 
-  const filteredCrews = (index: number) => {
-    const q = crewQueries[index]?.trim().toLowerCase();
+  const filteredDrivers = useMemo(() => {
+    const q = driverQuery.trim().toLowerCase();
     if (!q) return [];
-    return crews.filter(c => c.name.toLowerCase().includes(q) || c.badge_number.toLowerCase().includes(q)).slice(0, 8);
-  };
+    return drivers.filter(c => c.name.toLowerCase().includes(q) || c.badge_number?.toLowerCase().includes(q)).slice(0, 8);
+  }, [driverQuery, drivers]);
 
-  const canAddAnotherCrew = crewQueries.length < 2;
-  const showCrewError = selectedCrewIds.filter(Boolean).length === 0 && crewQueries.some(q => q.length > 0);
+  const filteredConductors = useMemo(() => {
+    const q = conductorQuery.trim().toLowerCase();
+    if (!q) return [];
+    return conductors.filter(c => c.name.toLowerCase().includes(q) || c.badge_number?.toLowerCase().includes(q)).slice(0, 8);
+  }, [conductorQuery, conductors]);
 
   async function handleAssign() {
-    const picked = selectedCrewIds.filter(Boolean);
-    if (!selectedVehicleId || picked.length === 0) {
-      toast.error('Select vehicle and at least one crew');
+    const crewIds = [selectedDriverId, selectedConductorId].filter(Boolean);
+    if (!selectedVehicleId || crewIds.length === 0) {
+      toast.error('Select vehicle and at least one crew member');
       return;
     }
-    const crewIdPayload = picked.length === 1 ? Number(picked[0]) : picked.map(id => Number(id));
+    const crewIdPayload = crewIds.length === 1 ? Number(crewIds[0]) : crewIds.map(id => Number(id));
     await assignVehicle({ vehicle_id: selectedVehicleId, crew_id: crewIdPayload });
   }
 
   return (
     <PageContainer>
       <PageHeader title="Assign vehicle" />
-      <main className="px-4 pb-24 max-w-sm mx-auto">
-        <Card className="p-6 rounded-2xl space-y-6 border-gray-200">
+      <main className="px-4 pb-24 max-w-md mx-auto">
+        <Card className="p-6 rounded-2xl space-y-6 border-2 border-white-500">
           {/* Vehicle Selection */}
           <div className="space-y-2">
-            <div className="text-sm md:text-base font-semibold text-gray-900">select vehicle</div>
+            <div className="text-sm font-medium text-gray-700">select vehicle</div>
             <div className="relative">
               <Input
                 value={vehicleQuery}
@@ -101,19 +114,14 @@ export default function AssignPage() {
                 onFocus={() => setVehicleMenuOpen(true)}
                 onBlur={() => setTimeout(() => setVehicleMenuOpen(false), 120)}
                 placeholder="search by name"
-                className="h-12 rounded-full pl-4 pr-4 text-base md:text-lg placeholder:text-black"
+                className="h-12 rounded-md border-gray-300"
               />
-              {selectedVehicleId && (
-                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs md:text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                  selected
-                </span>
-              )}
               {vehicleMenuOpen && vehicleQuery && filteredVehicles.length > 0 && (
-                <ul className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-sm max-h-56 overflow-auto text-sm">
+                <ul className="absolute z-20 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-56 overflow-auto">
                   {filteredVehicles.map(v => (
                     <li
                       key={v.vehicle_id}
-                      className="px-3 py-2 cursor-pointer hover:bg-purple-50 flex justify-between"
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100"
                       onMouseDown={(e) => {
                         e.preventDefault();
                         setSelectedVehicleId(v.vehicle_id);
@@ -122,124 +130,98 @@ export default function AssignPage() {
                       }}
                     >
                       <span className="font-medium uppercase">{v.number_plate}</span>
-                      {selectedVehicleId === v.vehicle_id && <span className="text-purple-600 text-xs">selected</span>}
                     </li>
                   ))}
                 </ul>
               )}
             </div>
-            {/* moved selected indicator into the input above */}
           </div>
 
-          {/* Crew Selection */}
-          <div className="space-y-5">
-            {crewQueries.map((query, idx) => (
-              <div key={idx} className="space-y-2">
-                {idx === 0 && <div className="text-sm md:text-base font-semibold text-gray-900">select crew</div>}
-                <div className="relative">
-                  <Input
-                    value={query}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const newQueries = [...crewQueries];
-                      newQueries[idx] = val;
-                      setCrewQueries(newQueries);
-                      
-                      // Only clear selection if user is actually typing (not just selecting)
-                      const newIds = [...selectedCrewIds];
-                      newIds[idx] = '';
-                      setSelectedCrewIds(newIds);
-                      
-                      const newMenus = [...crewMenusOpen];
-                      newMenus[idx] = true;
-                      setCrewMenusOpen(newMenus);
-                    }}
-                    onFocus={() => {
-                      const newMenus = [...crewMenusOpen];
-                      newMenus[idx] = true;
-                      setCrewMenusOpen(newMenus);
-                    }}
-                    onBlur={() => {
-                      setTimeout(() => {
-                        const newMenus = [...crewMenusOpen];
-                        newMenus[idx] = false;
-                        setCrewMenusOpen(newMenus);
-                      }, 150);
-                    }}
-                    placeholder="search by name"
-                    className="h-12 rounded-full pl-4 pr-4 text-base md:text-lg placeholder:text-black"
-                  />
-                  {selectedCrewIds[idx] && (
-                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs md:text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                      selected
-                    </span>
-                  )}
-                  {crewMenusOpen[idx] && query && filteredCrews(idx).length > 0 && (
-                    <ul className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-sm max-h-56 overflow-auto text-sm">
-                      {filteredCrews(idx).map(c => (
-                        <li
-                          key={c.crew_id}
-                          className="px-3 py-2 cursor-pointer hover:bg-purple-50 flex justify-between"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            
-                            // Update selected crew ID
-                            const newIds = [...selectedCrewIds];
-                            newIds[idx] = c.crew_id;
-                            setSelectedCrewIds(newIds);
-                            
-                            // Update query with crew name
-                            const newQueries = [...crewQueries];
-                            newQueries[idx] = c.name;
-                            setCrewQueries(newQueries);
-                            
-                            // Close menu
-                            const newMenus = [...crewMenusOpen];
-                            newMenus[idx] = false;
-                            setCrewMenusOpen(newMenus);
-                          }}
-                        >
-                          <span className="font-medium">{c.name}</span>
-                          <span className="text-gray-400 text-xs uppercase">{c.badge_number}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-                {/* moved selected indicator into the input above */}
-              </div>
-            ))}
-            <div className="flex justify-center">
-              <Button
-                type="button"
-                variant="outline"
-                className="rounded-full h-12 px-6 bg-purple-700 hover:bg-purple-800 text-white"
-                onClick={() => {
-                  if (canAddAnotherCrew) {
-                    setCrewQueries(prev => [...prev, '']);
-                    setSelectedCrewIds(prev => [...prev, '']);
-                    setCrewMenusOpen(prev => [...prev, false]);
-                  }
+          {/* Driver Selection */}
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-gray-700">select Driver</div>
+            <div className="relative">
+              <Input
+                value={driverQuery}
+                onChange={(e) => {
+                  setDriverQuery(e.target.value);
+                  setSelectedDriverId('');
+                  setDriverMenuOpen(true);
                 }}
-                disabled={!canAddAnotherCrew}
-              >
-                add another
-              </Button>
+                onFocus={() => setDriverMenuOpen(true)}
+                onBlur={() => setTimeout(() => setDriverMenuOpen(false), 120)}
+                placeholder="search by name"
+                className="h-12 rounded-md border-gray-300"
+              />
+              {driverMenuOpen && driverQuery && filteredDrivers.length > 0 && (
+                <ul className="absolute z-20 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-56 overflow-auto">
+                  {filteredDrivers.map(c => (
+                    <li
+                      key={c.crew_id}
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 flex justify-between"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setSelectedDriverId(c.crew_id);
+                        setDriverQuery(c.name);
+                        setDriverMenuOpen(false);
+                      }}
+                    >
+                      <span className="font-medium">{c.name}</span>
+                      <span className="text-gray-400 text-xs uppercase">{c.badge_number}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-            {showCrewError && (
-              <div className="text-[11px] text-red-600">Select a crew from the list.</div>
-            )}
           </div>
 
-          {/* Assign Action */}
-          <div>
+          {/* Conductor Selection */}
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-gray-700">select Conductor</div>
+            <div className="relative">
+              <Input
+                value={conductorQuery}
+                onChange={(e) => {
+                  setConductorQuery(e.target.value);
+                  setSelectedConductorId('');
+                  setConductorMenuOpen(true);
+                }}
+                onFocus={() => setConductorMenuOpen(true)}
+                onBlur={() => setTimeout(() => setConductorMenuOpen(false), 120)}
+                placeholder="search by name"
+                className="h-12 rounded-md border-gray-300"
+              />
+              {conductorMenuOpen && conductorQuery && filteredConductors.length > 0 && (
+                <ul className="absolute z-20 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-56 overflow-auto">
+                  {filteredConductors.map(c => (
+                    <li
+                      key={c.crew_id}
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 flex justify-between"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setSelectedConductorId(c.crew_id);
+                        setConductorQuery(c.name);
+                        setConductorMenuOpen(false);
+                      }}
+                    >
+                      <span className="font-medium">{c.name}</span>
+                      <span className="text-gray-400 text-xs uppercase">{c.badge_number}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {/* Assign Button */}
+          <div className="pt-4">
             <Button
               type="button"
-              disabled={isPending || !selectedVehicleId || selectedCrewIds.filter(Boolean).length === 0}
+              disabled={isPending || !selectedVehicleId || (!selectedDriverId && !selectedConductorId)}
               onClick={handleAssign}
-              className="w-full h-12 rounded-full bg-purple-700 hover:bg-purple-800 text-white"
+              className="w-full h-14 rounded-full bg-purple-700 hover:bg-purple-800 text-white text-lg font-medium"
             >
-              {isPending ? <Spinner className="w-4 h-4" /> : 'Assign'}
+              {isPending ? <Spinner className="w-5 h-5" /> : 'Assign'}
             </Button>
           </div>
         </Card>
