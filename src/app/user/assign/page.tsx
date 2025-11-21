@@ -9,6 +9,8 @@ import { useSession } from 'next-auth/react';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { useCrews } from '@/hooks/crew';
 import { useAssignVehicle } from '@/hooks/crew';
+import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
+import { AssignmentConflictDialog } from '@/components/assign/AssignmentConflictDialog';
 import type { Crew } from '@/types/crew';
 import { toast } from 'sonner';
 
@@ -50,8 +52,59 @@ export default function AssignPage() {
   const [selectedConductorId, setSelectedConductorId] = useState<string>('');
   const [conductorMenuOpen, setConductorMenuOpen] = useState(false);
 
+  // Conflict dialog state
+  const [conflictDialog, setConflictDialog] = useState<{
+    open: boolean;
+    error: string;
+    pendingIds: string[];
+  }>({
+    open: false,
+    error: '',
+    pendingIds: [],
+  });
+
+  const confirmMutation = useConfirmAssignment({
+    onSuccess: (data) => {
+      toast.success(data.message || 'Vehicle crew has been successfully reassigned');
+      setConflictDialog({ open: false, error: '', pendingIds: [] });
+      // Reset form
+      setSelectedVehicleId(null);
+      setVehicleQuery('');
+      setSelectedDriverId('');
+      setDriverQuery('');
+      setSelectedConductorId('');
+      setConductorQuery('');
+    },
+    onError: (err) => {
+      toast.error(err.message);
+      setConflictDialog({ open: false, error: '', pendingIds: [] });
+    },
+  });
+
+  const cancelMutation = useCancelAssignment({
+    onSuccess: (data) => {
+      toast.info(data.message || 'Pending assignment request cancelled');
+      setConflictDialog({ open: false, error: '', pendingIds: [] });
+    },
+    onError: (err) => {
+      toast.error(err.message);
+      setConflictDialog({ open: false, error: '', pendingIds: [] });
+    },
+  });
+
   const { mutateAsync: assignVehicle, isPending } = useAssignVehicle({
     onSuccess: (data) => {
+      console.log('Assignment response:', data);
+      // Check if there's a conflict
+      if (data.pending_assignment_ids && data.pending_assignment_ids.length > 0) {
+        setConflictDialog({
+          open: true,
+          error: data.error || data.message || '',
+          pendingIds: data.pending_assignment_ids,
+        });
+        return;
+      }
+      
       toast.success(data.message || 'Assignment successful');
       // Reset form
       setSelectedVehicleId(null);
@@ -232,6 +285,21 @@ export default function AssignPage() {
           <div className="mt-4 flex justify-center"><Spinner className="w-5 h-5" /></div>
         )}
       </main>
+
+      {/* Conflict Dialog */}
+      <AssignmentConflictDialog
+        open={conflictDialog.open}
+        errorMessage={conflictDialog.error}
+        onConfirm={() => {
+          const pendingIds = conflictDialog.pendingIds.map(id => Number(id));
+          confirmMutation.mutate({ assignment_ids: pendingIds });
+        }}
+        onCancel={() => {
+          const pendingIds = conflictDialog.pendingIds.map(id => Number(id));
+          cancelMutation.mutate({ assignment_ids: pendingIds });
+        }}
+        isLoading={confirmMutation.isPending || cancelMutation.isPending}
+      />
     </PageContainer>
   );
 }

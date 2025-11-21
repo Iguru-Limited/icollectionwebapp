@@ -16,6 +16,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
 import type { Crew } from '@/types/crew';
+import { useVehicles } from '@/hooks/vehicle/useVehicles';
+import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
+import { AssignmentConflictDialog } from '@/components/assign/AssignmentConflictDialog';
 
 export default function CrewSearchPage() {
   const [q, setQ] = useState('');
@@ -25,6 +28,11 @@ export default function CrewSearchPage() {
   });
   const [selectedVehicleId, setSelectedVehicleId] = useState('');
   const [vehicleSearchQuery, setVehicleSearchQuery] = useState('');
+  const [conflictDialog, setConflictDialog] = useState<{
+    open: boolean;
+    error: string;
+    pendingIds: string[];
+  }>({ open: false, error: '', pendingIds: [] });
 
   const { data: session } = useSession();
   const template = useCompanyTemplateStore((s) => s.template);
@@ -36,8 +44,9 @@ export default function CrewSearchPage() {
   }
 
   const { data: crewsData, isLoading: crewsLoading } = useCrews();
+  const { data: vehiclesData } = useVehicles();
   const crews = crewsData?.data || [];
-  const vehicles = template?.vehicles || [];
+  const vehicles = vehiclesData?.data || [];
 
   // Filter crews by search query
   const filteredCrews = useMemo(() => {
@@ -60,10 +69,40 @@ export default function CrewSearchPage() {
     );
   }, [vehicleSearchQuery, vehicles]);
 
-  const assignMutation = useAssignVehicle({
-    onSuccess: () => {
-      toast.success('Vehicle assigned successfully');
+  const confirmMutation = useConfirmAssignment({
+    onSuccess: (data) => {
+      toast.success(data.message || 'Vehicle crew has been successfully reassigned');
+      setConflictDialog({ open: false, error: '', pendingIds: [] });
       handleDialogClose();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to confirm assignment');
+    },
+  });
+
+  const cancelMutation = useCancelAssignment({
+    onSuccess: (data) => {
+      toast.success(data.message || 'Pending assignment request(s) cancelled successfully');
+      setConflictDialog({ open: false, error: '', pendingIds: [] });
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to cancel assignment');
+    },
+  });
+
+  const assignMutation = useAssignVehicle({
+    onSuccess: (data) => {
+      console.log('Assignment response:', data);
+      if (data.pending_assignment_ids && data.pending_assignment_ids.length > 0) {
+        setConflictDialog({
+          open: true,
+          error: data.error || data.message || '',
+          pendingIds: data.pending_assignment_ids,
+        });
+      } else {
+        toast.success('Vehicle assigned successfully');
+        handleDialogClose();
+      }
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to assign vehicle');
@@ -202,6 +241,20 @@ export default function CrewSearchPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AssignmentConflictDialog
+        open={conflictDialog.open}
+        errorMessage={conflictDialog.error}
+        onConfirm={() => {
+          const pendingIds = conflictDialog.pendingIds.map(id => Number(id));
+          confirmMutation.mutate({ assignment_ids: pendingIds });
+        }}
+        onCancel={() => {
+          const pendingIds = conflictDialog.pendingIds.map(id => Number(id));
+          cancelMutation.mutate({ assignment_ids: pendingIds });
+        }}
+        isLoading={confirmMutation.isPending || cancelMutation.isPending}
+      />
     </PageContainer>
   );
 }

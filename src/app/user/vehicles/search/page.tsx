@@ -4,6 +4,8 @@ import { useState, useMemo } from 'react';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
+import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
+import { AssignmentConflictDialog } from '@/components/assign/AssignmentConflictDialog';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -23,6 +25,11 @@ export default function VehicleSearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDriverId, setSelectedDriverId] = useState('');
   const [selectedConductorId, setSelectedConductorId] = useState('');
+  const [conflictDialog, setConflictDialog] = useState<{
+    open: boolean;
+    error: string;
+    pendingIds: string[];
+  }>({ open: false, error: '', pendingIds: [] });
 
   const { data: vehiclesData, isLoading: vehiclesLoading } = useVehicles();
   const { data: crewsData } = useCrews();
@@ -62,10 +69,40 @@ export default function VehicleSearchPage() {
     );
   }, [searchQuery, conductors]);
 
-  const assignMutation = useAssignVehicle({
-    onSuccess: () => {
-      toast.success('Crew assigned successfully');
+  const confirmMutation = useConfirmAssignment({
+    onSuccess: (data) => {
+      toast.success(data.message || 'Vehicle crew has been successfully reassigned');
+      setConflictDialog({ open: false, error: '', pendingIds: [] });
       handleDialogClose();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to confirm assignment');
+    },
+  });
+
+  const cancelMutation = useCancelAssignment({
+    onSuccess: (data) => {
+      toast.success(data.message || 'Pending assignment request(s) cancelled successfully');
+      setConflictDialog({ open: false, error: '', pendingIds: [] });
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to cancel assignment');
+    },
+  });
+
+  const assignMutation = useAssignVehicle({
+    onSuccess: (data) => {
+      console.log('Assignment response:', data);
+      if (data.pending_assignment_ids && data.pending_assignment_ids.length > 0) {
+        setConflictDialog({
+          open: true,
+          error: data.error || data.message || '',
+          pendingIds: data.pending_assignment_ids,
+        });
+      } else {
+        toast.success('Crew assigned successfully');
+        handleDialogClose();
+      }
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to assign crew');
@@ -223,6 +260,20 @@ export default function VehicleSearchPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AssignmentConflictDialog
+        open={conflictDialog.open}
+        errorMessage={conflictDialog.error}
+        onConfirm={() => {
+          const pendingIds = conflictDialog.pendingIds.map(id => Number(id));
+          confirmMutation.mutate({ assignment_ids: pendingIds });
+        }}
+        onCancel={() => {
+          const pendingIds = conflictDialog.pendingIds.map(id => Number(id));
+          cancelMutation.mutate({ assignment_ids: pendingIds });
+        }}
+        isLoading={confirmMutation.isPending || cancelMutation.isPending}
+      />
     </PageContainer>
   );
 }
