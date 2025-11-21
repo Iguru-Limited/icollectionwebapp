@@ -152,29 +152,30 @@ export default function VehicleSearchPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Search Crew</Label>
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Type to filter crew..."
-                className="h-9"
-              />
-            </div>
-            
-            <div className="space-y-2">
               <Label htmlFor="driver-select">Select Driver</Label>
               <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
                 <SelectTrigger id="driver-select">
                   <SelectValue placeholder="Choose a driver..." />
                 </SelectTrigger>
                 <SelectContent>
+                  <div className="px-2 pb-1">
+                    <Input
+                      autoFocus
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Type to search driver..."
+                      className="h-9"
+                    />
+                  </div>
                   {filteredDrivers.map((driver) => (
                     <SelectItem key={driver.crew_id} value={driver.crew_id}>
                       {driver.name} {driver.badge_number ? `(${driver.badge_number})` : ''}
                     </SelectItem>
                   ))}
                   {filteredDrivers.length === 0 && (
-                    <div className="p-2 text-sm text-gray-500">No drivers available</div>
+                    <div className="p-2 text-sm text-gray-500">
+                      {searchQuery ? 'No matching drivers found' : 'No drivers available'}
+                    </div>
                   )}
                 </SelectContent>
               </Select>
@@ -187,13 +188,23 @@ export default function VehicleSearchPage() {
                   <SelectValue placeholder="Choose a conductor..." />
                 </SelectTrigger>
                 <SelectContent>
+                  <div className="px-2 pb-1">
+                    <Input
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Type to search conductor..."
+                      className="h-9"
+                    />
+                  </div>
                   {filteredConductors.map((conductor) => (
                     <SelectItem key={conductor.crew_id} value={conductor.crew_id}>
                       {conductor.name} {conductor.badge_number ? `(${conductor.badge_number})` : ''}
                     </SelectItem>
                   ))}
                   {filteredConductors.length === 0 && (
-                    <div className="p-2 text-sm text-gray-500">No conductors available</div>
+                    <div className="p-2 text-sm text-gray-500">
+                      {searchQuery ? 'No matching conductors found' : 'No conductors available'}
+                    </div>
                   )}
                 </SelectContent>
               </Select>

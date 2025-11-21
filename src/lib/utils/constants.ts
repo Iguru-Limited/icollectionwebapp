@@ -10,6 +10,7 @@ export const API_ENDPOINTS = {
   CREW_HISTORY:'/api/crew-assignment-history/list.php',
   ASSIGN_VEHICLE:'/api/crew-assignment/manage.php',
   LIST_VEHICLES:'/api//vehicle/list.php',
+  
 } as const;
 
 export const APP_CONFIG = {

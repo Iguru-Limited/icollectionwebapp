@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
@@ -23,6 +24,7 @@ export default function CrewSearchPage() {
     crew: null,
   });
   const [selectedVehicleId, setSelectedVehicleId] = useState('');
+  const [vehicleSearchQuery, setVehicleSearchQuery] = useState('');
 
   const { data: session } = useSession();
   const template = useCompanyTemplateStore((s) => s.template);
@@ -49,6 +51,15 @@ export default function CrewSearchPage() {
     );
   }, [q, crews]);
 
+  // Filter vehicles by search query in dialog
+  const filteredVehicles = useMemo(() => {
+    if (!vehicleSearchQuery) return vehicles;
+    const query = vehicleSearchQuery.toLowerCase();
+    return vehicles.filter(v => 
+      v.number_plate.toLowerCase().includes(query)
+    );
+  }, [vehicleSearchQuery, vehicles]);
+
   const assignMutation = useAssignVehicle({
     onSuccess: () => {
       toast.success('Vehicle assigned successfully');
@@ -74,6 +85,7 @@ export default function CrewSearchPage() {
   const handleDialogClose = () => {
     setAssignDialog({ open: false, crew: null });
     setSelectedVehicleId('');
+    setVehicleSearchQuery('');
   };
 
   const openAssignDialog = (crew: Crew) => {
@@ -154,13 +166,24 @@ export default function CrewSearchPage() {
                   <SelectValue placeholder="Choose a vehicle..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {vehicles.map((vehicle) => (
+                  <div className="px-2 pb-1">
+                    <Input
+                      autoFocus
+                      value={vehicleSearchQuery}
+                      onChange={(e) => setVehicleSearchQuery(e.target.value)}
+                      placeholder="Type to search vehicle..."
+                      className="h-9"
+                    />
+                  </div>
+                  {filteredVehicles.map((vehicle) => (
                     <SelectItem key={vehicle.vehicle_id} value={String(vehicle.vehicle_id)}>
                       {vehicle.number_plate}
                     </SelectItem>
                   ))}
-                  {vehicles.length === 0 && (
-                    <div className="p-2 text-sm text-gray-500">No vehicles available</div>
+                  {filteredVehicles.length === 0 && (
+                    <div className="p-2 text-sm text-gray-500">
+                      {vehicleSearchQuery ? 'No matching vehicles found' : 'No vehicles available'}
+                    </div>
                   )}
                 </SelectContent>
               </Select>
