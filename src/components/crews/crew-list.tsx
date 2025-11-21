@@ -33,13 +33,14 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
   const [conflictDialog, setConflictDialog] = useState<{
     open: boolean;
     error: string;
+    message: string;
     pendingIds: string[];
-  }>({ open: false, error: '', pendingIds: [] });
+  }>({ open: false, error: '', message: '', pendingIds: [] });
 
   const confirmMutation = useConfirmAssignment({
     onSuccess: (data) => {
       toast?.success?.(data.message || 'Vehicle crew has been successfully reassigned');
-      setConflictDialog({ open: false, error: '', pendingIds: [] });
+      setConflictDialog({ open: false, error: '', message: '', pendingIds: [] });
       setOpen(false);
       const companyId = session?.user?.company?.company_id;
       queryClient.invalidateQueries({ queryKey: ['crews', companyId] });
@@ -52,7 +53,7 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
   const cancelMutation = useCancelAssignment({
     onSuccess: (data) => {
       toast?.success?.(data.message || 'Pending assignment request(s) cancelled successfully');
-      setConflictDialog({ open: false, error: '', pendingIds: [] });
+      setConflictDialog({ open: false, error: '', message: '', pendingIds: [] });
     },
     onError: (error) => {
       toast?.error?.(error.message || 'Failed to cancel assignment');
@@ -65,7 +66,8 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
       if (data.pending_assignment_ids && data.pending_assignment_ids.length > 0) {
         setConflictDialog({
           open: true,
-          error: data.error || data.message || '',
+          error: data.error || '',
+          message: data.message || '',
           pendingIds: data.pending_assignment_ids,
         });
       } else {
@@ -178,6 +180,7 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
       <AssignmentConflictDialog
         open={conflictDialog.open}
         errorMessage={conflictDialog.error}
+        message={conflictDialog.message}
         onConfirm={() => {
           const pendingIds = conflictDialog.pendingIds.map(id => Number(id));
           confirmMutation.mutate({ assignment_ids: pendingIds });

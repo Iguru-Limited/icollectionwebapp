@@ -56,17 +56,19 @@ export default function AssignPage() {
   const [conflictDialog, setConflictDialog] = useState<{
     open: boolean;
     error: string;
+    message: string;
     pendingIds: string[];
   }>({
     open: false,
     error: '',
+    message: '',
     pendingIds: [],
   });
 
   const confirmMutation = useConfirmAssignment({
     onSuccess: (data) => {
       toast.success(data.message || 'Vehicle crew has been successfully reassigned');
-      setConflictDialog({ open: false, error: '', pendingIds: [] });
+      setConflictDialog({ open: false, error: '', message: '', pendingIds: [] });
       // Reset form
       setSelectedVehicleId(null);
       setVehicleQuery('');
@@ -77,18 +79,18 @@ export default function AssignPage() {
     },
     onError: (err) => {
       toast.error(err.message);
-      setConflictDialog({ open: false, error: '', pendingIds: [] });
+      setConflictDialog({ open: false, error: '', message: '', pendingIds: [] });
     },
   });
 
   const cancelMutation = useCancelAssignment({
     onSuccess: (data) => {
       toast.info(data.message || 'Pending assignment request cancelled');
-      setConflictDialog({ open: false, error: '', pendingIds: [] });
+      setConflictDialog({ open: false, error: '', message: '', pendingIds: [] });
     },
     onError: (err) => {
       toast.error(err.message);
-      setConflictDialog({ open: false, error: '', pendingIds: [] });
+      setConflictDialog({ open: false, error: '', message: '', pendingIds: [] });
     },
   });
 
@@ -99,7 +101,8 @@ export default function AssignPage() {
       if (data.pending_assignment_ids && data.pending_assignment_ids.length > 0) {
         setConflictDialog({
           open: true,
-          error: data.error || data.message || '',
+          error: data.error || '',
+          message: data.message || '',
           pendingIds: data.pending_assignment_ids,
         });
         return;
@@ -290,6 +293,7 @@ export default function AssignPage() {
       <AssignmentConflictDialog
         open={conflictDialog.open}
         errorMessage={conflictDialog.error}
+        message={conflictDialog.message}
         onConfirm={() => {
           const pendingIds = conflictDialog.pendingIds.map(id => Number(id));
           confirmMutation.mutate({ assignment_ids: pendingIds });

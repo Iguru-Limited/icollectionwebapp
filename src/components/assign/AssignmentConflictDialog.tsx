@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 interface AssignmentConflictDialogProps {
   open: boolean;
   errorMessage: string;
+  message?: string;
   onConfirm: () => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -14,6 +15,7 @@ interface AssignmentConflictDialogProps {
 export function AssignmentConflictDialog({
   open,
   errorMessage,
+  message,
   onConfirm,
   onCancel,
   isLoading = false,
@@ -28,8 +30,11 @@ export function AssignmentConflictDialog({
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">Assignment Conflict</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-2">
+        <div className="space-y-3 py-2">
           <div className="text-sm text-gray-700">{errorMessage}</div>
+          {message && (
+            <div className="text-sm text-gray-600">{message}</div>
+          )}
         </div>
         <DialogFooter className="gap-2 sm:gap-2">
           <Button 
