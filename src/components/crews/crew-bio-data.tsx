@@ -18,11 +18,10 @@ interface CrewBioDataProps {
 export function CrewBioData({ crew }: CrewBioDataProps) {
   const expired = crew.badge_expiry ? new Date(crew.badge_expiry) < new Date() : false;
   const expiryStr = crew.badge_expiry ? new Date(crew.badge_expiry).toLocaleDateString() : '-';
-  const initials = crew.name?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'C';
 
   return (
     <div className="space-y-4">
-      <Card>
+      {/* <Card>
         <CardContent className="pt-6">
           <div className="text-center">
             <Avatar className="h-24 w-24 mx-auto mb-4">
@@ -32,7 +31,7 @@ export function CrewBioData({ crew }: CrewBioDataProps) {
             <Badge variant="secondary" className="mb-1">{crew.role_name}</Badge>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <Card>
         <CardHeader>

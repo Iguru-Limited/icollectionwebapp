@@ -29,12 +29,12 @@ export default function CrewRolePage() {
     <PageContainer>
       <PageHeader title={pluralLabel} />
       <main className="px-4 pb-24 max-w-3xl mx-auto space-y-4">
-        <button
+        {/* <button
           onClick={() => router.push('/user/crews')}
           className="flex items-center gap-2 text-sm text-purple-700 hover:text-purple-900 font-medium"
         >
           <ArrowLeftIcon className="w-4 h-4" /> Back to Categories
-        </button>
+        </button> */}
 
         <SearchBar
           value={q}
