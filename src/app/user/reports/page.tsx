@@ -3,8 +3,6 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { EyeIcon, ReceiptPercentIcon } from '@heroicons/react/24/outline';
 import { Card } from '@/components/ui/card';
-import { TopNavigation } from '@/components/ui/top-navigation';
-import { BottomNavigation } from '@/components/ui/bottom-navigation';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -79,11 +77,6 @@ export default function Reports() {
       transition={{ duration: 0.4 }}
       className="min-h-screen bg-gray-50"
     >
-      {/* Top navigation - hidden on small screens */}
-      <div className="hidden md:block">
-        <TopNavigation />
-      </div>
-
       <div className="container mx-auto px-4 py-4 pb-20 md:pb-6 space-y-4 max-w-screen-xl">
         {/* Date Navigation */}
         <DateSelector selectedDate={selectedDate} onDateChange={setSelectedDate} />
@@ -161,11 +154,6 @@ export default function Reports() {
             </Table>
           </Card>
         </div>
-      </div>
-
-      {/* Bottom Navigation - Mobile only */}
-      <div className="md:hidden">
-        <BottomNavigation />
       </div>
     </motion.div>
   );

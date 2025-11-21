@@ -1,14 +1,12 @@
 "use client";
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { PageContainer, PageHeader, SearchBar } from '@/components/layout';
 import { useCrews } from '@/hooks/crew';
 import { CrewList } from '@/components/crews';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useState, useMemo } from 'react';
 
 export default function CrewRolePage() {
   const params = useParams();
-  const router = useRouter();
   const roleParam = (params?.role as string)?.toUpperCase(); // e.g. CONDUCTOR
   const singular = roleParam?.charAt(0) + roleParam?.slice(1).toLowerCase();
   const pluralLabel = singular + 's';

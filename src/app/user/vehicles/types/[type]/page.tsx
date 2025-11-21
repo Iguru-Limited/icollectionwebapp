@@ -1,14 +1,12 @@
 "use client";
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import { PageContainer, PageHeader, SearchBar } from '@/components/layout';
 import { VehicleCategoryTable } from '@/components/vehicles/VehicleCategoryTable';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 export default function VehicleTypePage() {
   const params = useParams();
-  const router = useRouter();
   const typeParam = (params?.type as string)?.toLowerCase();
   const { data, isLoading } = useVehicles();
   const [q, setQ] = useState('');
