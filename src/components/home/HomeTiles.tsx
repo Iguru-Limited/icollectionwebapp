@@ -7,7 +7,7 @@ import {
   WalletIcon,
   UsersIcon,
   TruckIcon,
-  BookOpenIcon,
+  BoltIcon,
 } from '@heroicons/react/24/outline';
 
 type Tile = {
@@ -43,9 +43,9 @@ export default function HomeTiles() {
       rightName: 'assign_crew', // Uses assign_crew right since it manages crew assignments
     },
     {
-      title: 'Assign Vehicle',
+      title: 'Quick Assign',
       href: '/user/assign',
-      icon: <BookOpenIcon className="w-6 h-6 text-white" />,
+      icon: <BoltIcon className="w-6 h-6 text-white" />,
       bgClass: 'bg-green-600',
       rightName: 'assign_crew', // Same right - can assign vehicles to crew
     },
@@ -95,7 +95,7 @@ export default function HomeTiles() {
               {t.title === 'Vehicle' && typeof totalVehicles === 'number' && (
                 <div className="text-xl font-semibold text-gray-900">{totalVehicles}</div>
               )}
-              {t.title === 'Assign Vehicle' && typeof assignedVehicles === 'number' && typeof unassignedVehicles === 'number' && (
+              {t.title === 'Quick Assign' && typeof assignedVehicles === 'number' && typeof unassignedVehicles === 'number' && (
                 <div className="text-center space-y-1">
                   <div className="text-sm text-gray-600">
                     Assignments <span className="font-semibold text-green-700">{assignedVehicles}</span>
