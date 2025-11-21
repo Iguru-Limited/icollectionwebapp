@@ -14,13 +14,9 @@ export default async function UserLayout({ children }: { children: ReactNode }) 
 
   return (
     <>
-      <div className="hidden md:block">
-        <TopNavigation />
-      </div>
+      <TopNavigation />
       {children}
-      <div className="md:hidden">
-        <BottomNavigation />
-      </div>
+      <BottomNavigation />
     </>
   );
 }

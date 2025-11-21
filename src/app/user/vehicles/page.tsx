@@ -21,7 +21,7 @@ export default function VehiclesCategoriesPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Vehicles" />
+      <PageHeader title="Vehicles" backHref="/user"/>
       <main className="px-4 pb-24 max-w-md mx-auto">
         <div className="grid grid-cols-1 gap-4">
           {isLoading && (
