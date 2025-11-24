@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn, getSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { useAppStore } from '@/store/appStore';
 import { useRouter } from 'next/navigation';
+// API_ENDPOINTS no longer needed here; we use internal proxy route
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,37 +26,59 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     setError('');
 
     try {
-      // Attempt sign-in with NextAuth credentials provider
-      const result = await signIn('credentials', {
-        username,
-        password,
-        callbackUrl: '/user',
-        redirect: false,
+      // 1. Call internal proxy to perform server-side login (avoids CORS)
+      const proxyResp = await fetch('/api/auth/raw-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
       });
+      const proxyJson = await proxyResp.json();
+      console.log('Proxy login response:', proxyJson);
 
-      // Log the full sign-in response for debugging in the browser console
-      console.log('Sign-in response:', result);
+      if (!proxyResp.ok) {
+        setError(proxyJson?.error || 'Invalid username or password');
+        setIsLoading(false);
+        return;
+      }
+
+      const auth = proxyJson.auth;
+      if (!auth?.access_token || !auth?.user?.user_id) {
+        setError('Malformed login response');
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Persist company_template directly (never enters NextAuth)
+      if (proxyJson.company_template) {
+        useCompanyTemplateStore.getState().setTemplate(proxyJson.company_template);
+      }
+
+      // 3. Persist printer directly
+      if (auth.user?.printer) {
+        useAppStore.getState().setSelectedPrinter(auth.user.printer);
+      }
+
+      // 4. Prepare stripped JSON for NextAuth signIn (no company_template)
+      const raw_login_json = JSON.stringify(auth);
+
+      // 5. Call NextAuth credentials provider with raw_login_json (skips second backend call)
+      const result = await signIn('credentials', {
+        raw_login_json,
+        redirect: false,
+        callbackUrl: '/user',
+      });
+      console.log('Sign-in result after raw_login_json:', result);
 
       if (result?.error) {
-        console.error('Sign-in error:', result.error);
-        setError('Invalid username or password');
-      } else if (result?.ok) {
-        // Fetch session to get company_template and printer
-        const session = await getSession();
-        console.log('Session after login:', session);
-
-        // Persist company_template and printer from session to Zustand stores
-        if (session?.company_template) {
-          useCompanyTemplateStore.getState().setTemplate(session.company_template);
-        }
-        if (session?.user?.printer) {
-          useAppStore.getState().setSelectedPrinter(session.user.printer);
-        }
-
-        // Redirect to /user page on successful login
-        router.push('/user');
+        setError('Authentication failed establishing session');
+        setIsLoading(false);
+        return;
       }
-    } catch {
+
+      // 6. Navigate to user dashboard
+      router.push('/user');
+    } catch (err) {
+      console.error('Login process error:', err);
       setError('An error occurred during login');
     } finally {
       setIsLoading(false);

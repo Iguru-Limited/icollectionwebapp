@@ -37,14 +37,7 @@ export default function CrewSearchPage() {
 
   const { data: session } = useSession();
   const template = useCompanyTemplateStore((s) => s.template);
-  const setTemplate = useCompanyTemplateStore((s) => s.setTemplate);
-  
-  // Hydrate template from session if not in store
-  if (!template && session?.company_template) {
-    setTemplate(session.company_template);
-  }
-
-  const { data: crewsData, isLoading: crewsLoading } = useCrews();
+  // Template is already persisted from login in Zustand + localStorage  const { data: crewsData, isLoading: crewsLoading } = useCrews();
   const { data: vehiclesData } = useVehicles();
   const crews = crewsData?.data || [];
   const vehicles = vehiclesData?.data || [];

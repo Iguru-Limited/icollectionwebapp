@@ -6,22 +6,14 @@ import { Card } from '@/components/ui/card';
 import { TransactionSummaryTable } from '@/components/ui/transaction-summary-table';
 import { Button } from '@/components/ui/button';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { DateSelector } from '@/components/ui/date-selector';
 
 export default function AccountPage() {
   const { data: session } = useSession();
   const template = useCompanyTemplateStore((s) => s.template);
-  const setTemplate = useCompanyTemplateStore((s) => s.setTemplate);
-  const hasHydrated = useCompanyTemplateStore((s) => s._hasHydrated);
   const [selectedDate, setSelectedDate] = useState(new Date());
-
-  useEffect(() => {
-    if (!hasHydrated) return;
-    if (!template && session?.company_template) {
-      setTemplate(session.company_template);
-    }
-  }, [hasHydrated, template, session, setTemplate]);
+  // Template is already persisted from login in Zustand + localStorage
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/login' });

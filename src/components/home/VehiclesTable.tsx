@@ -6,8 +6,6 @@ import { Card } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/appStore';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
-import { useSession } from 'next-auth/react';
-import { useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -35,35 +33,11 @@ const buttonVariants = {
 
 export default function VehiclesTable() {
   const router = useRouter();
-  const { data: session } = useSession();
   const template = useCompanyTemplateStore((s) => s.template);
-  const setTemplate = useCompanyTemplateStore((s) => s.setTemplate);
-  const hasHydrated = useCompanyTemplateStore((s) => s._hasHydrated);
   const tableSearch = useAppStore((s) => s.viewPreferences.tableSearch);
   const setViewPreferences = useAppStore((s) => s.setViewPreferences);
   const setSelectedVehicleId = useAppStore((s) => s.setSelectedVehicleId);
-
-  // Hydrate store from session if store is empty
-  useEffect(() => {
-    if (!hasHydrated) return;
-
-    if (!template && session?.company_template) {
-      setTemplate(session.company_template);
-    }
-  }, [hasHydrated, template, session, setTemplate]);
-
-  // Additional effect to try hydrating after a short delay if session loads later
-  useEffect(() => {
-    if (!hasHydrated || template) return;
-
-    const timeout = setTimeout(() => {
-      if (!template && session?.company_template) {
-        setTemplate(session.company_template);
-      }
-    }, 100);
-
-    return () => clearTimeout(timeout);
-  }, [hasHydrated, template, session, setTemplate]);
+  // Template is already persisted from login in Zustand + localStorage
 
   return (
     <motion.section initial="hidden" animate="visible" variants={containerVariants}>
