@@ -50,6 +50,30 @@ export interface UpdateCrewResponse {
   data?: Crew;
 }
 
+// Partial edit types (EDIT_CREW)
+// Accepts only changed fields; crew_id is required for identification.
+export interface EditCrewPayload {
+  crew_id: string; // keep as string to align with existing Crew type
+  name?: string;
+  phone?: string;
+  badge_number?: string;
+  crew_role_id?: string; // allow role change
+  role_name?: string | null;
+  badge_expiry?: string | null;
+  email?: string | null;
+  employee_no?: string | null;
+  id_number?: string | null;
+  active?: string; // '1' | '0'
+  photo?: string | null; // base64 or URL if supported
+}
+
+export interface EditCrewResponse {
+  message: string;
+  success?: boolean;
+  error?: string;
+  data?: Crew;
+}
+
 export interface GetCrewRolesResponse {
   success: boolean;
   data: CrewRole[];
