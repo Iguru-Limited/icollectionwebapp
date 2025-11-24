@@ -14,8 +14,40 @@ interface CrewBioDataProps {
 }
 
 export function CrewBioData({ crew }: CrewBioDataProps) {
-  const expired = crew.badge_expiry ? new Date(crew.badge_expiry) < new Date() : false;
-  const expiryStr = crew.badge_expiry ? new Date(crew.badge_expiry).toLocaleDateString() : '-';
+  const getBadgeExpiryInfo = () => {
+    if (!crew.badge_expiry) return { text: '-', expired: false, className: '' };
+    
+    const expiryDate = new Date(crew.badge_expiry);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    expiryDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = expiryDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+      const daysAgo = Math.abs(diffDays);
+      return {
+        text: `Expired ${daysAgo} day${daysAgo === 1 ? '' : 's'} ago`,
+        expired: true,
+        className: 'text-red-600 font-semibold'
+      };
+    } else if (diffDays === 0) {
+      return {
+        text: 'Expires today',
+        expired: true,
+        className: 'text-red-600 font-semibold'
+      };
+    } else {
+      return {
+        text: `${diffDays} day${diffDays === 1 ? '' : 's'} remaining`,
+        expired: false,
+        className: ''
+      };
+    }
+  };
+
+  const expiryInfo = getBadgeExpiryInfo();
 
   return (
     <div className="space-y-4">
@@ -42,8 +74,8 @@ export function CrewBioData({ crew }: CrewBioDataProps) {
           <InfoRow
             icon={<CalendarDaysIcon className="h-4 w-4" />}
             label="Badge Expiry"
-            value={expiryStr}
-            valueClassName={expired ? 'text-red-600 font-semibold' : ''}
+            value={expiryInfo.text}
+            valueClassName={expiryInfo.className}
           />
         </CardContent>
       </Card>
