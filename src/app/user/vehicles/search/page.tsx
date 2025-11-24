@@ -1,6 +1,6 @@
 "use client";
 import { PageContainer, PageHeader, SearchBar } from '@/components/layout';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
@@ -11,9 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
-import { XMarkIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PencilIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import type { VehicleItem } from '@/types/vehicle';
 
@@ -28,6 +27,14 @@ export default function VehicleSearchPage() {
   const [selectedConductorId, setSelectedConductorId] = useState('');
   const [editDriver, setEditDriver] = useState(false);
   const [editConductor, setEditConductor] = useState(false);
+  const [showDriverSuggestions, setShowDriverSuggestions] = useState(false);
+  const [showConductorSuggestions, setShowConductorSuggestions] = useState(false);
+  const [driverSelectedIndex, setDriverSelectedIndex] = useState(-1);
+  const [conductorSelectedIndex, setConductorSelectedIndex] = useState(-1);
+  const [driverSearchQuery, setDriverSearchQuery] = useState('');
+  const [conductorSearchQuery, setConductorSearchQuery] = useState('');
+  const driverInputRef = useRef<HTMLInputElement>(null);
+  const conductorInputRef = useRef<HTMLInputElement>(null);
   const [conflictDialog, setConflictDialog] = useState<{
     open: boolean;
     error: string;
@@ -72,22 +79,22 @@ export default function VehicleSearchPage() {
 
   // Filter crews by search query in dialog
   const filteredDrivers = useMemo(() => {
-    if (!searchQuery) return drivers;
-    const query = searchQuery.toLowerCase();
+    if (!driverSearchQuery) return drivers;
+    const query = driverSearchQuery.toLowerCase();
     return drivers.filter(c => 
       c.name.toLowerCase().includes(query) || 
       c.badge_number?.toLowerCase().includes(query)
     );
-  }, [searchQuery, drivers]);
+  }, [driverSearchQuery, drivers]);
 
   const filteredConductors = useMemo(() => {
-    if (!searchQuery) return conductors;
-    const query = searchQuery.toLowerCase();
+    if (!conductorSearchQuery) return conductors;
+    const query = conductorSearchQuery.toLowerCase();
     return conductors.filter(c => 
       c.name.toLowerCase().includes(query) || 
       c.badge_number?.toLowerCase().includes(query)
     );
-  }, [searchQuery, conductors]);
+  }, [conductorSearchQuery, conductors]);
 
   const confirmMutation = useConfirmAssignment({
     onSuccess: (data) => {
@@ -150,9 +157,112 @@ export default function VehicleSearchPage() {
     setAssignDialog({ open: false, vehicle: null });
     setSelectedDriverId('');
     setSelectedConductorId('');
-    setSearchQuery('');
+    setDriverSearchQuery('');
+    setConductorSearchQuery('');
+    setShowDriverSuggestions(false);
+    setShowConductorSuggestions(false);
+    setDriverSelectedIndex(-1);
+    setConductorSelectedIndex(-1);
     setEditDriver(false);
     setEditConductor(false);
+  };
+
+  const handleDriverKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showDriverSuggestions || filteredDrivers.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setDriverSelectedIndex((prev) => (prev < filteredDrivers.length - 1 ? prev + 1 : prev));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setDriverSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (driverSelectedIndex >= 0 && filteredDrivers[driverSelectedIndex]) {
+          handleSelectDriver(filteredDrivers[driverSelectedIndex].crew_id);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowDriverSuggestions(false);
+        setDriverSelectedIndex(-1);
+        break;
+    }
+  };
+
+  const handleConductorKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showConductorSuggestions || filteredConductors.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setConductorSelectedIndex((prev) => (prev < filteredConductors.length - 1 ? prev + 1 : prev));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setConductorSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (conductorSelectedIndex >= 0 && filteredConductors[conductorSelectedIndex]) {
+          handleSelectConductor(filteredConductors[conductorSelectedIndex].crew_id);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowConductorSuggestions(false);
+        setConductorSelectedIndex(-1);
+        break;
+    }
+  };
+
+  const handleSelectDriver = (crewId: string) => {
+    const driver = crews.find((c) => c.crew_id === crewId);
+    if (driver) {
+      setSelectedDriverId(crewId);
+      setDriverSearchQuery(driver.name);
+      setShowDriverSuggestions(false);
+      setDriverSelectedIndex(-1);
+      setEditDriver(false);
+    }
+  };
+
+  const handleSelectConductor = (crewId: string) => {
+    const conductor = crews.find((c) => c.crew_id === crewId);
+    if (conductor) {
+      setSelectedConductorId(crewId);
+      setConductorSearchQuery(conductor.name);
+      setShowConductorSuggestions(false);
+      setConductorSelectedIndex(-1);
+      setEditConductor(false);
+    }
+  };
+
+  const handleDriverInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setDriverSearchQuery(newValue);
+    setShowDriverSuggestions(true);
+    setDriverSelectedIndex(-1);
+    
+    const selectedDriver = crews.find((c) => c.crew_id === selectedDriverId);
+    if (selectedDriver && newValue !== selectedDriver.name) {
+      setSelectedDriverId('');
+    }
+  };
+
+  const handleConductorInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setConductorSearchQuery(newValue);
+    setShowConductorSuggestions(true);
+    setConductorSelectedIndex(-1);
+    
+    const selectedConductor = crews.find((c) => c.crew_id === selectedConductorId);
+    if (selectedConductor && newValue !== selectedConductor.name) {
+      setSelectedConductorId('');
+    }
   };
 
   const handleUnassignDriver = () => {
@@ -266,32 +376,58 @@ export default function VehicleSearchPage() {
                   </div>
                 </div>
               ) : (
-                <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
-                  <SelectTrigger id="driver-select">
-                    <SelectValue placeholder="Choose a driver..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <div className="px-2 pb-1">
-                      <Input
-                        autoFocus
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Type to search driver..."
-                        className="h-9"
-                      />
+                <div className="relative">
+                  <Input
+                    ref={driverInputRef}
+                    value={driverSearchQuery}
+                    onChange={handleDriverInputChange}
+                    onKeyDown={handleDriverKeyDown}
+                    onFocus={() => setShowDriverSuggestions(true)}
+                    placeholder="Type to search driver..."
+                    className="w-full"
+                  />
+                  
+                  {showDriverSuggestions && driverSearchQuery && filteredDrivers.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                      {filteredDrivers.map((driver, index) => (
+                        <div
+                          key={driver.crew_id}
+                          className={`px-3 py-2 cursor-pointer flex items-center justify-between ${
+                            index === driverSelectedIndex
+                              ? 'bg-purple-50 text-purple-900'
+                              : 'hover:bg-gray-50'
+                          } ${
+                            driver.crew_id === selectedDriverId
+                              ? 'bg-purple-100'
+                              : ''
+                          }`}
+                          onClick={() => handleSelectDriver(driver.crew_id)}
+                          onMouseEnter={() => setDriverSelectedIndex(index)}
+                        >
+                          <span className="text-sm">
+                            {driver.name} {driver.badge_number ? `(${driver.badge_number})` : ''}
+                          </span>
+                          {driver.crew_id === selectedDriverId && (
+                            <CheckIcon className="w-4 h-4 text-purple-700" />
+                          )}
+                        </div>
+                      ))}
                     </div>
-                    {filteredDrivers.map((driver) => (
-                      <SelectItem key={driver.crew_id} value={driver.crew_id}>
-                        {driver.name} {driver.badge_number ? `(${driver.badge_number})` : ''}
-                      </SelectItem>
-                    ))}
-                    {filteredDrivers.length === 0 && (
-                      <div className="p-2 text-sm text-gray-500">
-                        {searchQuery ? 'No matching drivers found' : 'No drivers available'}
-                      </div>
-                    )}
-                  </SelectContent>
-                </Select>
+                  )}
+                  
+                  {showDriverSuggestions && driverSearchQuery && filteredDrivers.length === 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
+                      <p className="text-sm text-gray-500">No drivers found</p>
+                    </div>
+                  )}
+
+                  {selectedDriverId && crews.find(c => c.crew_id === selectedDriverId) && (
+                    <div className="text-sm text-green-600 flex items-center gap-2 mt-2">
+                      <CheckIcon className="w-4 h-4" />
+                      <span>Selected: {crews.find(c => c.crew_id === selectedDriverId)?.name}</span>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
@@ -321,31 +457,58 @@ export default function VehicleSearchPage() {
                   </div>
                 </div>
               ) : (
-                <Select value={selectedConductorId} onValueChange={setSelectedConductorId}>
-                  <SelectTrigger id="conductor-select">
-                    <SelectValue placeholder="Choose a conductor..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <div className="px-2 pb-1">
-                      <Input
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Type to search conductor..."
-                        className="h-9"
-                      />
+                <div className="relative">
+                  <Input
+                    ref={conductorInputRef}
+                    value={conductorSearchQuery}
+                    onChange={handleConductorInputChange}
+                    onKeyDown={handleConductorKeyDown}
+                    onFocus={() => setShowConductorSuggestions(true)}
+                    placeholder="Type to search conductor..."
+                    className="w-full"
+                  />
+                  
+                  {showConductorSuggestions && conductorSearchQuery && filteredConductors.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                      {filteredConductors.map((conductor, index) => (
+                        <div
+                          key={conductor.crew_id}
+                          className={`px-3 py-2 cursor-pointer flex items-center justify-between ${
+                            index === conductorSelectedIndex
+                              ? 'bg-purple-50 text-purple-900'
+                              : 'hover:bg-gray-50'
+                          } ${
+                            conductor.crew_id === selectedConductorId
+                              ? 'bg-purple-100'
+                              : ''
+                          }`}
+                          onClick={() => handleSelectConductor(conductor.crew_id)}
+                          onMouseEnter={() => setConductorSelectedIndex(index)}
+                        >
+                          <span className="text-sm">
+                            {conductor.name} {conductor.badge_number ? `(${conductor.badge_number})` : ''}
+                          </span>
+                          {conductor.crew_id === selectedConductorId && (
+                            <CheckIcon className="w-4 h-4 text-purple-700" />
+                          )}
+                        </div>
+                      ))}
                     </div>
-                    {filteredConductors.map((conductor) => (
-                      <SelectItem key={conductor.crew_id} value={conductor.crew_id}>
-                        {conductor.name} {conductor.badge_number ? `(${conductor.badge_number})` : ''}
-                      </SelectItem>
-                    ))}
-                    {filteredConductors.length === 0 && (
-                      <div className="p-2 text-sm text-gray-500">
-                        {searchQuery ? 'No matching conductors found' : 'No conductors available'}
-                      </div>
-                    )}
-                  </SelectContent>
-                </Select>
+                  )}
+                  
+                  {showConductorSuggestions && conductorSearchQuery && filteredConductors.length === 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
+                      <p className="text-sm text-gray-500">No conductors found</p>
+                    </div>
+                  )}
+
+                  {selectedConductorId && crews.find(c => c.crew_id === selectedConductorId) && (
+                    <div className="text-sm text-green-600 flex items-center gap-2 mt-2">
+                      <CheckIcon className="w-4 h-4" />
+                      <span>Selected: {crews.find(c => c.crew_id === selectedConductorId)?.name}</span>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
