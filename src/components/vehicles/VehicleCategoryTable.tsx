@@ -1,17 +1,13 @@
 "use client";
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
-import { CheckIcon } from '@heroicons/react/24/solid';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
 import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
-import { AssignmentConflictDialog } from '@/components/assign/AssignmentConflictDialog';
+import { AssignmentConflictDialog, AssignCrewDialog } from '@/components/assign';
 import { toast } from 'sonner';
 import type { VehicleItem } from '@/types/vehicle';
 
@@ -44,10 +40,6 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
     role: null,
   });
   const [selectedCrewId, setSelectedCrewId] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const inputRef = useRef<HTMLInputElement>(null);
   const [conflictDialog, setConflictDialog] = useState<{
     open: boolean;
     error: string;
@@ -64,14 +56,6 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
     : assignDialog.role === 'conductor'
     ? crews.filter(c => c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR')
     : [];
-
-  // Further filter by search query
-  const availableCrews = roleFilteredCrews.filter(crew => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return crew.name.toLowerCase().includes(query) || 
-           crew.badge_number?.toLowerCase().includes(query);
-  });
 
   const confirmMutation = useConfirmAssignment({
     onSuccess: (data) => {
@@ -130,65 +114,6 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
   const handleDialogClose = () => {
     setAssignDialog({ open: false, vehicleId: '', vehiclePlate: '', role: null });
     setSelectedCrewId('');
-    setSearchQuery('');
-    setShowSuggestions(false);
-    setSelectedIndex(-1);
-  };
-
-  useEffect(() => {
-    if (assignDialog.open) {
-      setSearchQuery('');
-      setShowSuggestions(false);
-      setSelectedIndex(-1);
-    }
-  }, [assignDialog.open]);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!showSuggestions || availableCrews.length === 0) return;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev < availableCrews.length - 1 ? prev + 1 : prev));
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0 && availableCrews[selectedIndex]) {
-          handleSelectCrew(availableCrews[selectedIndex].crew_id);
-        }
-        break;
-      case 'Escape':
-        e.preventDefault();
-        setShowSuggestions(false);
-        setSelectedIndex(-1);
-        break;
-    }
-  };
-
-  const handleSelectCrew = (crewId: string) => {
-    const crew = crews.find((c) => c.crew_id === crewId);
-    if (crew) {
-      setSelectedCrewId(crewId);
-      setSearchQuery(crew.name);
-      setShowSuggestions(false);
-      setSelectedIndex(-1);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setSearchQuery(newValue);
-    setShowSuggestions(true);
-    setSelectedIndex(-1);
-    
-    const selectedCrew = crews.find((c) => c.crew_id === selectedCrewId);
-    if (selectedCrew && newValue !== selectedCrew.name) {
-      setSelectedCrewId('');
-    }
   };
 
   if (isLoading) {
@@ -257,92 +182,20 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
       </Card>
 
       {/* Assignment Dialog */}
-      <Dialog open={assignDialog.open} onOpenChange={(open) => !open && handleDialogClose()}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Assign {assignDialog.role === 'driver' ? 'Driver' : 'Conductor'} to {assignDialog.vehiclePlate}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="crew-search">
-                Select {assignDialog.role === 'driver' ? 'Driver' : 'Conductor'}
-              </Label>
-              <div className="relative">
-                <Input
-                  id="crew-search"
-                  ref={inputRef}
-                  value={searchQuery}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
-                  onFocus={() => setShowSuggestions(true)}
-                  placeholder={`Type to search ${assignDialog.role}...`}
-                  className="w-full"
-                />
-                
-                {showSuggestions && searchQuery && availableCrews.length > 0 && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
-                    {availableCrews.map((crew, index) => (
-                      <div
-                        key={crew.crew_id}
-                        className={`px-3 py-2 cursor-pointer flex items-center justify-between ${
-                          index === selectedIndex
-                            ? 'bg-purple-50 text-purple-900'
-                            : 'hover:bg-gray-50'
-                        } ${
-                          crew.crew_id === selectedCrewId
-                            ? 'bg-purple-100'
-                            : ''
-                        }`}
-                        onClick={() => handleSelectCrew(crew.crew_id)}
-                        onMouseEnter={() => setSelectedIndex(index)}
-                      >
-                        <span className="text-sm">
-                          {crew.name} {crew.badge_number ? `(${crew.badge_number})` : ''}
-                        </span>
-                        {crew.crew_id === selectedCrewId && (
-                          <CheckIcon className="w-4 h-4 text-purple-700" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                {showSuggestions && searchQuery && availableCrews.length === 0 && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
-                    <p className="text-sm text-gray-500">
-                      {searchQuery ? 'No matching crew found' : `No ${assignDialog.role}s available`}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {selectedCrewId && crews.find(c => c.crew_id === selectedCrewId) && (
-                <div className="text-sm text-green-600 flex items-center gap-2">
-                  <CheckIcon className="w-4 h-4" />
-                  <span>Selected: {crews.find(c => c.crew_id === selectedCrewId)?.name}</span>
-                </div>
-              )}
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={handleDialogClose}
-              disabled={assignMutation.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAssign}
-              disabled={assignMutation.isPending || !selectedCrewId}
-            >
-              {assignMutation.isPending ? 'Assigning...' : 'Assign'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {assignDialog.role && (
+        <AssignCrewDialog
+          open={assignDialog.open}
+          onOpenChange={(open) => !open && handleDialogClose()}
+          crews={roleFilteredCrews}
+          selectedCrewId={selectedCrewId}
+          onCrewChange={setSelectedCrewId}
+          onConfirm={handleAssign}
+          title={`Assign ${assignDialog.role === 'driver' ? 'Driver' : 'Conductor'} to ${assignDialog.vehiclePlate}`}
+          description={`Select a ${assignDialog.role} for this vehicle`}
+          placeholder={`Search ${assignDialog.role} by name or badge...`}
+          loading={assignMutation.isPending}
+        />
+      )}
 
       <AssignmentConflictDialog
         open={conflictDialog.open}

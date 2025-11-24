@@ -1,21 +1,18 @@
 import type { Crew } from '@/types/crew';
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
 import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
 import { AssignmentConflictDialog } from '@/components/assign/AssignmentConflictDialog';
+import { AssignVehicleDialog } from '@/components/assign/AssignVehicleDialog';
 import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { CheckIcon } from '@heroicons/react/24/solid';
 
 interface CrewListProps {
   crews: Crew[];
@@ -25,11 +22,12 @@ interface CrewListProps {
 export function CrewList({ crews, isLoading }: CrewListProps) {
   const router = useRouter();
   const { data: session } = useSession();
-  // template not needed here; dialog fetches vehicles directly
+  const template = useCompanyTemplateStore((s) => s.template);
+  const vehicles = template?.vehicles || [];
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [activeCrew, setActiveCrew] = useState<Crew | null>(null);
-  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
   const [conflictDialog, setConflictDialog] = useState<{
     open: boolean;
     error: string;
@@ -176,7 +174,7 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
                     onClick={(e) => {
                       e.stopPropagation();
                       setActiveCrew(crew);
-                      setSelectedVehicleId(crew.vehicle_id || null);
+                      setSelectedVehicleId(crew.vehicle_id || '');
                       setOpen(true);
                     }}
                   >
@@ -199,8 +197,9 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
         open={open}
         onOpenChange={setOpen}
         crew={activeCrew}
-        value={selectedVehicleId}
-        onValueChange={(v) => setSelectedVehicleId(v)}
+        vehicles={vehicles}
+        selectedVehicleId={selectedVehicleId}
+        onVehicleChange={setSelectedVehicleId}
         loading={isPending}
         onConfirm={() => {
           if (!activeCrew || !selectedVehicleId) return;
@@ -226,180 +225,5 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
         isLoading={confirmMutation.isPending || cancelMutation.isPending}
       />
     </div>
-  );
-}
-
-// Dialog for assigning vehicle to a crew
-
-function AssignVehicleDialog({
-  open,
-  onOpenChange,
-  crew,
-  value,
-  onValueChange,
-  onConfirm,
-  loading,
-}: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  crew: Crew | null;
-  value: string | null;
-  onValueChange: (v: string) => void;
-  onConfirm: () => void;
-  loading?: boolean;
-}) {
-  const template = useCompanyTemplateStore((s) => s.template);
-  const vehicles = template?.vehicles || [];
-  const [q, setQ] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
-
-  const filtered = vehicles.filter((v) =>
-    v.number_plate.toLowerCase().includes(q.toLowerCase()) || String(v.vehicle_id).includes(q),
-  );
-
-  const selectedVehicle = vehicles.find((v) => String(v.vehicle_id) === value);
-
-  // Reset state when dialog opens/closes
-  useEffect(() => {
-    if (open) {
-      setQ('');
-      setShowSuggestions(false);
-      setSelectedIndex(-1);
-    }
-  }, [open]);
-
-  // Handle keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!showSuggestions || filtered.length === 0) return;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev < filtered.length - 1 ? prev + 1 : prev));
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0 && filtered[selectedIndex]) {
-          handleSelectVehicle(filtered[selectedIndex].vehicle_id);
-        }
-        break;
-      case 'Escape':
-        e.preventDefault();
-        setShowSuggestions(false);
-        setSelectedIndex(-1);
-        break;
-    }
-  };
-
-  const handleSelectVehicle = (vehicleId: number) => {
-    const vehicle = vehicles.find((v) => v.vehicle_id === vehicleId);
-    if (vehicle) {
-      onValueChange(String(vehicleId));
-      setQ(vehicle.number_plate);
-      setShowSuggestions(false);
-      setSelectedIndex(-1);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setQ(newValue);
-    setShowSuggestions(true);
-    setSelectedIndex(-1);
-    
-    // Clear selection if user modifies the input
-    if (selectedVehicle && newValue !== selectedVehicle.number_plate) {
-      onValueChange('');
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Assign Vehicle</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3">
-          <div className="text-sm text-gray-600">
-            {crew ? (
-              <span>
-                {crew.name} {crew.role_name ? `(${crew.role_name})` : ''}
-              </span>
-            ) : (
-              'No crew selected'
-            )}
-          </div>
-          
-          <div className="relative">
-            <Input
-              ref={inputRef}
-              value={q}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              onFocus={() => setShowSuggestions(true)}
-              placeholder="Type to search vehicle..."
-              className="w-full"
-            />
-            
-            {showSuggestions && q && filtered.length > 0 && (
-              <div
-                ref={suggestionsRef}
-                className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto"
-              >
-                {filtered.map((vehicle, index) => (
-                  <div
-                    key={vehicle.vehicle_id}
-                    className={`px-3 py-2 cursor-pointer flex items-center justify-between ${
-                      index === selectedIndex
-                        ? 'bg-purple-50 text-purple-900'
-                        : 'hover:bg-gray-50'
-                    } ${
-                      String(vehicle.vehicle_id) === value
-                        ? 'bg-purple-100'
-                        : ''
-                    }`}
-                    onClick={() => handleSelectVehicle(vehicle.vehicle_id)}
-                    onMouseEnter={() => setSelectedIndex(index)}
-                  >
-                    <span className="font-mono text-sm">{vehicle.number_plate}</span>
-                    {String(vehicle.vehicle_id) === value && (
-                      <CheckIcon className="w-4 h-4 text-purple-700" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {showSuggestions && q && filtered.length === 0 && (
-              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
-                <p className="text-sm text-gray-500">No vehicles found</p>
-              </div>
-            )}
-          </div>
-
-          {selectedVehicle && (
-            <div className="text-sm text-green-600 flex items-center gap-2">
-              <CheckIcon className="w-4 h-4" />
-              <span>Selected: {selectedVehicle.number_plate}</span>
-            </div>
-          )}
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-            Cancel
-          </Button>
-          <Button onClick={onConfirm} disabled={loading || !value}>
-            {loading ? 'Assigning...' : 'Assign'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
