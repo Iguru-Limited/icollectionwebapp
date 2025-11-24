@@ -16,17 +16,35 @@ export default function VehicleTypePage() {
     const items = vehiclesData?.data || [];
     if (items.length === 0) return [];
     const hasTypeNames = items.some(v => !!v.type_name);
-    const base = (!typeParam || typeParam === 'all' || !hasTypeNames)
-      ? items
-      : items.filter(v => (v.type_name || '').toLowerCase() === typeParam);
+
+    // Special handling for "null" / "uncategorized" parameters to show vehicles without type_name
+    if (typeParam === 'null' || typeParam === 'uncategorized') {
+      const uncategorized = items.filter(v => !v.type_name);
+      const baseSet = uncategorized.length > 0 ? uncategorized : items; // fallback if none explicitly null
+      if (!q) return baseSet;
+      const qLower = q.toLowerCase();
+      return baseSet.filter(v => (v.number_plate || '').toLowerCase().includes(qLower));
+    }
+
+    let base: typeof items;
+    if (!typeParam || typeParam === 'all' || !hasTypeNames) {
+      base = items;
+    } else {
+      const matches = items.filter(v => (v.type_name || '').toLowerCase() === typeParam);
+      // Fallback to all items if category produced zero matches to avoid empty table when data exists
+      base = matches.length > 0 ? matches : items;
+    }
+
     if (!q) return base;
     const qLower = q.toLowerCase();
     return base.filter(v => (v.number_plate || '').toLowerCase().includes(qLower));
   }, [vehiclesData?.data, typeParam, q]);
 
-  const properLabel = typeParamRaw
-    ? typeParamRaw.charAt(0).toUpperCase() + typeParamRaw.slice(1).toLowerCase()
-    : 'Vehicle';
+  const properLabel = !typeParamRaw
+    ? 'Vehicle'
+    : (typeParam === 'null' || typeParam === 'uncategorized')
+      ? 'Uncategorized'
+      : typeParamRaw.charAt(0).toUpperCase() + typeParamRaw.slice(1).toLowerCase();
 
   return (
     <PageContainer>
@@ -39,7 +57,10 @@ export default function VehicleTypePage() {
         />
         <VehicleCategoryTable vehicles={filtered} isLoading={isLoading} />
         {(!isLoading && filtered.length === 0 && (vehiclesData?.data || []).length > 0) && (
-          <p className="text-xs text-gray-500">No matches for this category/search. Try 'all'.</p>
+          <p className="text-xs text-gray-500">No vehicles matched this category/search. Showing all might help: navigate to /user/vehicles/types/all.</p>
+        )}
+        {(!isLoading && filtered.length > 0 && typeParam && filtered.length === (vehiclesData?.data || []).length && typeParam !== 'all' && typeParam !== 'null' && typeParam !== 'uncategorized') && (
+          <p className="text-[10px] text-gray-400">Category produced no direct matches; displaying all vehicles as fallback.</p>
         )}
         {(!isLoading && (vehiclesData?.data || []).length === 0) && (
           <p className="text-xs text-gray-500">No vehicles returned by list endpoint.</p>
