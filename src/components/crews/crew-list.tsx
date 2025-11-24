@@ -107,7 +107,35 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
     return name?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'C';
   };
 
-  // removed unused helpers (expiry, date formatting)
+  const getBadgeExpiryDisplay = (badgeExpiry: string | null) => {
+    if (!badgeExpiry) return { text: '-', className: '' };
+    
+    const expiryDate = new Date(badgeExpiry);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    expiryDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = expiryDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+      const daysAgo = Math.abs(diffDays);
+      return {
+        text: `Expired ${daysAgo}d ago`,
+        className: 'text-red-600 font-semibold'
+      };
+    } else if (diffDays === 0) {
+      return {
+        text: 'Expires today',
+        className: 'text-red-600 font-semibold'
+      };
+    } else {
+      return {
+        text: `${diffDays}d left`,
+        className: ''
+      };
+    }
+  };
 
   return (
     <div className="rounded-lg border bg-white shadow-sm">
@@ -119,6 +147,7 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
             <TableHead>Role</TableHead>
             <TableHead>Vehicle</TableHead>
             <TableHead>Badge No.</TableHead>
+            <TableHead>Badge Expiry</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -156,6 +185,11 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
                 </div>
               </TableCell>
               <TableCell className="font-mono text-sm">{crew.badge_number || '-'}</TableCell>
+              <TableCell className="text-sm">
+                <span className={getBadgeExpiryDisplay(crew.badge_expiry).className}>
+                  {getBadgeExpiryDisplay(crew.badge_expiry).text}
+                </span>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

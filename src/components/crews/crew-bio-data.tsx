@@ -38,17 +38,11 @@ export function CrewBioData({ crew }: CrewBioDataProps) {
         expired: true,
         className: 'text-red-600 font-semibold'
       };
-    } else if (diffDays <= 30) {
-      return {
-        text: `${diffDays} day${diffDays === 1 ? '' : 's'} remaining`,
-        expired: false,
-        className: 'text-orange-600 font-semibold'
-      };
     } else {
       return {
         text: `${diffDays} day${diffDays === 1 ? '' : 's'} remaining`,
         expired: false,
-        className: 'text-green-600'
+        className: ''
       };
     }
   };
