@@ -9,6 +9,12 @@ import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useMemo, useState } from 'react';
 import { Spinner } from '@/components/ui/spinner';
+import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
+import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
+import { AssignmentConflictDialog } from '@/components/assign/AssignmentConflictDialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import type { Crew } from '@/types/crew';
 
 type FilterType = 'vehicles' | 'drivers' | 'conductors' | null;
@@ -17,6 +23,10 @@ export default function AssignedPage() {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
   const { data: vehiclesData, isLoading: vehiclesLoading } = useVehicles();
+  const [openVehicleDialog, setOpenVehicleDialog] = useState(false);
+  const [activeCrew, setActiveCrew] = useState<Crew | null>(null);
+  const [vehicleSearch, setVehicleSearch] = useState('');
+  const [conflictState, setConflictState] = useState<{ open: boolean; error: string; message: string; pendingIds: string[] }>({ open: false, error: '', message: '', pendingIds: [] });
   const { data: crewsData, isLoading: crewsLoading } = useCrews();
 
   const vehicles = useMemo(() => vehiclesData?.data || [], [vehiclesData?.data]);
@@ -75,6 +85,42 @@ export default function AssignedPage() {
   };
 
   const isLoading = vehiclesLoading || crewsLoading;
+  interface VehicleSummary { vehicle_id: string | number; number_plate: string; crew?: { crew_role_id: string }[] }
+  const assignableVehicles: VehicleSummary[] = useMemo(() => {
+    return vehicles
+      .filter(v => !v.crew || v.crew.length === 0)
+      .map(v => ({ vehicle_id: v.vehicle_id, number_plate: v.number_plate, crew: v.crew }));
+  }, [vehicles]);
+  const filteredVehicles: VehicleSummary[] = useMemo(() => {
+    if (!vehicleSearch.trim()) return assignableVehicles;
+    const s = vehicleSearch.toLowerCase();
+    return assignableVehicles.filter(v => v.number_plate.toLowerCase().includes(s));
+  }, [assignableVehicles, vehicleSearch]);
+
+  const assignMutation = useAssignVehicle({
+    onSuccess: (data) => {
+      if (data.pending_assignment_ids && data.pending_assignment_ids.length > 0) {
+        setConflictState({ open: true, error: data.error || 'Conflict detected', message: data.message || '', pendingIds: data.pending_assignment_ids });
+      } else {
+        setOpenVehicleDialog(false);
+        setActiveCrew(null);
+      }
+    },
+    onError: (err) => console.error(err)
+  });
+  const confirmMutation = useConfirmAssignment({
+    onSuccess: () => setConflictState({ open: false, error: '', message: '', pendingIds: [] }),
+    onError: (e) => console.error(e)
+  });
+  const cancelMutation = useCancelAssignment({
+    onSuccess: () => setConflictState({ open: false, error: '', message: '', pendingIds: [] }),
+    onError: (e) => console.error(e)
+  });
+
+  const handleAssign = (vehicleId: number) => {
+    if (!activeCrew) return;
+    assignMutation.mutate({ vehicle_id: vehicleId, crew_id: Number(activeCrew.crew_id) });
+  };
 
   return (
     <PageContainer>
@@ -218,7 +264,21 @@ export default function AssignedPage() {
                             </span>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline">{driver.vehicle_plate}</Badge>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline">{driver.vehicle_plate}</Badge>
+                              <button
+                                type="button"
+                                aria-label="Reassign vehicle"
+                                className="text-purple-700 hover:text-purple-900"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveCrew(driver);
+                                  setOpenVehicleDialog(true);
+                                }}
+                              >
+                                <PencilSquareIcon className="w-4 h-4" />
+                              </button>
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Button
@@ -283,7 +343,21 @@ export default function AssignedPage() {
                             </span>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline">{conductor.vehicle_plate}</Badge>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline">{conductor.vehicle_plate}</Badge>
+                              <button
+                                type="button"
+                                aria-label="Reassign vehicle"
+                                className="text-purple-700 hover:text-purple-900"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveCrew(conductor);
+                                  setOpenVehicleDialog(true);
+                                }}
+                              >
+                                <PencilSquareIcon className="w-4 h-4" />
+                              </button>
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Button
@@ -314,6 +388,70 @@ export default function AssignedPage() {
           </div>
         )}
       </main>
+      <Dialog open={openVehicleDialog} onOpenChange={(o) => { if(!o){ setOpenVehicleDialog(false); setActiveCrew(null);} }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">Reassign Vehicle</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-sm text-gray-600">Crew: <span className="font-medium">{activeCrew?.name}</span></div>
+            <Input
+              placeholder="Search vehicle by plate"
+              value={vehicleSearch}
+              onChange={(e) => setVehicleSearch(e.target.value)}
+            />
+            <div className="max-h-64 overflow-y-auto rounded border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Plate</TableHead>
+                    <TableHead className="w-[100px]">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredVehicles.map((v) => (
+                    <TableRow key={v.vehicle_id} className="hover:bg-gray-50">
+                      <TableCell className="font-mono uppercase text-sm">{v.number_plate}</TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          className="bg-purple-600 hover:bg-purple-700"
+                          disabled={assignMutation.isPending}
+                          onClick={() => handleAssign(Number(v.vehicle_id))}
+                        >
+                          {assignMutation.isPending ? 'Assigning...' : 'Assign'}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {filteredVehicles.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={2} className="text-center text-gray-500 py-6">No vehicles available</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setOpenVehicleDialog(false); setActiveCrew(null); }}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <AssignmentConflictDialog
+        open={conflictState.open}
+        errorMessage={conflictState.error}
+        message={conflictState.message}
+        onConfirm={() => {
+          const ids = conflictState.pendingIds.map(id => Number(id));
+          confirmMutation.mutate({ assignment_ids: ids });
+        }}
+        onCancel={() => {
+          const ids = conflictState.pendingIds.map(id => Number(id));
+          cancelMutation.mutate({ assignment_ids: ids });
+        }}
+        isLoading={confirmMutation.isPending || cancelMutation.isPending}
+      />
     </PageContainer>
   );
 }
