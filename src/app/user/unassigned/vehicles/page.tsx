@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import { useMemo } from 'react';
 import { Spinner } from '@/components/ui/spinner';
+import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
 export default function PendingVehiclesPage() {
   const router = useRouter();
@@ -29,34 +30,42 @@ export default function PendingVehiclesPage() {
         )}
 
         {!isLoading && (
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="rounded-2xl shadow-md overflow-x-auto bg-white">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Plate Number</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="w-[100px]">Action</TableHead>
+                <TableRow className="bg-purple-50 hover:bg-purple-50">
+                  <TableHead className="font-semibold text-purple-900 text-xl md:text-2xl">#</TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-xl md:text-2xl">Vehicle</TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-xl md:text-2xl">Driver</TableHead>
+                  <TableHead className="font-semibold text-purple-900 text-xl md:text-2xl">Conductor</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {unassignedVehicles.map((vehicle) => (
-                  <TableRow key={vehicle.vehicle_id} className="cursor-pointer hover:bg-gray-50">
-                    <TableCell className="font-semibold uppercase">{vehicle.number_plate}</TableCell>
-                    <TableCell className="text-sm text-gray-600">{vehicle.type_name || '-'}</TableCell>
-                    <TableCell>
-                      <Button
-                        size="sm"
-                        className="bg-purple-700 hover:bg-purple-800"
+                {unassignedVehicles.map((vehicle, index) => (
+                  <TableRow key={vehicle.vehicle_id} className="hover:bg-gray-50">
+                    <TableCell className="font-large text-gray-600 text-xl md:text-2xl">{index + 1}</TableCell>
+                    <TableCell className="font-bold text-xl md:text-2xl text-gray-800 uppercase">{vehicle.number_plate}</TableCell>
+                    <TableCell className="text-center">
+                      <button
                         onClick={() => router.push('/user/vehicles/search')}
+                        className="inline-flex items-center gap-1 text-purple-600 hover:text-purple-800"
                       >
-                        Assign
-                      </Button>
+                        - <PencilSquareIcon className="w-5 h-5" />
+                      </button>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <button
+                        onClick={() => router.push('/user/vehicles/search')}
+                        className="inline-flex items-center gap-1 text-purple-600 hover:text-purple-800"
+                      >
+                        - <PencilSquareIcon className="w-5 h-5" />
+                      </button>
                     </TableCell>
                   </TableRow>
                 ))}
                 {unassignedVehicles.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-gray-500 py-8">
+                    <TableCell colSpan={4} className="text-center text-gray-500 py-8">
                       No pending vehicles found
                     </TableCell>
                   </TableRow>

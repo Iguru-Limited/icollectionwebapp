@@ -2,11 +2,12 @@
 import { PageContainer, PageHeader } from '@/components/layout';
 import { useRouter } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useMemo } from 'react';
 import { Spinner } from '@/components/ui/spinner';
+import type { Crew } from '@/types/crew';
 
 export default function PendingDriversPage() {
   const router = useRouter();
@@ -16,12 +17,46 @@ export default function PendingDriversPage() {
 
   // Filter unassigned crews (crews without a vehicle)
   const unassignedCrews = useMemo(() => {
-    return crews.filter(c => !c.vehicle_id);
+    return crews.filter((c: Crew) => !c.vehicle_id);
   }, [crews]);
 
   const unassignedDrivers = useMemo(() => {
-    return unassignedCrews.filter(c => c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER');
+    return unassignedCrews.filter((c: Crew) => c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER');
   }, [unassignedCrews]);
+
+  const getInitials = (name: string) => {
+    return name?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'C';
+  };
+
+  const getBadgeExpiryDisplay = (badgeExpiry: string | null) => {
+    if (!badgeExpiry) return { text: '-', className: '' };
+    
+    const expiryDate = new Date(badgeExpiry);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    expiryDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = expiryDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+      const daysAgo = Math.abs(diffDays);
+      return {
+        text: `Expired ${daysAgo}d ago`,
+        className: 'text-red-600 font-semibold'
+      };
+    } else if (diffDays === 0) {
+      return {
+        text: 'Expires today',
+        className: 'text-red-600 font-semibold'
+      };
+    } else {
+      return {
+        text: `${diffDays}d left`,
+        className: ''
+      };
+    }
+  };
 
   return (
     <PageContainer>
@@ -34,40 +69,57 @@ export default function PendingDriversPage() {
         )}
 
         {!isLoading && (
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="rounded-lg border bg-white shadow-sm">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[60px]">Avatar</TableHead>
                   <TableHead>Name</TableHead>
+                  <TableHead>Role</TableHead>
                   <TableHead>Badge No.</TableHead>
+                  <TableHead>Badge Expiry</TableHead>
                   <TableHead className="w-[100px]">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {unassignedDrivers.map((driver) => (
-                  <TableRow key={driver.crew_id} className="cursor-pointer hover:bg-gray-50">
+                  <TableRow
+                    key={driver.crew_id}
+                    className="cursor-pointer hover:bg-gray-50"
+                    onClick={() => router.push(`/user/crews/${driver.crew_id}`)}
+                  >
                     <TableCell>
-                      <Avatar className="w-10 h-10 bg-purple-100 text-purple-700 font-semibold">
-                        {driver.name.charAt(0).toUpperCase()}
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
+                          {getInitials(driver.name)}
+                        </AvatarFallback>
                       </Avatar>
                     </TableCell>
                     <TableCell className="font-medium">{driver.name}</TableCell>
-                    <TableCell className="text-sm font-mono">{driver.badge_number || '-'}</TableCell>
+                    <TableCell>{driver.role_name ? driver.role_name.charAt(0) + driver.role_name.slice(1).toLowerCase() : '-'}</TableCell>
+                    <TableCell className="font-mono text-sm">{driver.badge_number || '-'}</TableCell>
+                    <TableCell className="text-sm">
+                      <span className={getBadgeExpiryDisplay(driver.badge_expiry).className}>
+                        {getBadgeExpiryDisplay(driver.badge_expiry).text}
+                      </span>
+                    </TableCell>
                     <TableCell>
                       <Button
                         size="sm"
                         className="bg-purple-700 hover:bg-purple-800"
-                        onClick={() => router.push(`/user/crews/${driver.crew_id}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/user/crews/${driver.crew_id}`);
+                        }}
                       >
-                        Assign
+                        View
                       </Button>
                     </TableCell>
                   </TableRow>
                 ))}
                 {unassignedDrivers.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-gray-500 py-8">
+                    <TableCell colSpan={6} className="text-center text-gray-500 py-8">
                       No pending drivers found
                     </TableCell>
                   </TableRow>
