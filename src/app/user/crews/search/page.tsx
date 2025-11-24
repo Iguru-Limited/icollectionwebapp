@@ -166,7 +166,7 @@ export default function CrewSearchPage() {
                     )}
                   </div>
                   <Button size="sm" className="bg-purple-700 hover:bg-purple-800">
-                    Assign
+                    Manage
                   </Button>
                 </div>
               </Card>
