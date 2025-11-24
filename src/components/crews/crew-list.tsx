@@ -1,12 +1,11 @@
 import type { Crew } from '@/types/crew';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
@@ -16,6 +15,7 @@ import { AssignmentConflictDialog } from '@/components/assign/AssignmentConflict
 import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { CheckIcon } from '@heroicons/react/24/solid';
 
 interface CrewListProps {
   crews: Crew[];
@@ -251,9 +251,74 @@ function AssignVehicleDialog({
   const template = useCompanyTemplateStore((s) => s.template);
   const vehicles = template?.vehicles || [];
   const [q, setQ] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+
   const filtered = vehicles.filter((v) =>
     v.number_plate.toLowerCase().includes(q.toLowerCase()) || String(v.vehicle_id).includes(q),
   );
+
+  const selectedVehicle = vehicles.find((v) => String(v.vehicle_id) === value);
+
+  // Reset state when dialog opens/closes
+  useEffect(() => {
+    if (open) {
+      setQ('');
+      setShowSuggestions(false);
+      setSelectedIndex(-1);
+    }
+  }, [open]);
+
+  // Handle keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || filtered.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev < filtered.length - 1 ? prev + 1 : prev));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && filtered[selectedIndex]) {
+          handleSelectVehicle(filtered[selectedIndex].vehicle_id);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowSuggestions(false);
+        setSelectedIndex(-1);
+        break;
+    }
+  };
+
+  const handleSelectVehicle = (vehicleId: number) => {
+    const vehicle = vehicles.find((v) => v.vehicle_id === vehicleId);
+    if (vehicle) {
+      onValueChange(String(vehicleId));
+      setQ(vehicle.number_plate);
+      setShowSuggestions(false);
+      setSelectedIndex(-1);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setQ(newValue);
+    setShowSuggestions(true);
+    setSelectedIndex(-1);
+    
+    // Clear selection if user modifies the input
+    if (selectedVehicle && newValue !== selectedVehicle.number_plate) {
+      onValueChange('');
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -271,27 +336,60 @@ function AssignVehicleDialog({
               'No crew selected'
             )}
           </div>
-          <Select value={value || ''} onValueChange={onValueChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select vehicle" />
-            </SelectTrigger>
-            <SelectContent>
-              <div className="px-2 pb-1">
-                <Input
-                  autoFocus
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Type to search vehicle..."
-                  className="h-9"
-                />
+          
+          <div className="relative">
+            <Input
+              ref={inputRef}
+              value={q}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onFocus={() => setShowSuggestions(true)}
+              placeholder="Type to search vehicle..."
+              className="w-full"
+            />
+            
+            {showSuggestions && q && filtered.length > 0 && (
+              <div
+                ref={suggestionsRef}
+                className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto"
+              >
+                {filtered.map((vehicle, index) => (
+                  <div
+                    key={vehicle.vehicle_id}
+                    className={`px-3 py-2 cursor-pointer flex items-center justify-between ${
+                      index === selectedIndex
+                        ? 'bg-purple-50 text-purple-900'
+                        : 'hover:bg-gray-50'
+                    } ${
+                      String(vehicle.vehicle_id) === value
+                        ? 'bg-purple-100'
+                        : ''
+                    }`}
+                    onClick={() => handleSelectVehicle(vehicle.vehicle_id)}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                  >
+                    <span className="font-mono text-sm">{vehicle.number_plate}</span>
+                    {String(vehicle.vehicle_id) === value && (
+                      <CheckIcon className="w-4 h-4 text-purple-700" />
+                    )}
+                  </div>
+                ))}
               </div>
-              {filtered.map((v) => (
-                <SelectItem key={v.vehicle_id} value={String(v.vehicle_id)}>
-                  {v.number_plate}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            )}
+            
+            {showSuggestions && q && filtered.length === 0 && (
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
+                <p className="text-sm text-gray-500">No vehicles found</p>
+              </div>
+            )}
+          </div>
+
+          {selectedVehicle && (
+            <div className="text-sm text-green-600 flex items-center gap-2">
+              <CheckIcon className="w-4 h-4" />
+              <span>Selected: {selectedVehicle.number_plate}</span>
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
