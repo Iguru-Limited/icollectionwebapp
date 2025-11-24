@@ -188,7 +188,7 @@ export default function AssignPage() {
 
           {/* Driver Selection */}
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700">select Driver</div>
+            <div className="text-sm font-medium text-gray-700">Driver</div>
             <div className="relative">
               <Input
                 value={driverQuery}
@@ -226,7 +226,7 @@ export default function AssignPage() {
 
           {/* Conductor Selection */}
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700">select Conductor</div>
+            <div className="text-sm font-medium text-gray-700">Conductor</div>
             <div className="relative">
               <Input
                 value={conductorQuery}
