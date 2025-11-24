@@ -1,13 +1,13 @@
 "use client";
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
+import { CheckIcon } from '@heroicons/react/24/solid';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
 import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
@@ -45,6 +45,9 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
   });
   const [selectedCrewId, setSelectedCrewId] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [conflictDialog, setConflictDialog] = useState<{
     open: boolean;
     error: string;
@@ -128,6 +131,64 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
     setAssignDialog({ open: false, vehicleId: '', vehiclePlate: '', role: null });
     setSelectedCrewId('');
     setSearchQuery('');
+    setShowSuggestions(false);
+    setSelectedIndex(-1);
+  };
+
+  useEffect(() => {
+    if (assignDialog.open) {
+      setSearchQuery('');
+      setShowSuggestions(false);
+      setSelectedIndex(-1);
+    }
+  }, [assignDialog.open]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || availableCrews.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev < availableCrews.length - 1 ? prev + 1 : prev));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && availableCrews[selectedIndex]) {
+          handleSelectCrew(availableCrews[selectedIndex].crew_id);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowSuggestions(false);
+        setSelectedIndex(-1);
+        break;
+    }
+  };
+
+  const handleSelectCrew = (crewId: string) => {
+    const crew = crews.find((c) => c.crew_id === crewId);
+    if (crew) {
+      setSelectedCrewId(crewId);
+      setSearchQuery(crew.name);
+      setShowSuggestions(false);
+      setSelectedIndex(-1);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setSearchQuery(newValue);
+    setShowSuggestions(true);
+    setSelectedIndex(-1);
+    
+    const selectedCrew = crews.find((c) => c.crew_id === selectedCrewId);
+    if (selectedCrew && newValue !== selectedCrew.name) {
+      setSelectedCrewId('');
+    }
   };
 
   if (isLoading) {
@@ -205,35 +266,64 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="crew-select">
+              <Label htmlFor="crew-search">
                 Select {assignDialog.role === 'driver' ? 'Driver' : 'Conductor'}
               </Label>
-              <Select value={selectedCrewId} onValueChange={setSelectedCrewId}>
-                <SelectTrigger id="crew-select">
-                  <SelectValue placeholder={`Choose a ${assignDialog.role}...`} />
-                </SelectTrigger>
-                <SelectContent>
-                  <div className="px-2 pb-1">
-                    <Input
-                      autoFocus
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder={`Type to search ${assignDialog.role}...`}
-                      className="h-9"
-                    />
+              <div className="relative">
+                <Input
+                  id="crew-search"
+                  ref={inputRef}
+                  value={searchQuery}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => setShowSuggestions(true)}
+                  placeholder={`Type to search ${assignDialog.role}...`}
+                  className="w-full"
+                />
+                
+                {showSuggestions && searchQuery && availableCrews.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                    {availableCrews.map((crew, index) => (
+                      <div
+                        key={crew.crew_id}
+                        className={`px-3 py-2 cursor-pointer flex items-center justify-between ${
+                          index === selectedIndex
+                            ? 'bg-purple-50 text-purple-900'
+                            : 'hover:bg-gray-50'
+                        } ${
+                          crew.crew_id === selectedCrewId
+                            ? 'bg-purple-100'
+                            : ''
+                        }`}
+                        onClick={() => handleSelectCrew(crew.crew_id)}
+                        onMouseEnter={() => setSelectedIndex(index)}
+                      >
+                        <span className="text-sm">
+                          {crew.name} {crew.badge_number ? `(${crew.badge_number})` : ''}
+                        </span>
+                        {crew.crew_id === selectedCrewId && (
+                          <CheckIcon className="w-4 h-4 text-purple-700" />
+                        )}
+                      </div>
+                    ))}
                   </div>
-                  {availableCrews.map((crew) => (
-                    <SelectItem key={crew.crew_id} value={crew.crew_id}>
-                      {crew.name} {crew.badge_number ? `(${crew.badge_number})` : ''}
-                    </SelectItem>
-                  ))}
-                  {availableCrews.length === 0 && (
-                    <div className="p-2 text-sm text-gray-500">
+                )}
+                
+                {showSuggestions && searchQuery && availableCrews.length === 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
+                    <p className="text-sm text-gray-500">
                       {searchQuery ? 'No matching crew found' : `No ${assignDialog.role}s available`}
-                    </div>
-                  )}
-                </SelectContent>
-              </Select>
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {selectedCrewId && crews.find(c => c.crew_id === selectedCrewId) && (
+                <div className="text-sm text-green-600 flex items-center gap-2">
+                  <CheckIcon className="w-4 h-4" />
+                  <span>Selected: {crews.find(c => c.crew_id === selectedCrewId)?.name}</span>
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>

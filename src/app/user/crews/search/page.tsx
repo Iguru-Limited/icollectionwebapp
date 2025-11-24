@@ -1,6 +1,6 @@
 "use client";
 import { PageContainer, PageHeader, SearchBar } from '@/components/layout';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
 import { Card } from '@/components/ui/card';
@@ -10,13 +10,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
 import type { Crew } from '@/types/crew';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
 import { AssignmentConflictDialog } from '@/components/assign/AssignmentConflictDialog';
+import { CheckIcon } from '@heroicons/react/24/solid';
 
 export default function CrewSearchPage() {
   const [q, setQ] = useState('');
@@ -26,6 +26,9 @@ export default function CrewSearchPage() {
   });
   const [selectedVehicleId, setSelectedVehicleId] = useState('');
   const [vehicleSearchQuery, setVehicleSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [conflictDialog, setConflictDialog] = useState<{
     open: boolean;
     error: string;
@@ -116,6 +119,64 @@ export default function CrewSearchPage() {
     setAssignDialog({ open: false, crew: null });
     setSelectedVehicleId('');
     setVehicleSearchQuery('');
+    setShowSuggestions(false);
+    setSelectedIndex(-1);
+  };
+
+  useEffect(() => {
+    if (assignDialog.open) {
+      setVehicleSearchQuery('');
+      setShowSuggestions(false);
+      setSelectedIndex(-1);
+    }
+  }, [assignDialog.open]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || filteredVehicles.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev < filteredVehicles.length - 1 ? prev + 1 : prev));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && filteredVehicles[selectedIndex]) {
+          handleSelectVehicle(String(filteredVehicles[selectedIndex].vehicle_id));
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowSuggestions(false);
+        setSelectedIndex(-1);
+        break;
+    }
+  };
+
+  const handleSelectVehicle = (vehicleId: string) => {
+    const vehicle = vehicles.find((v) => String(v.vehicle_id) === vehicleId);
+    if (vehicle) {
+      setSelectedVehicleId(vehicleId);
+      setVehicleSearchQuery(vehicle.number_plate);
+      setShowSuggestions(false);
+      setSelectedIndex(-1);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setVehicleSearchQuery(newValue);
+    setShowSuggestions(true);
+    setSelectedIndex(-1);
+    
+    const selectedVehicle = vehicles.find((v) => String(v.vehicle_id) === selectedVehicleId);
+    if (selectedVehicle && newValue !== selectedVehicle.number_plate) {
+      setSelectedVehicleId('');
+    }
   };
 
   const openAssignDialog = (crew: Crew) => {
@@ -190,33 +251,58 @@ export default function CrewSearchPage() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="vehicle-select">Select Vehicle</Label>
-              <Select value={selectedVehicleId} onValueChange={setSelectedVehicleId}>
-                <SelectTrigger id="vehicle-select">
-                  <SelectValue placeholder="Choose a vehicle..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <div className="px-2 pb-1">
-                    <Input
-                      autoFocus
-                      value={vehicleSearchQuery}
-                      onChange={(e) => setVehicleSearchQuery(e.target.value)}
-                      placeholder="Type to search vehicle..."
-                      className="h-9"
-                    />
+              <Label htmlFor="vehicle-search">Select Vehicle</Label>
+              <div className="relative">
+                <Input
+                  id="vehicle-search"
+                  ref={inputRef}
+                  value={vehicleSearchQuery}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => setShowSuggestions(true)}
+                  placeholder="Type to search vehicle..."
+                  className="w-full"
+                />
+                
+                {showSuggestions && vehicleSearchQuery && filteredVehicles.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                    {filteredVehicles.map((vehicle, index) => (
+                      <div
+                        key={vehicle.vehicle_id}
+                        className={`px-3 py-2 cursor-pointer flex items-center justify-between ${
+                          index === selectedIndex
+                            ? 'bg-purple-50 text-purple-900'
+                            : 'hover:bg-gray-50'
+                        } ${
+                          String(vehicle.vehicle_id) === selectedVehicleId
+                            ? 'bg-purple-100'
+                            : ''
+                        }`}
+                        onClick={() => handleSelectVehicle(String(vehicle.vehicle_id))}
+                        onMouseEnter={() => setSelectedIndex(index)}
+                      >
+                        <span className="font-mono text-sm">{vehicle.number_plate}</span>
+                        {String(vehicle.vehicle_id) === selectedVehicleId && (
+                          <CheckIcon className="w-4 h-4 text-purple-700" />
+                        )}
+                      </div>
+                    ))}
                   </div>
-                  {filteredVehicles.map((vehicle) => (
-                    <SelectItem key={vehicle.vehicle_id} value={String(vehicle.vehicle_id)}>
-                      {vehicle.number_plate}
-                    </SelectItem>
-                  ))}
-                  {filteredVehicles.length === 0 && (
-                    <div className="p-2 text-sm text-gray-500">
-                      {vehicleSearchQuery ? 'No matching vehicles found' : 'No vehicles available'}
-                    </div>
-                  )}
-                </SelectContent>
-              </Select>
+                )}
+                
+                {showSuggestions && vehicleSearchQuery && filteredVehicles.length === 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-3">
+                    <p className="text-sm text-gray-500">No vehicles found</p>
+                  </div>
+                )}
+              </div>
+
+              {selectedVehicleId && vehicles.find(v => String(v.vehicle_id) === selectedVehicleId) && (
+                <div className="text-sm text-green-600 flex items-center gap-2">
+                  <CheckIcon className="w-4 h-4" />
+                  <span>Selected: {vehicles.find(v => String(v.vehicle_id) === selectedVehicleId)?.number_plate}</span>
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>
