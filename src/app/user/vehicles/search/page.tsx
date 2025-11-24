@@ -176,7 +176,7 @@ export default function VehicleSearchPage() {
                     <div className="text-sm text-gray-600">{vehicle.type_name}</div>
                   </div>
                   <Button size="sm" className="bg-purple-700 hover:bg-purple-800">
-                    Assign
+                    Manage
                   </Button>
                 </div>
               </Card>
