@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
+import { useDeferredValue } from 'react';
 import { useAppStore } from '@/store/appStore';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
@@ -38,6 +39,7 @@ export default function VehiclesTable() {
   const hasHydrated = useCompanyTemplateStore((s) => s._hasHydrated);
   const { data: vehiclesApi, isLoading: vehiclesLoading } = useVehicles();
   const tableSearch = useAppStore((s) => s.viewPreferences.tableSearch);
+  const deferredSearch = useDeferredValue(tableSearch.trim().toLowerCase());
   const setViewPreferences = useAppStore((s) => s.setViewPreferences);
   const setSelectedVehicleId = useAppStore((s) => s.setSelectedVehicleId);
   // Template is already persisted from login in Zustand + localStorage
@@ -105,9 +107,23 @@ export default function VehiclesTable() {
                   number_plate: v.number_plate,
                   crew: [] as { crew_id: string; name: string; phone: string; crew_role_id: string }[],
                 }));
-                return source
-                  .filter(v => tableSearch ? v.number_plate.toLowerCase().includes(tableSearch.toLowerCase()) : true)
-                  .map((vehicle, index) => {
+                const filtered = source.filter(v => {
+                  if (!deferredSearch) return true;
+                  const plate = v.number_plate.toLowerCase();
+                  const driverName = v.crew?.find(c => c.crew_role_id === '3')?.name?.toLowerCase() || '';
+                  const conductorName = v.crew?.find(c => c.crew_role_id === '12')?.name?.toLowerCase() || '';
+                  return plate.includes(deferredSearch) || driverName.includes(deferredSearch) || conductorName.includes(deferredSearch);
+                });
+                if (filtered.length === 0 && deferredSearch) {
+                  return (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-sm text-gray-500">
+                        No vehicles match “{tableSearch}” (searched plate, driver, conductor)
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
+                return filtered.map((vehicle, index) => {
                     const driver = vehicle.crew?.find(c => c.crew_role_id === '3')?.name || '-';
                     const conductor = vehicle.crew?.find(c => c.crew_role_id === '12')?.name || '-';
                     return (

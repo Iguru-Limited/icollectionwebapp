@@ -39,12 +39,16 @@ export default function VehicleSearchPage() {
 
   // Filter vehicles by search query
   const filteredVehicles = useMemo(() => {
-    if (!q.trim()) return [];
-    const query = q.toLowerCase();
-    return vehicles.filter(v => 
-      v.number_plate.toLowerCase().includes(query) ||
-      v.type_name.toLowerCase().includes(query)
-    );
+    const raw = q.trim();
+    if (!raw) return [];
+    const query = raw.toLowerCase();
+    return vehicles.filter(v => {
+      const plate = (v.number_plate || '').toLowerCase();
+      const type = (v.type_name || '').toLowerCase();
+      const driver = v.crew?.find(c => c.crew_role_id === '3')?.name?.toLowerCase() || '';
+      const conductor = v.crew?.find(c => c.crew_role_id === '12')?.name?.toLowerCase() || '';
+      return plate.includes(query) || type.includes(query) || driver.includes(query) || conductor.includes(query);
+    });
   }, [q, vehicles]);
 
   // Get drivers and conductors
