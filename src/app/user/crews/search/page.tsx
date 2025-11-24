@@ -3,8 +3,6 @@ import { PageContainer, PageHeader, SearchBar } from '@/components/layout';
 import { useState, useMemo } from 'react';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
-import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
-import { useSession } from 'next-auth/react';
 import { Card } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -35,12 +33,10 @@ export default function CrewSearchPage() {
     pendingIds: string[];
   }>({ open: false, error: '', message: '', pendingIds: [] });
 
-  const { data: session } = useSession();
-  const template = useCompanyTemplateStore((s) => s.template);
-  // Template is already persisted from login in Zustand + localStorage  const { data: crewsData, isLoading: crewsLoading } = useCrews();
+  const { data: crewsData, isLoading: crewsLoading } = useCrews();
   const { data: vehiclesData } = useVehicles();
-  const crews = crewsData?.data || [];
-  const vehicles = vehiclesData?.data || [];
+  const crews = useMemo(() => crewsData?.data || [], [crewsData?.data]);
+  const vehicles = useMemo(() => vehiclesData?.data || [], [vehiclesData?.data]);
 
   // Filter crews by search query
   const filteredCrews = useMemo(() => {

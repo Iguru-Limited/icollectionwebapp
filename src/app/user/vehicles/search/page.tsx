@@ -34,8 +34,8 @@ export default function VehicleSearchPage() {
 
   const { data: vehiclesData, isLoading: vehiclesLoading } = useVehicles();
   const { data: crewsData } = useCrews();
-  const vehicles = vehiclesData?.data || [];
-  const crews = crewsData?.data || [];
+  const vehicles = useMemo(() => vehiclesData?.data || [], [vehiclesData?.data]);
+  const crews = useMemo(() => crewsData?.data || [], [crewsData?.data]);
 
   // Filter vehicles by search query
   const filteredVehicles = useMemo(() => {

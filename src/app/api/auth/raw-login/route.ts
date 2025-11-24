@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { API_ENDPOINTS } from '@/lib/utils/constants';
+import type { AuthResponse } from '@/types/auth/userauthentication';
 
 // Server-side proxy for external login to avoid browser CORS.
 // Accepts { username, password } and calls external API with pass_phrase.
@@ -28,11 +29,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid credentials', raw: text }, { status: externalResp.status });
     }
 
-    // Try parse JSON
-    let data: any;
+    // Try parse JSON with explicit typing
+    let data: AuthResponse & { company_template?: unknown };
     try {
-      data = JSON.parse(text);
-    } catch (e) {
+      data = JSON.parse(text) as AuthResponse & { company_template?: unknown };
+    } catch {
       return NextResponse.json({ error: 'Upstream parse error', raw: text }, { status: 502 });
     }
 

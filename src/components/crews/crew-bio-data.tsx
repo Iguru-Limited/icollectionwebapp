@@ -1,5 +1,3 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   EnvelopeIcon,
@@ -21,17 +19,7 @@ export function CrewBioData({ crew }: CrewBioDataProps) {
 
   return (
     <div className="space-y-4">
-      {/* <Card>
-        <CardContent className="pt-6">
-          <div className="text-center">
-            <Avatar className="h-24 w-24 mx-auto mb-4">
-              <AvatarFallback className="text-2xl bg-blue-100 text-blue-700">{initials}</AvatarFallback>
-            </Avatar>
-            <h2 className="text-xl font-bold text-gray-900 mb-1">{crew.name}</h2>
-            <Badge variant="secondary" className="mb-1">{crew.role_name}</Badge>
-          </div>
-        </CardContent>
-      </Card> */}
+      {/* Avatar and badge section removed to eliminate unused imports */}
 
       <Card>
         <CardHeader>

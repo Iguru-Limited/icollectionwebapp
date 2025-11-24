@@ -1,7 +1,6 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { AuthResponse, AuthStats } from '@/types/auth/userauthentication';
-import type { CompanyTemplateResponse } from '@/types/company-template';
 import { API_ENDPOINTS } from '@/lib/utils/constants';
 
 export const authOptions: NextAuthOptions = {
