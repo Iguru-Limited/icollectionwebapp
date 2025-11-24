@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUpdateCrew, useCrewRoles } from '@/hooks/crew';
+import { useUpdateCrew, useCrewRoles, useEditCrew } from '@/hooks/crew';
 import { toast } from 'sonner';
 import type { Crew } from '@/types/crew';
 import { Spinner } from '@/components/ui/spinner';
@@ -42,14 +42,24 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
     },
   });
 
+  const editCrewMutation = crew ? useEditCrew(crew, {
+    onSuccess: (data) => {
+      toast.success(data.message || 'Crew updated successfully');
+      router.push(`/user/crews/${crew.crew_id}`);
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update crew');
+    },
+  }) : null;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     
-    if (mode === 'edit' && crew) {
-      updateCrewMutation.mutate({
-        crew_id: Number(crew.crew_id),
+    if (mode === 'edit' && crew && editCrewMutation) {
+      // Use editCrewMutation to send only changed fields
+      editCrewMutation.mutate({
         name,
-        crew_role_id: Number(crewRoleId),
+        crew_role_id: crewRoleId,
         phone,
         badge_number: badgeNumber,
         badge_expiry: badgeExpiry || null,
@@ -178,16 +188,16 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
           variant="outline" 
           className="flex-1"
           onClick={() => router.back()}
-          disabled={updateCrewMutation.isPending}
+          disabled={editCrewMutation?.isPending}
         >
           Cancel
         </Button>
         <Button 
           type="submit" 
           className="flex-1" 
-          disabled={updateCrewMutation.isPending}
+          disabled={editCrewMutation?.isPending}
         >
-          {updateCrewMutation.isPending ? 'Saving...' : mode === 'create' ? 'Add Crew' : 'Save Changes'}
+          {editCrewMutation?.isPending ? 'Saving...' : mode === 'create' ? 'Add Crew' : 'Save Changes'}
         </Button>
       </div>
     </form>
