@@ -1,6 +1,6 @@
 "use client";
 import { PageContainer, PageHeader, SearchBar } from '@/components/layout';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { XMarkIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import type { VehicleItem } from '@/types/vehicle';
 
@@ -25,6 +26,8 @@ export default function VehicleSearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDriverId, setSelectedDriverId] = useState('');
   const [selectedConductorId, setSelectedConductorId] = useState('');
+  const [editDriver, setEditDriver] = useState(false);
+  const [editConductor, setEditConductor] = useState(false);
   const [conflictDialog, setConflictDialog] = useState<{
     open: boolean;
     error: string;
@@ -36,6 +39,18 @@ export default function VehicleSearchPage() {
   const { data: crewsData } = useCrews();
   const vehicles = useMemo(() => vehiclesData?.data || [], [vehiclesData?.data]);
   const crews = useMemo(() => crewsData?.data || [], [crewsData?.data]);
+
+  // Preload current crew assignments when dialog opens
+  useEffect(() => {
+    if (assignDialog.open && assignDialog.vehicle) {
+      const currentDriver = assignDialog.vehicle.crew?.find(c => c.crew_role_id === '3');
+      const currentConductor = assignDialog.vehicle.crew?.find(c => c.crew_role_id === '12');
+      setSelectedDriverId(currentDriver?.crew_id || '');
+      setSelectedConductorId(currentConductor?.crew_id || '');
+      setEditDriver(false);
+      setEditConductor(false);
+    }
+  }, [assignDialog.open, assignDialog.vehicle]);
 
   // Filter vehicles by search query
   const filteredVehicles = useMemo(() => {
@@ -136,6 +151,18 @@ export default function VehicleSearchPage() {
     setSelectedDriverId('');
     setSelectedConductorId('');
     setSearchQuery('');
+    setEditDriver(false);
+    setEditConductor(false);
+  };
+
+  const handleUnassignDriver = () => {
+    setSelectedDriverId('');
+    setEditDriver(true);
+  };
+
+  const handleUnassignConductor = () => {
+    setSelectedConductorId('');
+    setEditConductor(true);
   };
 
   const openAssignDialog = (vehicle: VehicleItem) => {
@@ -164,93 +191,162 @@ export default function VehicleSearchPage() {
 
         {!vehiclesLoading && filteredVehicles.length > 0 && (
           <div className="space-y-3">
-            {filteredVehicles.map((vehicle) => (
-              <Card
-                key={vehicle.vehicle_id}
-                className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => openAssignDialog(vehicle)}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold text-lg uppercase">{vehicle.number_plate}</div>
-                    <div className="text-sm text-gray-600">{vehicle.type_name}</div>
+            {filteredVehicles.map((vehicle) => {
+              const driver = vehicle.crew?.find(c => c.crew_role_id === '3');
+              const conductor = vehicle.crew?.find(c => c.crew_role_id === '12');
+              
+              return (
+                <Card
+                  key={vehicle.vehicle_id}
+                  className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => openAssignDialog(vehicle)}
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-semibold text-lg uppercase">{vehicle.number_plate}</div>
+                        <div className="text-sm text-gray-600">{vehicle.type_name || 'Unknown Type'}</div>
+                      </div>
+                      <Button size="sm" className="bg-purple-700 hover:bg-purple-800">
+                        Manage
+                      </Button>
+                    </div>
+                    
+                    {/* Crew information */}
+                    <div className="text-sm space-y-1 pt-2 border-t">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Driver:</span>
+                        <span className="font-medium text-gray-900">{driver?.name || '-'}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Conductor:</span>
+                        <span className="font-medium text-gray-900">{conductor?.name || '-'}</span>
+                      </div>
+                    </div>
                   </div>
-                  <Button size="sm" className="bg-purple-700 hover:bg-purple-800">
-                    Manage
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         )}
       </main>
 
       {/* Assignment Dialog */}
       <Dialog open={assignDialog.open} onOpenChange={(open) => !open && handleDialogClose()}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              Assign Crew to {assignDialog.vehicle?.number_plate}
+              Manage Crew for {assignDialog.vehicle?.number_plate}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {/* Current Driver Section */}
             <div className="space-y-2">
-              <Label htmlFor="driver-select">Select Driver</Label>
-              <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
-                <SelectTrigger id="driver-select">
-                  <SelectValue placeholder="Choose a driver..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <div className="px-2 pb-1">
-                    <Input
-                      autoFocus
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Type to search driver..."
-                      className="h-9"
-                    />
+              <Label>Driver</Label>
+              {!editDriver && selectedDriverId ? (
+                <div className="flex items-center justify-between p-3 border rounded-md bg-gray-50">
+                  <span className="font-medium">
+                    {crews.find(c => c.crew_id === selectedDriverId)?.name || 'Unknown'}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditDriver(true)}
+                      className="p-1 hover:bg-gray-200 rounded"
+                      aria-label="Edit driver"
+                    >
+                      <PencilIcon className="w-4 h-4 text-blue-600" />
+                    </button>
+                    <button
+                      onClick={handleUnassignDriver}
+                      className="p-1 hover:bg-gray-200 rounded"
+                      aria-label="Unassign driver"
+                    >
+                      <XMarkIcon className="w-4 h-4 text-red-600" />
+                    </button>
                   </div>
-                  {filteredDrivers.map((driver) => (
-                    <SelectItem key={driver.crew_id} value={driver.crew_id}>
-                      {driver.name} {driver.badge_number ? `(${driver.badge_number})` : ''}
-                    </SelectItem>
-                  ))}
-                  {filteredDrivers.length === 0 && (
-                    <div className="p-2 text-sm text-gray-500">
-                      {searchQuery ? 'No matching drivers found' : 'No drivers available'}
+                </div>
+              ) : (
+                <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
+                  <SelectTrigger id="driver-select">
+                    <SelectValue placeholder="Choose a driver..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <div className="px-2 pb-1">
+                      <Input
+                        autoFocus
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Type to search driver..."
+                        className="h-9"
+                      />
                     </div>
-                  )}
-                </SelectContent>
-              </Select>
+                    {filteredDrivers.map((driver) => (
+                      <SelectItem key={driver.crew_id} value={driver.crew_id}>
+                        {driver.name} {driver.badge_number ? `(${driver.badge_number})` : ''}
+                      </SelectItem>
+                    ))}
+                    {filteredDrivers.length === 0 && (
+                      <div className="p-2 text-sm text-gray-500">
+                        {searchQuery ? 'No matching drivers found' : 'No drivers available'}
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
+            {/* Current Conductor Section */}
             <div className="space-y-2">
-              <Label htmlFor="conductor-select">Select Conductor</Label>
-              <Select value={selectedConductorId} onValueChange={setSelectedConductorId}>
-                <SelectTrigger id="conductor-select">
-                  <SelectValue placeholder="Choose a conductor..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <div className="px-2 pb-1">
-                    <Input
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Type to search conductor..."
-                      className="h-9"
-                    />
+              <Label>Conductor</Label>
+              {!editConductor && selectedConductorId ? (
+                <div className="flex items-center justify-between p-3 border rounded-md bg-gray-50">
+                  <span className="font-medium">
+                    {crews.find(c => c.crew_id === selectedConductorId)?.name || 'Unknown'}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditConductor(true)}
+                      className="p-1 hover:bg-gray-200 rounded"
+                      aria-label="Edit conductor"
+                    >
+                      <PencilIcon className="w-4 h-4 text-blue-600" />
+                    </button>
+                    <button
+                      onClick={handleUnassignConductor}
+                      className="p-1 hover:bg-gray-200 rounded"
+                      aria-label="Unassign conductor"
+                    >
+                      <XMarkIcon className="w-4 h-4 text-red-600" />
+                    </button>
                   </div>
-                  {filteredConductors.map((conductor) => (
-                    <SelectItem key={conductor.crew_id} value={conductor.crew_id}>
-                      {conductor.name} {conductor.badge_number ? `(${conductor.badge_number})` : ''}
-                    </SelectItem>
-                  ))}
-                  {filteredConductors.length === 0 && (
-                    <div className="p-2 text-sm text-gray-500">
-                      {searchQuery ? 'No matching conductors found' : 'No conductors available'}
+                </div>
+              ) : (
+                <Select value={selectedConductorId} onValueChange={setSelectedConductorId}>
+                  <SelectTrigger id="conductor-select">
+                    <SelectValue placeholder="Choose a conductor..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <div className="px-2 pb-1">
+                      <Input
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Type to search conductor..."
+                        className="h-9"
+                      />
                     </div>
-                  )}
-                </SelectContent>
-              </Select>
+                    {filteredConductors.map((conductor) => (
+                      <SelectItem key={conductor.crew_id} value={conductor.crew_id}>
+                        {conductor.name} {conductor.badge_number ? `(${conductor.badge_number})` : ''}
+                      </SelectItem>
+                    ))}
+                    {filteredConductors.length === 0 && (
+                      <div className="p-2 text-sm text-gray-500">
+                        {searchQuery ? 'No matching conductors found' : 'No conductors available'}
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
           <DialogFooter>
@@ -261,7 +357,7 @@ export default function VehicleSearchPage() {
               onClick={handleAssign}
               disabled={assignMutation.isPending || (!selectedDriverId && !selectedConductorId)}
             >
-              {assignMutation.isPending ? 'Assigning...' : 'Assign'}
+              {assignMutation.isPending ? 'Updating...' : 'Update Crew'}
             </Button>
           </DialogFooter>
         </DialogContent>
