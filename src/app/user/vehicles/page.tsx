@@ -11,7 +11,7 @@ import { TruckIcon } from '@heroicons/react/24/outline';
 export default function VehiclesCategoriesPage() {
   const router = useRouter();
   const { data, isLoading } = useVehicles();
-  const items = data?.data || [];
+  const items = useMemo(() => data?.data || [], [data?.data]);
   // Group by type_name and count
   const grouped = useMemo(() => {
     const map: Record<string, number> = {};

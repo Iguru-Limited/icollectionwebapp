@@ -34,17 +34,21 @@ export default function VehicleSearchPage() {
 
   const { data: vehiclesData, isLoading: vehiclesLoading } = useVehicles();
   const { data: crewsData } = useCrews();
-  const vehicles = vehiclesData?.data || [];
-  const crews = crewsData?.data || [];
+  const vehicles = useMemo(() => vehiclesData?.data || [], [vehiclesData?.data]);
+  const crews = useMemo(() => crewsData?.data || [], [crewsData?.data]);
 
   // Filter vehicles by search query
   const filteredVehicles = useMemo(() => {
-    if (!q.trim()) return [];
-    const query = q.toLowerCase();
-    return vehicles.filter(v => 
-      v.number_plate.toLowerCase().includes(query) ||
-      v.type_name.toLowerCase().includes(query)
-    );
+    const raw = q.trim();
+    if (!raw) return [];
+    const query = raw.toLowerCase();
+    return vehicles.filter(v => {
+      const plate = (v.number_plate || '').toLowerCase();
+      const type = (v.type_name || '').toLowerCase();
+      const driver = v.crew?.find(c => c.crew_role_id === '3')?.name?.toLowerCase() || '';
+      const conductor = v.crew?.find(c => c.crew_role_id === '12')?.name?.toLowerCase() || '';
+      return plate.includes(query) || type.includes(query) || driver.includes(query) || conductor.includes(query);
+    });
   }, [q, vehicles]);
 
   // Get drivers and conductors
@@ -172,7 +176,7 @@ export default function VehicleSearchPage() {
                     <div className="text-sm text-gray-600">{vehicle.type_name}</div>
                   </div>
                   <Button size="sm" className="bg-purple-700 hover:bg-purple-800">
-                    Assign
+                    Manage
                   </Button>
                 </div>
               </Card>

@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
+import { useDeferredValue } from 'react';
 import { useAppStore } from '@/store/appStore';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
-import { useSession } from 'next-auth/react';
-import { useEffect } from 'react';
+import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import {
   Table,
   TableBody,
@@ -35,35 +35,14 @@ const buttonVariants = {
 
 export default function VehiclesTable() {
   const router = useRouter();
-  const { data: session } = useSession();
   const template = useCompanyTemplateStore((s) => s.template);
-  const setTemplate = useCompanyTemplateStore((s) => s.setTemplate);
   const hasHydrated = useCompanyTemplateStore((s) => s._hasHydrated);
+  const { data: vehiclesApi, isLoading: vehiclesLoading } = useVehicles();
   const tableSearch = useAppStore((s) => s.viewPreferences.tableSearch);
+  const deferredSearch = useDeferredValue(tableSearch.trim().toLowerCase());
   const setViewPreferences = useAppStore((s) => s.setViewPreferences);
   const setSelectedVehicleId = useAppStore((s) => s.setSelectedVehicleId);
-
-  // Hydrate store from session if store is empty
-  useEffect(() => {
-    if (!hasHydrated) return;
-
-    if (!template && session?.company_template) {
-      setTemplate(session.company_template);
-    }
-  }, [hasHydrated, template, session, setTemplate]);
-
-  // Additional effect to try hydrating after a short delay if session loads later
-  useEffect(() => {
-    if (!hasHydrated || template) return;
-
-    const timeout = setTimeout(() => {
-      if (!template && session?.company_template) {
-        setTemplate(session.company_template);
-      }
-    }, 100);
-
-    return () => clearTimeout(timeout);
-  }, [hasHydrated, template, session, setTemplate]);
+  // Template is already persisted from login in Zustand + localStorage
 
   return (
     <motion.section initial="hidden" animate="visible" variants={containerVariants}>
@@ -111,53 +90,83 @@ export default function VehiclesTable() {
               <TableRow className="">
                 <TableHead className="text-grey-400 font-medium">#</TableHead>
                 <TableHead className="text-grey-400 font-medium">Vehicle</TableHead>
+                <TableHead className="text-grey-400 font-medium">Driver</TableHead>
+                <TableHead className="text-grey-400 font-medium">Conductor</TableHead>
                 <TableHead className="flex text-grey-400 font-medium justify-end items-center">
                   Action
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(template?.vehicles ?? [])
-                .filter((v) =>
-                  tableSearch
-                    ? v.number_plate.toLowerCase().includes(tableSearch.toLowerCase())
-                    : true,
-                )
-                .map((vehicle, index) => {
-                  console.log(`🚗 Rendering vehicle ${index + 1}:`, vehicle.number_plate);
+              {(() => {
+                const apiVehicles = vehiclesApi?.data || [];
+                const hasCrewInfo = apiVehicles.length > 0 && apiVehicles.some(v => v.crew && v.crew.length > 0);
+                // Choose source: prefer API (has crew), else template fallback.
+                const source = hasCrewInfo ? apiVehicles : (template?.vehicles || []).map(v => ({
+                  vehicle_id: String(v.vehicle_id),
+                  number_plate: v.number_plate,
+                  crew: [] as { crew_id: string; name: string; phone: string; crew_role_id: string }[],
+                }));
+                const filtered = source.filter(v => {
+                  if (!deferredSearch) return true;
+                  const plate = v.number_plate.toLowerCase();
+                  const driverName = v.crew?.find(c => c.crew_role_id === '3')?.name?.toLowerCase() || '';
+                  const conductorName = v.crew?.find(c => c.crew_role_id === '12')?.name?.toLowerCase() || '';
+                  return plate.includes(deferredSearch) || driverName.includes(deferredSearch) || conductorName.includes(deferredSearch);
+                });
+                if (filtered.length === 0 && deferredSearch) {
                   return (
-                    <TableRow key={`${vehicle.vehicle_id}-${index}`} className="hover:bg-gray-50">
-                      <TableCell className="font-mono">{vehicle.vehicle_id}</TableCell>
-                      <TableCell className="font-mono">{vehicle.number_plate}</TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2 justify-end">
-                          <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                            <Button
-                              size="sm"
-                              className="bg-green-600 hover:bg-green-700 text-white rounded-none"
-                              onClick={() => {
-                                setSelectedVehicleId(vehicle.vehicle_id);
-                                window.location.href = '/user/collection';
-                              }}
-                            >
-                              Collect
-                            </Button>
-                          </motion.div>
-                          <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => router.push(`/user/report/${vehicle.vehicle_id}`)}
-                              className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-none"
-                            >
-                              Reports
-                            </Button>
-                          </motion.div>
-                        </div>
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-sm text-gray-500">
+                        No vehicles match “{tableSearch}” (searched plate, driver, conductor)
                       </TableCell>
                     </TableRow>
                   );
-                })}
+                }
+                return filtered.map((vehicle, index) => {
+                    const driver = vehicle.crew?.find(c => c.crew_role_id === '3')?.name || '-';
+                    const conductor = vehicle.crew?.find(c => c.crew_role_id === '12')?.name || '-';
+                    return (
+                      <TableRow key={`${vehicle.vehicle_id}-${index}`} className="hover:bg-gray-50">
+                        <TableCell className="font-mono">{vehicle.vehicle_id}</TableCell>
+                        <TableCell className="font-mono">{vehicle.number_plate}</TableCell>
+                        <TableCell className="font-mono">{driver}</TableCell>
+                        <TableCell className="font-mono">{conductor}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2 justify-end">
+                            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                              <Button
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700 text-white rounded-none"
+                                onClick={() => {
+                                  setSelectedVehicleId(Number(vehicle.vehicle_id));
+                                  window.location.href = '/user/collection';
+                                }}
+                              >
+                                Collect
+                              </Button>
+                            </motion.div>
+                            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => router.push(`/user/report/${vehicle.vehicle_id}`)}
+                                className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-none"
+                              >
+                                Reports
+                              </Button>
+                            </motion.div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  });
+              })()}
+              {vehiclesLoading && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-sm text-gray-500">Loading vehicles...</TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </Card>

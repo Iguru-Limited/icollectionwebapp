@@ -5,7 +5,6 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { useSession } from 'next-auth/react';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { useCrews } from '@/hooks/crew';
 import { useAssignVehicle } from '@/hooks/crew';
@@ -17,14 +16,8 @@ import { toast } from 'sonner';
 interface SimpleVehicle { vehicle_id: number; number_plate: string }
 
 export default function AssignPage() {
-  const { data: session } = useSession();
   const template = useCompanyTemplateStore((s) => s.template);
-  const setTemplate = useCompanyTemplateStore((s) => s.setTemplate);
-
-  // Hydrate template from session if not in store (client-side fallback)
-  if (!template && session?.company_template) {
-    setTemplate(session.company_template);
-  }
+  // Template is already persisted from login in Zustand + localStorage
 
   // Crews hook
   const { data: crewsResponse, isLoading: crewsLoading, error: crewsError } = useCrews();

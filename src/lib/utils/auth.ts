@@ -1,7 +1,6 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { AuthResponse, AuthStats } from '@/types/auth/userauthentication';
-import type { CompanyTemplateResponse } from '@/types/company-template';
 import { API_ENDPOINTS } from '@/lib/utils/constants';
 
 export const authOptions: NextAuthOptions = {
@@ -11,54 +10,60 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         username: { label: 'Username', type: 'text' },
         password: { label: 'Password', type: 'password' },
+        raw_login_json: { label: 'Raw Login JSON', type: 'text' }, // sent when client already fetched login
       },
       async authorize(credentials) {
+        // Fast path: client already fetched login response and sent raw_login_json (without company_template)
+        if (credentials?.raw_login_json) {
+          try {
+            const parsed = JSON.parse(credentials.raw_login_json);
+            if (!parsed.access_token || !parsed.user?.user_id) return null;
+            return {
+              id: parsed.user.user_id,
+              user_id: parsed.user.user_id,
+              username: parsed.user.username,
+              role: parsed.role,
+              token: parsed.access_token,
+              refresh_token: parsed.refresh_token,
+              company: parsed.user.company,
+              stage: parsed.user.stage,
+              printer: parsed.user.printer,
+              rights: parsed.user.rights,
+              stats: parsed.stats,
+            };
+          } catch (e) {
+            console.error('Failed to parse raw_login_json', e);
+            return null;
+          }
+        }
+
+        // Normal path: server performs login. We DO NOT include company_template in returned user.
         if (!credentials?.username || !credentials?.password) {
           return null;
         }
 
         try {
-          // Prepare data from user credentials
           const requestData = {
             username: credentials.username,
             pass_phrase: credentials.password,
           };
-
-          // Use external API endpoint for authentication
           const apiUrl = `${API_ENDPOINTS.BASE_URL}/api/auth/login.php`;
-
           const response = await fetch(apiUrl, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestData),
           });
-
           const responseText = await response.text();
-          console.log('Authentication response:', responseText);
-
-          if (!response.ok) {
-            return null;
-          }
-
-          // Parse the response text as JSON
-          let data: AuthResponse & {
-            company_template?: CompanyTemplateResponse;
-            user?: AuthResponse['user'] & { printer?: { id: string; name: string } | null };
-          };
+          console.log('Authentication response (server authorize):', responseText);
+          if (!response.ok) return null;
+          let data: AuthResponse & { user?: AuthResponse['user'] & { printer?: { id: string; name: string } | null } };
           try {
             data = JSON.parse(responseText);
           } catch {
             console.error('Failed to parse authentication response');
             return null;
           }
-
-          // Validate the response structure
-          if (!data.access_token || !data.user || !data.user.username || !data.user.user_id) {
-            return null;
-          }
-
+          if (!data.access_token || !data.user || !data.user.username || !data.user.user_id) return null;
           return {
             id: data.user.user_id,
             user_id: data.user.user_id,
@@ -69,9 +74,8 @@ export const authOptions: NextAuthOptions = {
             company: data.user.company,
             stage: data.user.stage,
             printer: data.user.printer,
-            company_template: data.company_template,
             rights: data.user.rights,
-            stats: data.stats, // include stats in user object so jwt callback can access
+            stats: data.stats,
           };
         } catch (error) {
           console.error('Authentication error:', error);
@@ -118,7 +122,7 @@ export const authOptions: NextAuthOptions = {
         token.stage = user.stage;
         token.printer = user.printer;
         token.username = user.username;
-        token.company_template = user.company_template;
+        // company_template intentionally excluded from token to keep cookie small
         token.rights = user.rights;
         const maybeStats = (user as unknown as { stats?: AuthStats }).stats;
         if (maybeStats) {
@@ -166,11 +170,6 @@ export const authOptions: NextAuthOptions = {
         session.user.printer = token.printer;
         session.user.username = token.username || '';
         session.user.rights = token.rights;
-        // expose company template at the top-level session (not in user)
-        if (token.company_template) {
-          (session as unknown as { company_template?: CompanyTemplateResponse }).company_template =
-            token.company_template as CompanyTemplateResponse;
-        }
         if (token.stats) {
           (session as unknown as { stats?: unknown }).stats = token.stats;
         }
