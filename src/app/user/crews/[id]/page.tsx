@@ -1,11 +1,14 @@
 "use client";
 import { use, useState } from 'react';
+import Link from 'next/link';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { CrewDetailHeader, CrewBioData } from '@/components/crews';
 import { useCrew, useCrewHistory } from '@/hooks/crew';
 import { Spinner } from '@/components/ui/spinner';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
 interface CrewProfilePageProps { params: Promise<{ id: string }> }
 
@@ -50,7 +53,18 @@ export default function CrewProfilePage({ params }: CrewProfilePageProps) {
 
   return (
     <PageContainer>
-      <PageHeader title="" backHref="/user/crews" />
+      <PageHeader 
+        title="" 
+        backHref="/user/crews"
+        rightAction={
+          <Link href={`/user/crews/${id}/edit`}>
+            <Button size="sm" variant="outline" className="gap-2">
+              <PencilSquareIcon className="w-4 h-4" />
+              Edit
+            </Button>
+          </Link>
+        }
+      />
       <main className="px-4 pb-24 max-w-2xl mx-auto">
         <CrewDetailHeader
           crew={crew}
