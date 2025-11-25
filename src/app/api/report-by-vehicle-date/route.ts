@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/utils/auth';
 import { API_ENDPOINTS } from '@/lib/utils/constants';
 import type { ReportByVehicleDateRequest, ReportByVehicleDateResponse } from '@/types/receipt';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 // POST /api/report-by-vehicle-date
 // Body: { company_id: number, vehicle_id: number, date: string }
 export async function POST(request: NextRequest) {
