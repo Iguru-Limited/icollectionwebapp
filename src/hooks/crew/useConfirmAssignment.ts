@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
 import type { ConfirmAssignmentPayload, ConfirmAssignmentResponse } from '@/types/crew';
 
 interface UseConfirmAssignmentOptions {
@@ -10,6 +11,7 @@ interface UseConfirmAssignmentOptions {
 
 export function useConfirmAssignment(options?: UseConfirmAssignmentOptions) {
   const queryClient = useQueryClient();
+  const { update } = useSession();
 
   return useMutation<ConfirmAssignmentResponse, Error, ConfirmAssignmentPayload>({
     mutationFn: async (payload: ConfirmAssignmentPayload) => {
@@ -28,6 +30,8 @@ export function useConfirmAssignment(options?: UseConfirmAssignmentOptions) {
       // Invalidate crews and vehicles queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['crews'] });
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });
+      // Update session to refresh dashboard stats
+      update();
       options?.onSuccess?.(data);
     },
     onError: (error) => {
@@ -38,6 +42,7 @@ export function useConfirmAssignment(options?: UseConfirmAssignmentOptions) {
 
 export function useCancelAssignment(options?: UseConfirmAssignmentOptions) {
   const queryClient = useQueryClient();
+  const { update } = useSession();
 
   return useMutation<ConfirmAssignmentResponse, Error, ConfirmAssignmentPayload>({
     mutationFn: async (payload: ConfirmAssignmentPayload) => {
@@ -56,6 +61,8 @@ export function useCancelAssignment(options?: UseConfirmAssignmentOptions) {
       // Invalidate crews and vehicles queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['crews'] });
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });
+      // Update session to refresh dashboard stats
+      update();
       options?.onSuccess?.(data);
     },
     onError: (error) => {

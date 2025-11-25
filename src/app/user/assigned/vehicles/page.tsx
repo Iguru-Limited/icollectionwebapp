@@ -5,10 +5,8 @@ import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
 import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
-import { AssignmentConflictDialog } from '@/components/assign/AssignmentConflictDialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { AssignmentConflictDialog, AssignCrewDialog } from '@/components/assign';
+import { toast } from 'sonner';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import { useMemo, useState } from 'react';
 import { Spinner } from '@/components/ui/spinner';
@@ -22,7 +20,7 @@ export default function AssignedVehiclesPage() {
   const [openAssign, setOpenAssign] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [selectedRole, setSelectedRole] = useState<'driver' | 'conductor' | null>(null);
-  const [search, setSearch] = useState('');
+  const [selectedCrewId, setSelectedCrewId] = useState('');
   const [conflictState, setConflictState] = useState<{ open: boolean; error: string; message: string; pendingIds: string[] }>({ open: false, error: '', message: '', pendingIds: [] });
 
   const vehicles: Vehicle[] = useMemo(() => (vehiclesData?.data || []) as Vehicle[], [vehiclesData?.data]);
@@ -31,46 +29,64 @@ export default function AssignedVehiclesPage() {
   // Assigned vehicles have at least one crew member
   const assignedVehicles: Vehicle[] = useMemo(() => vehicles.filter((v: Vehicle) => v.crew && v.crew.length > 0), [vehicles]);
 
-  // Unassigned crews by role
-  const unassignedCrews = useMemo(() => crews.filter(c => !c.vehicle_id), [crews]);
-  const unassignedDrivers = useMemo(() => unassignedCrews.filter(c => c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER'), [unassignedCrews]);
-  const unassignedConductors = useMemo(() => unassignedCrews.filter(c => c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR'), [unassignedCrews]);
+  // Show ALL crews by role (whether assigned or not)
+  const allDrivers = useMemo(() => crews.filter(c => c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER'), [crews]);
+  const allConductors = useMemo(() => crews.filter(c => c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR'), [crews]);
 
-  const visibleCrew = useMemo(() => {
-    const base = selectedRole === 'driver' ? unassignedDrivers : unassignedConductors;
-    if (!search.trim()) return base;
-    const s = search.toLowerCase();
-    return base.filter(c => c.name.toLowerCase().includes(s) || c.badge_number?.toLowerCase().includes(s));
-  }, [selectedRole, unassignedDrivers, unassignedConductors, search]);
+  const crewListForDialog = useMemo(() => {
+    return selectedRole === 'driver' ? allDrivers : allConductors;
+  }, [selectedRole, allDrivers, allConductors]);
 
   const assignMutation = useAssignVehicle({
     onSuccess: (data) => {
       if (data.pending_assignment_ids && data.pending_assignment_ids.length > 0) {
         setConflictState({ open: true, error: data.error || 'Conflict detected', message: data.message || '', pendingIds: data.pending_assignment_ids });
       } else {
+        toast.success(data.message || 'Crew assigned successfully');
         setOpenAssign(false);
         setSelectedVehicle(null);
         setSelectedRole(null);
+        setSelectedCrewId('');
       }
     },
-    onError: (err) => console.error(err)
+    onError: (err) => {
+      toast.error(err.message || 'Failed to assign crew');
+      console.error(err);
+    }
   });
 
   const confirmMutation = useConfirmAssignment({
-    onSuccess: () => {
+    onSuccess: (data) => {
+      toast.success(data.message || 'Assignment confirmed successfully');
       setConflictState({ open: false, error: '', message: '', pendingIds: [] });
       setOpenAssign(false);
+      setSelectedCrewId('');
     },
-    onError: (e) => console.error(e)
+    onError: (e) => {
+      toast.error('Failed to confirm assignment');
+      console.error(e);
+    }
   });
   const cancelMutation = useCancelAssignment({
-    onSuccess: () => setConflictState({ open: false, error: '', message: '', pendingIds: [] }),
-    onError: (e) => console.error(e)
+    onSuccess: (data) => {
+      toast.success(data.message || 'Assignment cancelled successfully');
+      setConflictState({ open: false, error: '', message: '', pendingIds: [] });
+    },
+    onError: (e) => {
+      toast.error('Failed to cancel assignment');
+      console.error(e);
+    }
   });
 
-  const handleAssign = (crewId: string) => {
-    if (!selectedVehicle) return;
-    assignMutation.mutate({ vehicle_id: Number(selectedVehicle.vehicle_id), crew_id: Number(crewId) });
+  const handleAssign = () => {
+    if (!selectedVehicle || !selectedCrewId) return;
+    assignMutation.mutate({ vehicle_id: Number(selectedVehicle.vehicle_id), crew_id: Number(selectedCrewId) });
+  };
+
+  const handleDialogClose = () => {
+    setOpenAssign(false);
+    setSelectedRole(null);
+    setSelectedCrewId('');
   };
 
   return (
@@ -139,58 +155,17 @@ export default function AssignedVehiclesPage() {
         )}
       </main>
       {/* Assignment Dialog */}
-      <Dialog open={openAssign} onOpenChange={(o) => { if (!o) { setOpenAssign(false); setSelectedRole(null); } }}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">Assign {selectedRole === 'driver' ? 'Driver' : 'Conductor'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="text-sm text-gray-600">Vehicle: <span className="font-medium uppercase">{selectedVehicle?.number_plate}</span></div>
-            <Input
-              placeholder={`Search ${selectedRole === 'driver' ? 'drivers' : 'conductors'} by name or badge`}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <div className="max-h-64 overflow-y-auto rounded border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Badge</TableHead>
-                    <TableHead className="w-[100px]">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {visibleCrew.map(c => (
-                    <TableRow key={c.crew_id} className="hover:bg-gray-50">
-                      <TableCell className="font-medium">{c.name}</TableCell>
-                      <TableCell className="font-mono text-sm">{c.badge_number || '-'}</TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          className="bg-purple-600 hover:bg-purple-700"
-                          disabled={assignMutation.isPending}
-                          onClick={() => handleAssign(c.crew_id)}
-                        >
-                          {assignMutation.isPending ? 'Assigning...' : 'Assign'}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {visibleCrew.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={3} className="text-center text-gray-500 py-6">No matching crew found</TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setOpenAssign(false); setSelectedRole(null); }}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AssignCrewDialog
+        open={openAssign}
+        onOpenChange={handleDialogClose}
+        title={`Assign ${selectedRole === 'driver' ? 'Driver' : 'Conductor'}`}
+        description={`Vehicle: ${selectedVehicle?.number_plate || ''}`}
+        crews={crewListForDialog}
+        selectedCrewId={selectedCrewId}
+        onCrewChange={setSelectedCrewId}
+        onConfirm={handleAssign}
+        loading={assignMutation.isPending}
+      />
       <AssignmentConflictDialog
         open={conflictState.open}
         errorMessage={conflictState.error}

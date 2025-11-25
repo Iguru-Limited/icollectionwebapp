@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
 import type { AssignVehiclePayload, AssignVehicleResponse } from '@/types/crew';
 
 interface UseAssignVehicleOptions {
@@ -10,6 +11,7 @@ interface UseAssignVehicleOptions {
 
 export function useAssignVehicle(options?: UseAssignVehicleOptions) {
   const queryClient = useQueryClient();
+  const { update } = useSession();
 
   return useMutation<AssignVehicleResponse, Error, AssignVehiclePayload>({
     mutationFn: async (payload: AssignVehiclePayload) => {
@@ -29,6 +31,11 @@ export function useAssignVehicle(options?: UseAssignVehicleOptions) {
       crewIds.forEach((cid) => {
         queryClient.invalidateQueries({ queryKey: ['crew-history', String(cid)] });
       });
+      // Invalidate crews and vehicles queries to refresh unassigned counts and lists
+      queryClient.invalidateQueries({ queryKey: ['crews'] });
+      queryClient.invalidateQueries({ queryKey: ['vehicles'] });
+      // Update session to refresh dashboard stats
+      update();
       options?.onSuccess?.(data, variables);
     },
     onError: (error, variables) => {

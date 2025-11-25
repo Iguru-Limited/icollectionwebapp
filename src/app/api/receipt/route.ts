@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/utils/auth';
 import { API_ENDPOINTS } from '@/lib/utils/constants';
 import type { SaveReceiptRequest, SaveReceiptResponse } from '@/types/receipt';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     // Get the session to access user token
