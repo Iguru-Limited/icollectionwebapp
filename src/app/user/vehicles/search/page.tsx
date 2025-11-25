@@ -9,7 +9,6 @@ import { AssignmentConflictDialog, AssignCrewDialog } from '@/components/assign'
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { XMarkIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import type { VehicleItem } from '@/types/vehicle';
 

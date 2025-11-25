@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUpdateCrew, useCrewRoles, useEditCrew } from '@/hooks/crew';
+import { useCrewRoles, useEditCrew } from '@/hooks/crew';
 import { toast } from 'sonner';
 import type { Crew } from '@/types/crew';
 import { Spinner } from '@/components/ui/spinner';
@@ -32,30 +32,41 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
 
   const { data: rolesResponse, isLoading: rolesLoading } = useCrewRoles();
 
-  const updateCrewMutation = useUpdateCrew({
+  // Always call useEditCrew to comply with React Hooks rules
+  // Pass a dummy crew object when crew is undefined to avoid conditional hook call
+  const dummyCrew: Crew = crew || {
+    crew_id: '',
+    name: '',
+    phone: '',
+    badge_number: '',
+    crew_role_id: '',
+    role_name: '',
+    badge_expiry: null,
+    email: null,
+    employee_no: null,
+    id_number: null,
+    type: 'crew',
+    vehicle_id: null,
+    vehicle_plate: null,
+    vehicle_type_name: null,
+  };
+
+  const editCrewMutation = useEditCrew(dummyCrew, {
     onSuccess: (data) => {
       toast.success(data.message || 'Crew updated successfully');
-      router.push('/user/crews');
+      if (crew) {
+        router.push(`/user/crews/${crew.crew_id}`);
+      }
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to update crew');
     },
   });
 
-  const editCrewMutation = crew ? useEditCrew(crew, {
-    onSuccess: (data) => {
-      toast.success(data.message || 'Crew updated successfully');
-      router.push(`/user/crews/${crew.crew_id}`);
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to update crew');
-    },
-  }) : null;
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     
-    if (mode === 'edit' && crew && editCrewMutation) {
+    if (mode === 'edit' && crew) {
       // Use editCrewMutation to send only changed fields
       editCrewMutation.mutate({
         name,
@@ -188,16 +199,16 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
           variant="outline" 
           className="flex-1"
           onClick={() => router.back()}
-          disabled={editCrewMutation?.isPending}
+          disabled={editCrewMutation.isPending}
         >
           Cancel
         </Button>
         <Button 
           type="submit" 
           className="flex-1" 
-          disabled={editCrewMutation?.isPending}
+          disabled={editCrewMutation.isPending}
         >
-          {editCrewMutation?.isPending ? 'Saving...' : mode === 'create' ? 'Add Crew' : 'Save Changes'}
+          {editCrewMutation.isPending ? 'Saving...' : mode === 'create' ? 'Add Crew' : 'Save Changes'}
         </Button>
       </div>
     </form>
