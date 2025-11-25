@@ -1,6 +1,5 @@
 "use client";
 import { PageContainer, PageHeader } from '@/components/layout';
-import { useRouter } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
@@ -16,7 +15,6 @@ import { Input } from '@/components/ui/input';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
 export default function PendingVehiclesPage() {
-  const router = useRouter();
   const { data: vehiclesData, isLoading } = useVehicles();
   const { data: crewsData } = useCrews();
 

@@ -22,8 +22,7 @@ function buildDiffPayload(original: Crew, updated: Partial<Crew>): EditCrewPaylo
       if (k === 'crew_role_id' && updated[k]) {
         payload[k] = String(updated[k]);
       } else {
-        // @ts-expect-error dynamic assignment onto payload
-        payload[k] = updated[k] as any;
+        (payload as unknown as Record<string, unknown>)[k] = updated[k];
       }
     }
   });
