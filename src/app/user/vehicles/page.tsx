@@ -1,15 +1,15 @@
 'use client';
-"use client";
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import { PageHeader, PageContainer } from '@/components/layout';
-import { Button } from '@/components/ui/button';
-import { TruckIcon } from '@heroicons/react/24/outline';
+import { TruckIcon, UsersIcon } from '@heroicons/react/24/solid';
+import { useSession } from 'next-auth/react';
 
 export default function VehiclesCategoriesPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const { data, isLoading } = useVehicles();
   const items = useMemo(() => data?.data || [], [data?.data]);
   // Group by type_name and count
@@ -22,12 +22,30 @@ export default function VehiclesCategoriesPage() {
   return (
     <PageContainer>
       <PageHeader title="Vehicles" backHref="/user"/>
-      <main className="px-4 pb-24 max-w-md mx-auto">
-        <div className="grid grid-cols-1 gap-4">
+      <main className="px-4 pb-24">
+        {/* Header with total */}
+        <div className="bg-purple-100 rounded-2xl p-4 mb-6 flex items-center gap-3">
+          <div className="bg-purple-700 rounded-full p-3">
+            <UsersIcon className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Vehicle Management</h2>
+            <p className="text-sm text-gray-600">{session?.stats?.vehicles?.total_vehicles || 0} total</p>
+          </div>
+        </div>
+
+        {/* Category Cards Grid */}
+        <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
           {isLoading && (
-            <Card className="p-6 space-y-2">
-              {[...Array(3)].map((_,i)=>(<div key={i} className="h-12 bg-gray-100 animate-pulse rounded-full" />))}
-            </Card>
+            [...Array(2)].map((_, i) => (
+              <Card key={i} className="rounded-2xl">
+                <CardContent className="p-6">
+                  <div className="bg-gray-200 rounded-full w-12 h-12 mb-3 animate-pulse" />
+                  <div className="bg-gray-200 h-8 w-16 mb-2 rounded animate-pulse" />
+                  <div className="bg-gray-200 h-4 w-20 rounded animate-pulse" />
+                </CardContent>
+              </Card>
+            ))
           )}
           {!isLoading && grouped.map(([type, count]) => {
             const slug = type.toLowerCase();
@@ -43,30 +61,25 @@ export default function VehiclesCategoriesPage() {
                     router.push(`/user/vehicles/types/${slug}`);
                   }
                 }}
-                className="cursor-pointer rounded-full border-gray-200 hover:shadow-md transition-shadow"
+                className="cursor-pointer rounded-2xl border-gray-200 hover:shadow-md transition-shadow"
               >
-                <CardContent className="py-4 px-6 flex items-center justify-between">
-                  <span className="font-semibold text-gray-800 text-lg">{`${type} (${count})`}</span>
-                  <TruckIcon className="w-5 h-5 text-purple-700" />
+                <CardContent className="p-6 flex flex-col items-start gap-3">
+                  <div className="bg-purple-700 rounded-full p-3 mb-1">
+                    <UsersIcon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex items-center justify-between w-full">
+                    <div className="text-2xl font-bold text-gray-900">{count}</div>
+                    <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                  <div className="text-sm font-medium text-gray-700">{type}</div>
                 </CardContent>
               </Card>
             );
           })}
-          {/* Search card */}
-          <Card
-            role="button"
-            tabIndex={0}
-            onClick={() => router.push('/user/vehicles/search')}
-            onKeyDown={(e) => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); router.push('/user/vehicles/search'); } }}
-            className="cursor-pointer rounded-full border-dashed border-gray-300 hover:border-gray-400 hover:shadow-sm transition"
-          >
-            <CardContent className="py-4 px-6 flex items-center justify-between">
-              <span className="font-semibold text-gray-700 text-lg">Search</span>
-              <Button variant="outline" size="sm">Open</Button>
-            </CardContent>
-          </Card>
           {!isLoading && grouped.length === 0 && (
-            <div className="text-center text-gray-500 py-12">No vehicles available.</div>
+            <div className="col-span-2 text-center text-gray-500 py-12">No vehicles available.</div>
           )}
         </div>
       </main>
