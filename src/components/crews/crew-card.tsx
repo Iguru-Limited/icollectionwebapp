@@ -21,7 +21,7 @@ export function CrewCard({ crew }: CrewCardProps) {
             <AvatarFallback className="bg-blue-100 text-blue-700">{initials}</AvatarFallback>
           </Avatar>
           {/* Profile Completion Badge */}
-          <div className="absolute -bottom-1 -right-1 bg-green-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">
+          <div className="absolute -bottom-1 -right-1 text-black text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
             {completionPercentage}%
           </div>
         </div>

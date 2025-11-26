@@ -163,7 +163,7 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
                     </AvatarFallback>
                   </Avatar>
                   {/* Profile Completion Badge */}
-                  <div className="absolute -bottom-0.5 -right-0.5 bg-green-500 text-white text-[9px] font-bold rounded-full h-4 w-4 flex items-center justify-center border border-white">
+                  <div className="absolute -bottom-0.5 -right-0.5 text-black text-[9px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
                     {crew.profile_completion_percentage ? parseInt(crew.profile_completion_percentage) : 0}%
                   </div>
                 </div>

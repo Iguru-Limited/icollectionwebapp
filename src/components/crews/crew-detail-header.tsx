@@ -21,7 +21,7 @@ export function CrewDetailHeader({ crew, active, onSelect }: CrewDetailHeaderPro
           <AvatarFallback className="text-3xl bg-blue-100 text-blue-700">{initials}</AvatarFallback>
         </Avatar>
         {/* Profile Completion Badge */}
-        <div className="absolute -bottom-1 -right-1 bg-green-500 text-white text-xs font-bold rounded-full h-7 w-7 flex items-center justify-center border-2 border-white">
+        <div className="absolute -bottom-1 -right-1 text-black text-xs font-bold rounded-full h-7 w-7 flex items-center justify-center">
           {completionPercentage}%
         </div>
       </div>
