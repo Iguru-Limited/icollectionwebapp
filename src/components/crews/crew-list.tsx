@@ -156,11 +156,17 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
               onClick={() => router.push(`/user/crews/${crew.crew_id}`)}
             >
               <TableCell>
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
-                    {getInitials(crew.name)}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
+                      {getInitials(crew.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {/* Profile Completion Badge */}
+                  <div className="absolute -bottom-0.5 -right-0.5 bg-green-500 text-white text-[9px] font-bold rounded-full h-4 w-4 flex items-center justify-center border border-white">
+                    {crew.profile_completion_percentage ? parseInt(crew.profile_completion_percentage) : 0}%
+                  </div>
+                </div>
               </TableCell>
               <TableCell className="font-medium">{crew.name}</TableCell>
               <TableCell>{crew.role_name ? crew.role_name.charAt(0) + crew.role_name.slice(1).toLowerCase() : '-'}</TableCell>

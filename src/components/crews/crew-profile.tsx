@@ -21,15 +21,22 @@ export function CrewProfile({ crew }: CrewProfileProps) {
   const expired = crew.badge_expiry ? new Date(crew.badge_expiry) < new Date() : false;
   const expiryStr = crew.badge_expiry ? new Date(crew.badge_expiry).toLocaleDateString() : '-';
   const initials = crew.name?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'C';
+  const completionPercentage = crew.profile_completion_percentage ? parseInt(crew.profile_completion_percentage) : 0;
 
   return (
     <div className="space-y-4">
       <Card>
         <CardContent className="pt-6">
           <div className="text-center">
-            <Avatar className="h-24 w-24 mx-auto mb-4">
-              <AvatarFallback className="text-2xl bg-blue-100 text-blue-700">{initials}</AvatarFallback>
-            </Avatar>
+            <div className="relative inline-block mb-4">
+              <Avatar className="h-24 w-24">
+                <AvatarFallback className="text-2xl bg-blue-100 text-blue-700">{initials}</AvatarFallback>
+              </Avatar>
+              {/* Profile Completion Badge */}
+              <div className="absolute -bottom-1 -right-1 bg-green-500 text-white text-[11px] font-bold rounded-full h-6 w-6 flex items-center justify-center border-2 border-white">
+                {completionPercentage}%
+              </div>
+            </div>
             <h2 className="text-xl font-bold text-gray-900 mb-1">
               {crew.name}
             </h2>

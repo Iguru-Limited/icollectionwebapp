@@ -12,11 +12,19 @@ interface CrewDetailHeaderProps {
 export function CrewDetailHeader({ crew, active, onSelect }: CrewDetailHeaderProps) {
   const initials = crew.name?.split(' ').map(n => n[0]).join('').slice(0, 1) || 'C';
 
+  const completionPercentage = crew.profile_completion_percentage ? parseInt(crew.profile_completion_percentage) : 0;
+
   return (
     <div className="flex flex-col items-center">
-      <Avatar className="h-28 w-28 mb-4">
-        <AvatarFallback className="text-3xl bg-blue-100 text-blue-700">{initials}</AvatarFallback>
-      </Avatar>
+      <div className="relative mb-4">
+        <Avatar className="h-28 w-28">
+          <AvatarFallback className="text-3xl bg-blue-100 text-blue-700">{initials}</AvatarFallback>
+        </Avatar>
+        {/* Profile Completion Badge */}
+        <div className="absolute -bottom-1 -right-1 bg-green-500 text-white text-xs font-bold rounded-full h-7 w-7 flex items-center justify-center border-2 border-white">
+          {completionPercentage}%
+        </div>
+      </div>
       <div className="text-center">
         <div className="text-lg font-semibold text-gray-900">{crew.name}</div>
         <div className="mt-2">
