@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
-import type { GetCrewsResponse, GetCrewRolesResponse, UpdateCrewRequest, UpdateCrewResponse } from '@/types/crew';
+import type { GetCrewsResponse, GetCrewRolesResponse, UpdateCrewRequest, UpdateCrewResponse, CreateCrewRequest, CreateCrewResponse } from '@/types/crew';
 
 interface UseCrewsOptions {
   companyId?: number;
@@ -124,5 +124,47 @@ export function useCrewRoles() {
     enabled: !!session,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+}
+
+interface UseCreateCrewOptions {
+  onSuccess?: (data: CreateCrewResponse) => void;
+  onError?: (error: Error) => void;
+}
+
+/**
+ * Hook to create a new crew member
+ * Automatically invalidates crew list cache on success
+ */
+export function useCreateCrew(options?: UseCreateCrewOptions) {
+  const queryClient = useQueryClient();
+  const { data: session } = useSession();
+
+  return useMutation({
+    mutationFn: async (payload: CreateCrewRequest): Promise<CreateCrewResponse> => {
+      const response = await fetch('/api/crews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create crew member');
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Invalidate crew list to refetch with new crew
+      const companyId = session?.user?.company?.company_id;
+      queryClient.invalidateQueries({ queryKey: ['crews', companyId] });
+      options?.onSuccess?.(data);
+    },
+    onError: (error: Error) => {
+      options?.onError?.(error);
+    },
   });
 }

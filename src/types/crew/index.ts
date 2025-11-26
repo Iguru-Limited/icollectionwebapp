@@ -37,6 +37,24 @@ export interface GetCrewsResponse {
   message?: string;
 }
 
+export interface CreateCrewRequest {
+  name: string;
+  crew_role_id: number;
+  phone: string;
+  employee_no?: string;
+  email?: string;
+  id_number?: string;
+  badge_number: string;
+  vehicle_id?: number;
+  badge_expiry?: string;
+}
+
+export interface CreateCrewResponse {
+  message: string;
+  crew_id: string;
+  success?: boolean;
+}
+
 export interface UpdateCrewRequest {
   crew_id: number;
   name: string;

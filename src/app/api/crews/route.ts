@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/utils/auth';
 import { API_ENDPOINTS } from '@/lib/utils/constants';
-import type { GetCrewsResponse, UpdateCrewRequest, UpdateCrewResponse, EditCrewPayload, EditCrewResponse } from '@/types/crew';
+import type { GetCrewsResponse, UpdateCrewRequest, UpdateCrewResponse, EditCrewPayload, EditCrewResponse, CreateCrewRequest, CreateCrewResponse } from '@/types/crew';
 
 // GET /api/crews
 // Query: ?company_id=9
@@ -68,6 +68,86 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(responseData);
   } catch (error) {
     console.error('Crew list error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
+      { status: 500 },
+    );
+  }
+}
+
+// POST /api/crews
+// Body: { name, crew_role_id, phone, badge_number, ... }
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.token) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body: CreateCrewRequest = await request.json();
+
+    // Validate required fields
+    if (!body.name || !body.crew_role_id || !body.phone || !body.badge_number) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields: name, crew_role_id, phone, badge_number' },
+        { status: 400 },
+      );
+    }
+
+    const apiUrl = `${API_ENDPOINTS.BASE_URL}${API_ENDPOINTS.ADD_CREW}`;
+
+    console.log('=== CREATE CREW API REQUEST ===');
+    console.log('API URL:', apiUrl);
+    console.log('Payload:', JSON.stringify(body, null, 2));
+    console.log('===============================');
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.user.token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('=== CREATE CREW API ERROR ===');
+      console.error('Status:', response.status);
+      console.error('Error:', errorText);
+      console.error('=============================');
+      
+      // Try to parse error response for specific error message
+      let errorMessage = 'Failed to create crew member';
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch {
+        // If parsing fails, use the raw error text if it's not too long
+        if (errorText && errorText.length < 200) {
+          errorMessage = errorText;
+        }
+      }
+      
+      return NextResponse.json(
+        { success: false, error: errorMessage },
+        { status: response.status },
+      );
+    }
+
+    const data: CreateCrewResponse = await response.json();
+
+    console.log('=== CREATE CREW API RESPONSE ===');
+    console.log('Response:', JSON.stringify(data, null, 2));
+    console.log('================================');
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Create crew error:', error);
     return NextResponse.json(
       {
         success: false,

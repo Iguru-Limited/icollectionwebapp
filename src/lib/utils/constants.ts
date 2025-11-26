@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
   ASSIGN_VEHICLE:'/api/crew-assignment/manage.php',
   LIST_VEHICLES:'/api//vehicle/list.php',
   CREW_ASSIGNMENT_CONFIRM:'/api//crew-assignment/confirm.php',
+  ADD_CREW:'/api/crew-detail/manage.php',
 } as const;
 
 export const APP_CONFIG = {

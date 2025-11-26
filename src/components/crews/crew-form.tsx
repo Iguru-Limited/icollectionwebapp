@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useCrewRoles, useEditCrew } from '@/hooks/crew';
+import { useCrewRoles, useEditCrew, useCreateCrew } from '@/hooks/crew';
 import { toast } from 'sonner';
 import type { Crew } from '@/types/crew';
 import { Spinner } from '@/components/ui/spinner';
@@ -63,6 +63,18 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
     },
   });
 
+  const createCrewMutation = useCreateCrew({
+    onSuccess: (data) => {
+      toast.success(data.message || 'Crew member created successfully');
+      router.push('/user/crews');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to create crew member');
+    },
+  });
+
+  const isPending = mode === 'edit' ? editCrewMutation.isPending : createCrewMutation.isPending;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     
@@ -79,8 +91,17 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
         id_number: idNumber || null,
       });
     } else {
-      // TODO: Implement create crew functionality
-      toast.error('Create crew not yet implemented');
+      // Create new crew member
+      createCrewMutation.mutate({
+        name,
+        crew_role_id: Number(crewRoleId),
+        phone,
+        badge_number: badgeNumber,
+        badge_expiry: badgeExpiry || undefined,
+        email: email || undefined,
+        employee_no: employeeNo || undefined,
+        id_number: idNumber || undefined,
+      });
     }
   }
 
@@ -199,16 +220,16 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
           variant="outline" 
           className="flex-1"
           onClick={() => router.back()}
-          disabled={editCrewMutation.isPending}
+          disabled={isPending}
         >
           Cancel
         </Button>
         <Button 
           type="submit" 
           className="flex-1" 
-          disabled={editCrewMutation.isPending}
+          disabled={isPending}
         >
-          {editCrewMutation.isPending ? 'Saving...' : mode === 'create' ? 'Add Crew' : 'Save Changes'}
+          {isPending ? 'Saving...' : mode === 'create' ? 'Add Crew' : 'Save Changes'}
         </Button>
       </div>
     </form>
