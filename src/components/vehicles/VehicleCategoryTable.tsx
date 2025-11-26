@@ -8,7 +8,8 @@ import { PencilSquareIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
 import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
-import { AssignmentConflictDialog, AssignCrewDialog } from '@/components/assign';
+import { AssignmentConflictDialog } from '@/components/assign';
+import { AssignCrewSheet } from './AssignCrewSheet';
 import { toast } from 'sonner';
 import type { VehicleItem } from '@/types/vehicle';
 
@@ -34,13 +35,12 @@ function getConductorName(crew: VehicleItem['crew']): string | null {
 }
 
 export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTableProps) {
-  const [assignDialog, setAssignDialog] = useState<{ open: boolean; vehicleId: string; vehiclePlate: string; role: 'driver' | 'conductor' | null }>({
+  const [assignSheet, setAssignSheet] = useState<{ open: boolean; vehicleId: string; vehiclePlate: string; typeName: string }>({
     open: false,
     vehicleId: '',
     vehiclePlate: '',
-    role: null,
+    typeName: '',
   });
-  const [selectedCrewId, setSelectedCrewId] = useState('');
   const [conflictDialog, setConflictDialog] = useState<{
     open: boolean;
     error: string;
@@ -51,18 +51,15 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
   const { data: crewsData } = useCrews();
   const crews = crewsData?.data || [];
   
-  // Filter crews by role for the assignment dialog
-  const roleFilteredCrews = assignDialog.role === 'driver' 
-    ? crews.filter(c => (c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER') && c.active === '1')
-    : assignDialog.role === 'conductor'
-    ? crews.filter(c => (c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR') && c.active === '1')
-    : [];
+  // Filter crews by role
+  const conductors = crews.filter(c => (c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR') && c.active === '1');
+  const drivers = crews.filter(c => (c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER') && c.active === '1');
 
   const confirmMutation = useConfirmAssignment({
     onSuccess: (data) => {
       toast.success(data.message || 'Vehicle crew has been successfully reassigned');
       setConflictDialog({ open: false, error: '', message: '', pendingIds: [] });
-      handleDialogClose();
+      handleSheetClose();
       window.location.reload();
     },
     onError: (error) => {
@@ -91,8 +88,8 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
           pendingIds: data.pending_assignment_ids,
         });
       } else {
-        toast.success(`${assignDialog.role === 'driver' ? 'Driver' : 'Conductor'} assigned successfully`);
-        handleDialogClose();
+        toast.success('Crew assigned successfully');
+        handleSheetClose();
         window.location.reload();
       }
     },
@@ -101,20 +98,19 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
     },
   });
 
-  const handleAssign = () => {
-    if (!selectedCrewId || !assignDialog.vehicleId) {
+  const handleAssignCrew = (crewId: string, role: 'conductor' | 'driver') => {
+    if (!crewId || !assignSheet.vehicleId) {
       toast.error('Please select a crew member');
       return;
     }
     assignMutation.mutate({
-      crew_id: Number(selectedCrewId),
-      vehicle_id: Number(assignDialog.vehicleId),
+      crew_id: Number(crewId),
+      vehicle_id: Number(assignSheet.vehicleId),
     });
   };
 
-  const handleDialogClose = () => {
-    setAssignDialog({ open: false, vehicleId: '', vehiclePlate: '', role: null });
-    setSelectedCrewId('');
+  const handleSheetClose = () => {
+    setAssignSheet({ open: false, vehicleId: '', vehiclePlate: '', typeName: '' });
   };
 
   if (isLoading) {
@@ -187,7 +183,7 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
                           <div className="font-medium text-sm">{conductor.name}</div>
                         </div>
                         <button
-                          onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'conductor' })}
+                          onClick={() => setAssignSheet({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, typeName: v.type_name })}
                           className="p-2 hover:bg-gray-100 rounded-full"
                           aria-label="Reassign conductor"
                         >
@@ -211,7 +207,7 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
                           <div className="font-medium text-sm">{driver.name}</div>
                         </div>
                         <button
-                          onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'driver' })}
+                          onClick={() => setAssignSheet({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, typeName: v.type_name })}
                           className="p-2 hover:bg-gray-100 rounded-full"
                           aria-label="Reassign driver"
                         >
@@ -224,7 +220,7 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
                   {/* Reassign Button */}
                   <Button 
                     className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                    onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'driver' })}
+                    onClick={() => setAssignSheet({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, typeName: v.type_name })}
                   >
                     <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -245,7 +241,7 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
                   {/* Assign Button */}
                   <Button 
                     className="w-full bg-red-600 hover:bg-red-700 text-white"
-                    onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'driver' })}
+                    onClick={() => setAssignSheet({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, typeName: v.type_name })}
                   >
                     <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -282,7 +278,7 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
                     <div className="flex items-center gap-2">
                       <span>{driver}</span>
                       <button
-                        onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'driver' })}
+                        onClick={() => setAssignSheet({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, typeName: v.type_name })}
                         className="text-purple-600 hover:text-purple-800"
                         aria-label="Assign driver"
                       >
@@ -294,7 +290,7 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
                     <div className="flex items-center gap-2">
                       <span>{conductor}</span>
                       <button
-                        onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'conductor' })}
+                        onClick={() => setAssignSheet({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, typeName: v.type_name })}
                         className="text-purple-600 hover:text-purple-800"
                         aria-label="Assign conductor"
                       >
@@ -309,21 +305,16 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
         </Table>
       </Card>
 
-      {/* Assignment Dialog */}
-      {assignDialog.role && (
-        <AssignCrewDialog
-          open={assignDialog.open}
-          onOpenChange={(open) => !open && handleDialogClose()}
-          crews={roleFilteredCrews}
-          selectedCrewId={selectedCrewId}
-          onCrewChange={setSelectedCrewId}
-          onConfirm={handleAssign}
-          title={`Assign ${assignDialog.role === 'driver' ? 'Driver' : 'Conductor'} to ${assignDialog.vehiclePlate}`}
-          description={`Select a ${assignDialog.role} for this vehicle`}
-          placeholder={`Search ${assignDialog.role} by name or badge...`}
-          loading={assignMutation.isPending}
-        />
-      )}
+      {/* Assignment Sheet */}
+      <AssignCrewSheet
+        open={assignSheet.open}
+        onOpenChange={(open) => !open && handleSheetClose()}
+        vehicle={assignSheet.open ? { number_plate: assignSheet.vehiclePlate, type_name: assignSheet.typeName } : null}
+        conductors={conductors}
+        drivers={drivers}
+        onAssign={handleAssignCrew}
+        loading={assignMutation.isPending}
+      />
 
       <AssignmentConflictDialog
         open={conflictDialog.open}
