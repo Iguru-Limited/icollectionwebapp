@@ -51,9 +51,9 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
   
   // Filter crews by role for the assignment dialog
   const roleFilteredCrews = assignDialog.role === 'driver' 
-    ? crews.filter(c => c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER')
+    ? crews.filter(c => (c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER') && c.active === '1')
     : assignDialog.role === 'conductor'
-    ? crews.filter(c => c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR')
+    ? crews.filter(c => (c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR') && c.active === '1')
     : [];
 
   const confirmMutation = useConfirmAssignment({

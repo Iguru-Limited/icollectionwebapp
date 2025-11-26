@@ -31,8 +31,8 @@ export default function PendingVehiclesPage() {
   }, [vehicles]);
 
   // Show ALL drivers and conductors (whether assigned or not) for assignment
-  const allDrivers = useMemo(() => crews.filter(c => c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER'), [crews]);
-  const allConductors = useMemo(() => crews.filter(c => c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR'), [crews]);
+  const allDrivers = useMemo(() => crews.filter(c => (c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER') && c.active === '1'), [crews]);
+  const allConductors = useMemo(() => crews.filter(c => (c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR') && c.active === '1'), [crews]);
 
   const crewListForDialog = useMemo(() => {
     return selectedRole === 'driver' ? allDrivers : allConductors;
