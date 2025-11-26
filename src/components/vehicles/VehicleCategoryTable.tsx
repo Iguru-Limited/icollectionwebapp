@@ -2,7 +2,9 @@
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
-import { PencilSquareIcon } from '@heroicons/react/24/outline';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { PencilSquareIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
 import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
@@ -131,7 +133,98 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
 
   return (
     <>
-      <Card className="overflow-x-auto rounded-2xl">
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {vehicles.map((v) => {
+          const driver = v.crew?.find(c => c.crew_role_id === '3');
+          const conductor = v.crew?.find(c => c.crew_role_id === '12');
+          const hasCrew = driver || conductor;
+          
+          return (
+            <Card key={v.vehicle_id} className="p-4 space-y-4">
+              {/* Vehicle Header */}
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold uppercase">{v.number_plate}</h3>
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span>{v.type_name}</span>
+                </div>
+              </div>
+
+              {/* Conductor - Only show if exists */}
+              {conductor && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-10 w-10 bg-red-100">
+                      <AvatarFallback className="bg-red-100 text-red-700 text-sm">
+                        {conductor.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="text-xs text-gray-500">COND.</div>
+                      <div className="font-medium text-sm">{conductor.name}</div>
+                    </div>
+                    <button
+                      onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'conductor' })}
+                      className="p-2 hover:bg-gray-100 rounded-full"
+                      aria-label="Reassign conductor"
+                    >
+                      <XMarkIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Driver - Only show if exists */}
+              {driver && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-gray-100 text-gray-700 text-sm">
+                        {driver.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="text-xs text-gray-500">DRIVER</div>
+                      <div className="font-medium text-sm">{driver.name}</div>
+                    </div>
+                    <button
+                      onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'driver' })}
+                      className="p-2 hover:bg-gray-100 rounded-full"
+                      aria-label="Reassign driver"
+                    >
+                      <XMarkIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Show message if no crew assigned */}
+              {!hasCrew && (
+                <div className="text-center py-4 text-gray-400 text-sm">
+                  No crew assigned to this vehicle
+                </div>
+              )}
+
+              {/* Reassign Button */}
+              <Button 
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'driver' })}
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                {hasCrew ? 'Reassign' : 'Assign Crew'}
+              </Button>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Desktop Table View */}
+      <Card className="overflow-x-auto rounded-2xl hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
