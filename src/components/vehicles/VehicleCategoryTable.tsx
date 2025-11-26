@@ -141,83 +141,119 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
           const hasCrew = driver || conductor;
           
           return (
-            <Card key={v.vehicle_id} className="p-4 space-y-4">
+            <Card key={v.vehicle_id} className="p-4">
               {/* Vehicle Header */}
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold uppercase">{v.number_plate}</h3>
-                <div className="flex items-center gap-1 text-xs text-gray-500">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  <span>{v.type_name}</span>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  {/* Vehicle Icon */}
+                  <div className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center">
+                    <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                    </svg>
+                  </div>
+                  {/* Vehicle Details */}
+                  <div>
+                    <h3 className="text-lg font-bold uppercase">{v.number_plate}</h3>
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span>{v.type_name}</span>
+                    </div>
+                  </div>
                 </div>
+                
+                {/* Tag Badge - if available */}
+                {/* {v.vehicle_id && (
+                  <div className="bg-red-200 text-red-800 px-3 py-1 rounded-md text-sm font-medium">
+                    F-{v.vehicle_id}
+                  </div>
+                )} */}
               </div>
 
-              {/* Conductor - Only show if exists */}
-              {conductor && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-10 w-10 bg-red-100">
-                      <AvatarFallback className="bg-red-100 text-red-700 text-sm">
-                        {conductor.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="text-xs text-gray-500">COND.</div>
-                      <div className="font-medium text-sm">{conductor.name}</div>
+              {hasCrew ? (
+                <>
+                  {/* Conductor - Only show if exists */}
+                  {conductor && (
+                    <div className="mb-3">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-10 w-10 bg-red-100">
+                          <AvatarFallback className="bg-red-100 text-red-700 text-sm">
+                            {conductor.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="text-xs text-gray-500">COND.</div>
+                          <div className="font-medium text-sm">{conductor.name}</div>
+                        </div>
+                        <button
+                          onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'conductor' })}
+                          className="p-2 hover:bg-gray-100 rounded-full"
+                          aria-label="Reassign conductor"
+                        >
+                          <XMarkIcon className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'conductor' })}
-                      className="p-2 hover:bg-gray-100 rounded-full"
-                      aria-label="Reassign conductor"
-                    >
-                      <XMarkIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              )}
+                  )}
 
-              {/* Driver - Only show if exists */}
-              {driver && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-gray-100 text-gray-700 text-sm">
-                        {driver.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="text-xs text-gray-500">DRIVER</div>
-                      <div className="font-medium text-sm">{driver.name}</div>
+                  {/* Driver - Only show if exists */}
+                  {driver && (
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback className="bg-gray-100 text-gray-700 text-sm">
+                            {driver.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="text-xs text-gray-500">DRIVER</div>
+                          <div className="font-medium text-sm">{driver.name}</div>
+                        </div>
+                        <button
+                          onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'driver' })}
+                          className="p-2 hover:bg-gray-100 rounded-full"
+                          aria-label="Reassign driver"
+                        >
+                          <XMarkIcon className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'driver' })}
-                      className="p-2 hover:bg-gray-100 rounded-full"
-                      aria-label="Reassign driver"
-                    >
-                      <XMarkIcon className="w-5 h-5" />
-                    </button>
+                  )}
+
+                  {/* Reassign Button */}
+                  <Button 
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                    onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'driver' })}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Reassign
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {/* No Crew Warning */}
+                  <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 mb-4">
+                    <svg className="w-5 h-5 text-yellow-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span className="text-sm font-medium text-yellow-800">No crew assigned</span>
                   </div>
-                </div>
-              )}
 
-              {/* Show message if no crew assigned */}
-              {!hasCrew && (
-                <div className="text-center py-4 text-gray-400 text-sm">
-                  No crew assigned to this vehicle
-                </div>
+                  {/* Assign Button */}
+                  <Button 
+                    className="w-full bg-red-600 hover:bg-red-700 text-white"
+                    onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'driver' })}
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Assign
+                  </Button>
+                </>
               )}
-
-              {/* Reassign Button */}
-              <Button 
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                onClick={() => setAssignDialog({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, role: 'driver' })}
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                {hasCrew ? 'Reassign' : 'Assign Crew'}
-              </Button>
             </Card>
           );
         })}
