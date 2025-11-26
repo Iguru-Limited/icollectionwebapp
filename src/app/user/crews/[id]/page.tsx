@@ -121,16 +121,8 @@ export default function CrewProfilePage({ params }: CrewProfilePageProps) {
       <PageHeader 
         title="" 
         backHref="/user/crews"
-        rightAction={
-          <Link href={`/user/crews/${id}/edit`}>
-            <Button size="sm" variant="outline" className="gap-2">
-              <PencilSquareIcon className="w-4 h-4" />
-              Edit
-            </Button>
-          </Link>
-        }
       />
-      <main className="px-4 pb-24 max-w-2xl mx-auto">
+      <main className="pb-24\">
         <CrewDetailHeader
           crew={crew}
           active={activeSection}
@@ -144,7 +136,7 @@ export default function CrewProfilePage({ params }: CrewProfilePageProps) {
           }}
         />
 
-        <div className="mt-6">
+        <div className="mt-6 px-4 max-w-2xl mx-auto">
           {activeSection === 'bio' && <CrewBioData crew={crew} />}
           {activeSection === 'actions' && (
             <div className="space-y-3">
