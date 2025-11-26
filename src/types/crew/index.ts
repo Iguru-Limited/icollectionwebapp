@@ -17,6 +17,11 @@ export interface Crew {
   employee_no: string | null;
   id_number: string | null;
   type: 'crew';
+  active: string; // '0' | '1'
+  profile_completion_percentage: string;
+  created_at: string;
+  updated_at: string;
+  photo: string | null;
   vehicle_id: string | null;
   vehicle_plate: string | null;
   vehicle_type_name: string | null;

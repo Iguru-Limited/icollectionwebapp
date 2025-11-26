@@ -48,10 +48,29 @@ export function CrewBioData({ crew }: CrewBioDataProps) {
   };
 
   const expiryInfo = getBadgeExpiryInfo();
+  const isActive = crew.active === '1';
 
   return (
     <div className="space-y-4">
       {/* Avatar and badge section removed to eliminate unused imports */}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Status</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between py-2">
+            <span className="text-sm text-gray-600">Active Status</span>
+            <span className={`text-sm font-medium px-3 py-1 rounded-full ${
+              isActive 
+                ? 'bg-green-100 text-green-700' 
+                : 'bg-red-100 text-red-700'
+            }`}>
+              {isActive ? 'Active' : 'Inactive'}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
