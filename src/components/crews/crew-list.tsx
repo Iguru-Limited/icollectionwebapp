@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PencilSquareIcon, PhoneIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
@@ -201,6 +201,9 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
                 <TableCell>
                   <div className="relative">
                     <Avatar className="h-10 w-10">
+                      {crew.photo ? (
+                        <AvatarImage src={crew.photo} alt={crew.name || 'Crew'} />
+                      ) : null}
                       <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
                         {getInitials(crew.name)}
                       </AvatarFallback>
@@ -222,6 +225,11 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
                       className="text-purple-700 hover:text-purple-900"
                       onClick={(e) => {
                         e.stopPropagation();
+                        // Check if crew is active before allowing assignment
+                        if (crew.active !== '1') {
+                          toast?.error?.('Cannot assign vehicle to inactive crew member');
+                          return;
+                        }
                         setActiveCrew(crew);
                         setSelectedVehicleId(crew.vehicle_id || '');
                         setOpen(true);
@@ -259,11 +267,11 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
                     Suspended
                   </Badge>
                 )}
-                {isActive && (
+                {/* {isActive && (
                   <Badge className="text-xs bg-red-500 hover:bg-red-600">
                     Inactive
                   </Badge>
-                )}
+                )} */}
               </div>
 
               {/* Main Content */}
@@ -271,18 +279,19 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
                 {/* Avatar */}
                 <div className="relative flex-shrink-0">
                   <Avatar className="h-12 w-12 bg-red-600 text-white">
+                    {crew.photo && <AvatarImage src={crew.photo} alt={crew.name || 'Crew'} />}
                     <AvatarFallback className="bg-red-600 text-white font-bold">
                       {getInitials(crew.name)}
                     </AvatarFallback>
                   </Avatar>
                   {/* Active Status Indicator */}
-                  {isActive && (
+                  {/* {isActive && (
                     <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-0.5">
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                  )}
+                  )} */}
                   {/* Profile Completion Percentage */}
                   <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 translate-y-full mt-1 text-[10px] font-bold text-gray-700 whitespace-nowrap">
                     {crew.profile_completion_percentage ? parseInt(crew.profile_completion_percentage) : 0}%
@@ -342,8 +351,8 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
                   onClick={() => router.push(`/user/crews/${crew.crew_id}`)}
                   className={`w-full ${
                     hasVehicle 
-                      ? 'bg-red-600 hover:bg-red-700' 
-                      : 'bg-purple-600 hover:bg-purple-700'
+                      ? 'bg-purple-600 hover:bg-purple-700' 
+                      : 'bg-red-600 hover:bg-red-700'
                   } text-white`}
                   size="sm"
                 >

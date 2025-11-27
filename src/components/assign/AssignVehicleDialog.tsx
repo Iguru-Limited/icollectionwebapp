@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { AutocompleteInput, type AutocompleteOption } from '@/components/ui/autocomplete-input';
 import type { Crew } from '@/types/crew';
+import { Badge } from '@/components/ui/badge';
 
 interface Vehicle {
   vehicle_id: number | string;
@@ -34,6 +35,8 @@ export function AssignVehicleDialog({
   onConfirm,
   loading = false,
 }: AssignVehicleDialogProps) {
+  const isCrewActive = crew?.active === '1';
+  
   const vehicleOptions: AutocompleteOption[] = useMemo(
     () =>
       vehicles.map((vehicle) => ({
@@ -44,18 +47,35 @@ export function AssignVehicleDialog({
     [vehicles]
   );
 
+  const handleConfirm = () => {
+    if (!isCrewActive) {
+      return;
+    }
+    onConfirm();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Assign Vehicle</DialogTitle>
+          {crew && !isCrewActive && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-3 mt-2">
+              <p className="text-sm text-red-800">This crew member is inactive and cannot be assigned to a vehicle.</p>
+            </div>
+          )}
         </DialogHeader>
         <div className="space-y-3">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 flex items-center gap-2">
             {crew ? (
-              <span>
-                {crew.name} {crew.role_name ? `(${crew.role_name})` : ''}
-              </span>
+              <>
+                <span>
+                  {crew.name} {crew.role_name ? `(${crew.role_name})` : ''}
+                </span>
+                {crew.active !== '1' && (
+                  <Badge variant="destructive" className="text-xs">Inactive</Badge>
+                )}
+              </>
             ) : (
               'No crew selected'
             )}
@@ -67,7 +87,7 @@ export function AssignVehicleDialog({
               value={selectedVehicleId}
               onValueChange={onVehicleChange}
               placeholder="Type to search vehicle..."
-              disabled={loading}
+              disabled={loading || !isCrewActive}
             />
           </div>
         </div>
@@ -75,8 +95,11 @@ export function AssignVehicleDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={onConfirm} disabled={loading || !selectedVehicleId}>
-            {loading ? 'Assigning...' : 'Assign'}
+          <Button 
+            onClick={handleConfirm} 
+            disabled={loading || !selectedVehicleId || !isCrewActive}
+          >
+            {loading ? 'Assigning...' : !isCrewActive ? 'Crew Inactive - Cannot Assign' : 'Assign'}
           </Button>
         </DialogFooter>
       </DialogContent>

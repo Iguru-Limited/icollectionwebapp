@@ -3,8 +3,6 @@ import { PageContainer, PageHeader } from '@/components/layout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
@@ -12,7 +10,6 @@ import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
 import { AssignmentConflictDialog } from '@/components/assign';
 import { AssignCrewSheet } from '@/components/vehicles/AssignCrewSheet';
 import { useMemo, useState } from 'react';
-import type { AssignVehicleResponse } from '@/types/crew';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
 import { MagnifyingGlassIcon, TruckIcon } from '@heroicons/react/24/outline';
@@ -99,7 +96,7 @@ export default function PendingVehiclesPage() {
     }
   });
 
-  const handleAssignCrew = (crewId: string, role: 'conductor' | 'driver') => {
+  const handleAssignCrew = (crewId: string) => {
     if (!crewId || !assignSheet.vehicleId) {
       toast.error('Please select a crew member');
       return;

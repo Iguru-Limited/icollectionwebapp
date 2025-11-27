@@ -1,7 +1,7 @@
 "use client";
 import { PageContainer, PageHeader } from '@/components/layout';
 import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
@@ -115,7 +115,7 @@ export default function AssignedVehiclesPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Assigned Vehicles" backHref="/user/assigned" />
+      <PageHeader title="Assigned Vehicles" backHref="/user/vehicles" />
       <main className="px-4 pb-24 max-w-4xl mx-auto">
         {vehiclesLoading && (
           <div className="flex justify-center py-12"><Spinner className="w-6 h-6" /></div>
@@ -208,10 +208,18 @@ export default function AssignedVehiclesPage() {
                     </div>
 
                     {/* Conductor */}
-                    {conductor && (
+                    {conductor && (() => {
+                      const conductorCrew = crews.find(c => c.crew_id === conductor.crew_id);
+                      return (
                       <div className="mb-3">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-10 w-10 bg-red-100">
+                            {conductorCrew?.photo ? (
+                              <AvatarImage 
+                                src={conductorCrew.photo} 
+                                alt={conductor.name || 'Conductor'} 
+                              />
+                            ) : null}
                             <AvatarFallback className="bg-red-100 text-red-700 text-sm">
                               {conductor.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'C'}
                             </AvatarFallback>
@@ -229,13 +237,22 @@ export default function AssignedVehiclesPage() {
                           </button>
                         </div>
                       </div>
-                    )}
+                      );
+                    })()}
 
                     {/* Driver */}
-                    {driver && (
+                    {driver && (() => {
+                      const driverCrew = crews.find(c => c.crew_id === driver.crew_id);
+                      return (
                       <div className="mb-4">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-10 w-10">
+                            {driverCrew?.photo ? (
+                              <AvatarImage 
+                                src={driverCrew.photo} 
+                                alt={driver.name || 'Driver'} 
+                              />
+                            ) : null}
                             <AvatarFallback className="bg-gray-100 text-gray-700 text-sm">
                               {driver.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'D'}
                             </AvatarFallback>
@@ -253,7 +270,8 @@ export default function AssignedVehiclesPage() {
                           </button>
                         </div>
                       </div>
-                    )}
+                      );
+                    })()}
 
                     {/* Reassign Button */}
                     <Button 

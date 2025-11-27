@@ -3,7 +3,7 @@ import { PageContainer, PageHeader } from '@/components/layout';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
@@ -125,7 +125,10 @@ export default function AssignedConductorsPage() {
                   {assignedConductors.map((conductor) => (
                     <TableRow key={conductor.crew_id} className="cursor-pointer hover:bg-gray-50" onClick={() => router.push(`/user/crews/${conductor.crew_id}`)}>
                       <TableCell>
-                        <Avatar className="h-10 w-10"><AvatarFallback className="bg-blue-100 text-blue-700 text-xs">{getInitials(conductor.name)}</AvatarFallback></Avatar>
+                        <Avatar className="h-10 w-10">
+                          {conductor.photo ? <AvatarImage src={conductor.photo} alt={conductor.name} /> : null}
+                          <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">{getInitials(conductor.name)}</AvatarFallback>
+                        </Avatar>
                       </TableCell>
                       <TableCell className="font-medium">{conductor.name}</TableCell>
                       <TableCell>{conductor.role_name ? conductor.role_name.charAt(0) + conductor.role_name.slice(1).toLowerCase() : '-'}</TableCell>

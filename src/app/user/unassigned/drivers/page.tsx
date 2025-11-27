@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
@@ -165,6 +165,7 @@ export default function PendingDriversPage() {
                     >
                       <TableCell>
                         <Avatar className="h-10 w-10">
+                          {driver.photo ? <AvatarImage src={driver.photo} alt={driver.name} /> : null}
                           <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
                             {getInitials(driver.name)}
                           </AvatarFallback>

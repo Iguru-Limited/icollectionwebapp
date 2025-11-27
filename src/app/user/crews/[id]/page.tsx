@@ -1,6 +1,5 @@
 "use client";
 import { use, useState } from 'react';
-import Link from 'next/link';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { CrewDetailHeader, CrewBioData } from '@/components/crews';
 import { useCrew, useCrewHistory } from '@/hooks/crew';
@@ -8,7 +7,6 @@ import { Spinner } from '@/components/ui/spinner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import { AssignVehicleDialog } from '@/components/assign/AssignVehicleDialog';
 import { AssignmentConflictDialog } from '@/components/assign/AssignmentConflictDialog';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
@@ -122,7 +120,7 @@ export default function CrewProfilePage({ params }: CrewProfilePageProps) {
         title="" 
         backHref="/user/crews"
       />
-      <main className="pb-24\">
+      <main className="pb-24">
         <CrewDetailHeader
           crew={crew}
           active={activeSection}

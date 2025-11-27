@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import type { Crew } from '@/types/crew';
 
@@ -18,6 +18,9 @@ export function CrewCard({ crew }: CrewCardProps) {
       <Card className="flex items-center gap-3 p-4 hover:shadow-md transition-shadow cursor-pointer">
         <div className="relative">
           <Avatar className="h-12 w-12">
+            {crew.photo ? (
+              <AvatarImage src={crew.photo} alt={crew.name || 'Crew'} />
+            ) : null}
             <AvatarFallback className="bg-blue-100 text-blue-700">{initials}</AvatarFallback>
           </Avatar>
           {/* Profile Completion Badge */}

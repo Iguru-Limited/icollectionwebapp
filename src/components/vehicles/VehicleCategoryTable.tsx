@@ -52,11 +52,11 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
   const [removeDialog, setRemoveDialog] = useState<{ open: boolean; crewName: string; crewId: string; role: 'conductor' | 'driver'; vehiclePlate: string }>({ open: false, crewName: '', crewId: '', role: 'conductor', vehiclePlate: '' });
   
   const { data: crewsData } = useCrews();
-  const crews = crewsData?.data || [];
+  const crews = useMemo(() => crewsData?.data || [], [crewsData?.data]);
   
   // Filter crews by role
-  const conductors = crews.filter(c => (c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR') && c.active === '1');
-  const drivers = crews.filter(c => (c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER') && c.active === '1');
+  const conductors = useMemo(() => crews.filter(c => (c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR') && c.active === '1'), [crews]);
+  const drivers = useMemo(() => crews.filter(c => (c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER') && c.active === '1'), [crews]);
 
   const confirmMutation = useConfirmAssignment({
     onSuccess: (data) => {
@@ -111,6 +111,7 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
     },
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleAssignCrew = (crewId: string, role: 'conductor' | 'driver') => {
     if (!crewId || !assignSheet.vehicleId) {
       toast.error('Please select a crew member');
@@ -139,6 +140,7 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
     return vehicles.find(v => v.vehicle_id === assignSheet.vehicleId);
   }, [vehicles, assignSheet.vehicleId]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const assignedConductor = useMemo(() => {
     if (!currentVehicle?.crew) return null;
     const conductor = currentVehicle.crew.find(c => c.crew_role_id === '12');
@@ -146,6 +148,7 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
     return crews.find(c => c.crew_id === conductor.crew_id) || null;
   }, [currentVehicle, crews]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const assignedDriver = useMemo(() => {
     if (!currentVehicle?.crew) return null;
     const driver = currentVehicle.crew.find(c => c.crew_role_id === '3');

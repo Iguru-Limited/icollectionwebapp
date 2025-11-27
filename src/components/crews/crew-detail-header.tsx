@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { UserIcon, ClockIcon } from '@heroicons/react/24/outline';
 import type { Crew } from '@/types/crew';
@@ -18,6 +18,7 @@ export function CrewDetailHeader({ crew, active, onSelect }: CrewDetailHeaderPro
       {/* Avatar and Name Section */}
       <div className="flex items-start gap-4 px-4 pt-4">
         <Avatar className="h-16 w-16 bg-red-600 flex-shrink-0">
+          {crew.photo && <AvatarImage src={crew.photo} alt={crew.name || 'Crew'} />}
           <AvatarFallback className="text-2xl bg-red-600 text-white font-bold">
             {initials}
           </AvatarFallback>
