@@ -259,11 +259,11 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
                     Suspended
                   </Badge>
                 )}
-                {isActive && (
+                {/* {isActive && (
                   <Badge className="text-xs bg-red-500 hover:bg-red-600">
                     Inactive
                   </Badge>
-                )}
+                )} */}
               </div>
 
               {/* Main Content */}
