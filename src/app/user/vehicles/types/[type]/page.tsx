@@ -51,10 +51,59 @@ export default function VehicleTypePage() {
       ? 'Uncategorized'
       : typeParamRaw.charAt(0).toUpperCase() + typeParamRaw.slice(1).toLowerCase();
 
+  // Calculate stats
+  const totalVehicles = filtered.length;
+  const assignedVehicles = filtered.filter(v => v.crew && v.crew.length > 0).length;
+  const unassignedVehicles = totalVehicles - assignedVehicles;
+
   return (
     <PageContainer>
-      <PageHeader backHref="/user/vehicles" title={properLabel + ' Category'} />
+      <PageHeader backHref="/user/vehicles" title={properLabel} />
       <main className="px-4 pb-24 max-w-3xl mx-auto space-y-4">
+        {/* Stats Section - Mobile Only */}
+        <div className="md:hidden space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="p-3 bg-gray-900 rounded-lg">
+              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+              </svg>
+            </div>
+            <div>
+              <div className="text-2xl font-bold">{properLabel.toUpperCase()}</div>
+              <div className="text-sm text-gray-500">{totalVehicles} active</div>
+            </div>
+          </div>
+
+          {/* Quick Stats Cards */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white rounded-lg p-3 border border-gray-200">
+              <div className="flex items-center gap-2 mb-1">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                </svg>
+                <span className="text-xs text-gray-600">Total</span>
+              </div>
+              <div className="text-2xl font-bold">{totalVehicles}</div>
+            </div>
+
+            <div className="bg-white rounded-lg p-3 border border-gray-200">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-xs text-gray-600">Assigned</span>
+              </div>
+              <div className="text-2xl font-bold">{assignedVehicles}</div>
+            </div>
+
+            <div className="bg-white rounded-lg p-3 border border-gray-200">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                <span className="text-xs text-gray-600">Unassigned</span>
+              </div>
+              <div className="text-2xl font-bold">{unassignedVehicles}</div>
+            </div>
+          </div>
+        </div>
+
         <SearchBar
           value={q}
           onChange={setQ}

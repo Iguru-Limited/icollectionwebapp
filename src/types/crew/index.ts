@@ -17,6 +17,11 @@ export interface Crew {
   employee_no: string | null;
   id_number: string | null;
   type: 'crew';
+  active: string; // '0' | '1'
+  profile_completion_percentage: string;
+  created_at: string;
+  updated_at: string;
+  photo: string | null;
   vehicle_id: string | null;
   vehicle_plate: string | null;
   vehicle_type_name: string | null;
@@ -30,6 +35,24 @@ export interface GetCrewsResponse {
   success: boolean;
   data: Crew[];
   message?: string;
+}
+
+export interface CreateCrewRequest {
+  name: string;
+  crew_role_id: number;
+  phone: string;
+  employee_no?: string;
+  email?: string;
+  id_number?: string;
+  badge_number: string;
+  vehicle_id?: number;
+  badge_expiry?: string;
+}
+
+export interface CreateCrewResponse {
+  message: string;
+  crew_id: string;
+  success?: boolean;
 }
 
 export interface UpdateCrewRequest {

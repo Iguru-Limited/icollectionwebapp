@@ -40,8 +40,8 @@ export default function AssignedCategoriesPage() {
   return (
     <PageContainer>
       <PageHeader title="Assigned" backHref="/user" />
-      <main className="px-4 pb-24 max-w-md mx-auto">
-        <div className="grid grid-cols-1 gap-4">
+      <main className="px-4 pb-24 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {categories.map(category => (
             <Card
               key={category.title}
@@ -54,11 +54,11 @@ export default function AssignedCategoriesPage() {
                   router.push(category.route);
                 }
               }}
-              className="cursor-pointer rounded-full border-gray-200 hover:shadow-md transition-shadow"
+              className="cursor-pointer rounded-2xl border-gray-200 hover:shadow-lg transition-shadow bg-white"
             >
-              <CardContent className="py-4 px-6 flex items-center justify-between">
-                <span className="font-semibold text-gray-800 text-lg">{`${category.title} (${category.count})`}</span>
-                <span className="text-sm text-gray-500">View</span>
+              <CardContent className="py-6 px-6 flex flex-col items-center justify-center text-center">
+                <span className="font-bold text-gray-800 text-2xl mb-2">{category.count}</span>
+                <span className="text-sm text-gray-600">{category.title}</span>
               </CardContent>
             </Card>
           ))}

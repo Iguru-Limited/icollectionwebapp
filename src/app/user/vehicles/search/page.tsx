@@ -61,8 +61,8 @@ export default function VehicleSearchPage() {
   }, [q, vehicles]);
 
   // Get drivers and conductors
-  const drivers = crews.filter(c => c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER');
-  const conductors = crews.filter(c => c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR');
+  const drivers = crews.filter(c => (c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER') && c.active === '1');
+  const conductors = crews.filter(c => (c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR') && c.active === '1');
 
   const confirmMutation = useConfirmAssignment({
     onSuccess: (data) => {

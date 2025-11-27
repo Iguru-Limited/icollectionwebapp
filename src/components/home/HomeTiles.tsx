@@ -8,6 +8,7 @@ import {
   UsersIcon,
   TruckIcon,
   BoltIcon,
+  UserPlusIcon,
 } from '@heroicons/react/24/outline';
 
 type Tile = {
@@ -34,6 +35,13 @@ export default function HomeTiles() {
       icon: <WalletIcon className="w-6 h-6 text-white" />,
       bgClass: 'bg-purple-700',
       rightName: 'collection',
+    },
+    {
+      title: 'Add Crew',
+      href: '/user/crews/add',
+      icon: <UserPlusIcon className="w-6 h-6 text-white" />,
+      bgClass: 'bg-blue-600',
+      rightName: 'assign_crew',
     },
     {
       title: 'Crew',

@@ -11,13 +11,20 @@ export function CrewCard({ crew }: CrewCardProps) {
   const expired = crew.badge_expiry ? new Date(crew.badge_expiry) < new Date() : false;
   const expiryStr = crew.badge_expiry ? new Date(crew.badge_expiry).toLocaleDateString() : '-';
   const initials = crew.name?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'C';
+  const completionPercentage = crew.profile_completion_percentage ? parseInt(crew.profile_completion_percentage) : 0;
 
   return (
     <Link href={`/user/crews/${crew.crew_id}`}>
       <Card className="flex items-center gap-3 p-4 hover:shadow-md transition-shadow cursor-pointer">
-        <Avatar className="h-12 w-12">
-          <AvatarFallback className="bg-blue-100 text-blue-700">{initials}</AvatarFallback>
-        </Avatar>
+        <div className="relative">
+          <Avatar className="h-12 w-12">
+            <AvatarFallback className="bg-blue-100 text-blue-700">{initials}</AvatarFallback>
+          </Avatar>
+          {/* Profile Completion Badge */}
+          <div className="absolute -bottom-1 -right-1 text-black text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
+            {completionPercentage}%
+          </div>
+        </div>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold truncate text-gray-900">
             {crew.name}
