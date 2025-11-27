@@ -39,22 +39,24 @@ export function AssignCrewSheet({
   const [showDriverDropdown, setShowDriverDropdown] = useState(false);
   // Sheet no longer handles removal directly
 
-  // Filter conductors based on search
+  // Filter conductors based on search - only show active crew
   const filteredConductors = useMemo(() => {
-    if (!conductorSearch.trim()) return conductors;
+    const activeConductors = conductors.filter(c => c.active === '1');
+    if (!conductorSearch.trim()) return activeConductors;
     const search = conductorSearch.toLowerCase();
-    return conductors.filter(c => 
+    return activeConductors.filter(c => 
       c.name.toLowerCase().includes(search) || 
       c.badge_number?.toLowerCase().includes(search) ||
       c.phone?.toLowerCase().includes(search)
     );
   }, [conductors, conductorSearch]);
 
-  // Filter drivers based on search
+  // Filter drivers based on search - only show active crew
   const filteredDrivers = useMemo(() => {
-    if (!driverSearch.trim()) return drivers;
+    const activeDrivers = drivers.filter(d => d.active === '1');
+    if (!driverSearch.trim()) return activeDrivers;
     const search = driverSearch.toLowerCase();
-    return drivers.filter(d => 
+    return activeDrivers.filter(d => 
       d.name.toLowerCase().includes(search) || 
       d.badge_number?.toLowerCase().includes(search) ||
       d.phone?.toLowerCase().includes(search)
@@ -62,10 +64,21 @@ export function AssignCrewSheet({
   }, [drivers, driverSearch]);
 
   const handleAssign = () => {
+    // Validate active status before assignment
     if (selectedConductor) {
+      const conductor = conductors.find(c => c.crew_id === selectedConductor);
+      if (conductor && conductor.active !== '1') {
+        // Toast will be handled by parent but we shouldn't proceed
+        return;
+      }
       onAssign(selectedConductor, 'conductor');
     }
     if (selectedDriver) {
+      const driver = drivers.find(d => d.crew_id === selectedDriver);
+      if (driver && driver.active !== '1') {
+        // Toast will be handled by parent but we shouldn't proceed
+        return;
+      }
       onAssign(selectedDriver, 'driver');
     }
   };
@@ -155,7 +168,12 @@ export function AssignCrewSheet({
                         selectedConductor === conductor.crew_id ? 'bg-purple-50' : ''
                       }`}
                     >
-                      <div className="font-medium text-gray-900">{conductor.name}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium text-gray-900">{conductor.name}</div>
+                        {conductor.active !== '1' && (
+                          <Badge className="bg-red-100 text-red-600 text-[10px] px-1.5 py-0">Inactive</Badge>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 text-xs text-gray-500">
                         {conductor.badge_number && <span>Badge: {conductor.badge_number}</span>}
                         {conductor.phone && <span>• {conductor.phone}</span>}
@@ -163,7 +181,7 @@ export function AssignCrewSheet({
                     </button>
                   ))}
                   {filteredConductors.length === 0 && (
-                    <div className="px-4 py-3 text-sm text-gray-500">No conductors found</div>
+                    <div className="px-4 py-3 text-sm text-gray-500">No active conductors found</div>
                   )}
                 </div>
               )}
@@ -212,7 +230,12 @@ export function AssignCrewSheet({
                         selectedDriver === driver.crew_id ? 'bg-purple-50' : ''
                       }`}
                     >
-                      <div className="font-medium text-gray-900">{driver.name}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium text-gray-900">{driver.name}</div>
+                        {driver.active !== '1' && (
+                          <Badge className="bg-red-100 text-red-600 text-[10px] px-1.5 py-0">Inactive</Badge>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 text-xs text-gray-500">
                         {driver.badge_number && <span>Badge: {driver.badge_number}</span>}
                         {driver.phone && <span>• {driver.phone}</span>}
@@ -220,7 +243,7 @@ export function AssignCrewSheet({
                     </button>
                   ))}
                   {filteredDrivers.length === 0 && (
-                    <div className="px-4 py-3 text-sm text-gray-500">No drivers found</div>
+                    <div className="px-4 py-3 text-sm text-gray-500">No active drivers found</div>
                   )}
                 </div>
               )}

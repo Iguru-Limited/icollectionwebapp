@@ -222,6 +222,11 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
                       className="text-purple-700 hover:text-purple-900"
                       onClick={(e) => {
                         e.stopPropagation();
+                        // Check if crew is active before allowing assignment
+                        if (crew.active !== '1') {
+                          toast?.error?.('Cannot assign vehicle to inactive crew member');
+                          return;
+                        }
                         setActiveCrew(crew);
                         setSelectedVehicleId(crew.vehicle_id || '');
                         setOpen(true);

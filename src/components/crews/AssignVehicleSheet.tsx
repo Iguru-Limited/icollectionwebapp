@@ -34,6 +34,9 @@ export function AssignVehicleSheet({
   loading = false,
 }: AssignVehicleSheetProps) {
   const [search, setSearch] = useState("");
+  
+  // Check if crew is active
+  const isCrewActive = crew?.active === '1';
 
   const filteredVehicles = useMemo(() => {
     if (!search.trim()) return vehicles;
@@ -42,6 +45,14 @@ export function AssignVehicleSheet({
       v.number_plate.toLowerCase().includes(s) || (v.type_name || "").toLowerCase().includes(s)
     );
   }, [vehicles, search]);
+  
+  const handleConfirm = () => {
+    if (!isCrewActive) {
+      // Don't proceed if crew is not active
+      return;
+    }
+    onConfirm();
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -50,9 +61,19 @@ export function AssignVehicleSheet({
         <div className="relative p-6 pb-4 border-b">
           <h2 className="text-lg font-semibold text-gray-900">Assign Vehicle</h2>
           {crew && (
-            <p className="mt-1 text-sm text-gray-600">
-              {crew.name} {crew.role_name ? `(${crew.role_name})` : ''}
-            </p>
+            <div className="mt-1">
+              <p className="text-sm text-gray-600">
+                {crew.name} {crew.role_name ? `(${crew.role_name})` : ''}
+              </p>
+              {!isCrewActive && (
+                <div className="mt-2 flex items-center gap-2 text-xs text-red-600 bg-red-50 px-2 py-1.5 rounded">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span className="font-medium">This crew member is inactive and cannot be assigned to a vehicle</span>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -105,11 +126,11 @@ export function AssignVehicleSheet({
         {/* Footer */}
         <div className="p-6 pt-4 border-t">
           <Button
-            onClick={onConfirm}
-            disabled={loading || !selectedVehicleId}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+            onClick={handleConfirm}
+            disabled={loading || !selectedVehicleId || !isCrewActive}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Assigning...' : 'Assign Vehicle'}
+            {loading ? 'Assigning...' : !isCrewActive ? 'Crew Inactive - Cannot Assign' : 'Assign Vehicle'}
           </Button>
         </div>
       </DialogContent>

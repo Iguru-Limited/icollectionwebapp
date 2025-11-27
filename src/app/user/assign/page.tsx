@@ -39,9 +39,9 @@ export default function AssignPage() {
     })) as SimpleVehicle[];
   }, [vehiclesResponse?.data, template?.vehicles]);
 
-  // Get drivers and conductors
-  const drivers = crews.filter(c => c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER');
-  const conductors = crews.filter(c => c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR');
+  // Get drivers and conductors (only active ones)
+  const drivers = crews.filter(c => (c.crew_role_id === '3' || c.role_name?.toUpperCase() === 'DRIVER') && c.active === '1');
+  const conductors = crews.filter(c => (c.crew_role_id === '12' || c.role_name?.toUpperCase() === 'CONDUCTOR') && c.active === '1');
 
   // Form state
   const [vehicleQuery, setVehicleQuery] = useState('');
@@ -160,6 +160,20 @@ export default function AssignPage() {
       toast.error('Select vehicle and at least one crew member');
       return;
     }
+    
+    // Validate that selected crew members are active
+    const selectedDriver = selectedDriverId ? crews.find(c => c.crew_id === selectedDriverId) : null;
+    const selectedConductor = selectedConductorId ? crews.find(c => c.crew_id === selectedConductorId) : null;
+    
+    if (selectedDriver && selectedDriver.active !== '1') {
+      toast.error(`Cannot assign inactive driver: ${selectedDriver.name}`);
+      return;
+    }
+    if (selectedConductor && selectedConductor.active !== '1') {
+      toast.error(`Cannot assign inactive conductor: ${selectedConductor.name}`);
+      return;
+    }
+    
     const crewIdPayload = crewIds.length === 1 ? Number(crewIds[0]) : crewIds.map(id => Number(id));
     await assignVehicle({ vehicle_id: selectedVehicleId, crew_id: crewIdPayload });
   }
@@ -289,7 +303,7 @@ export default function AssignPage() {
                   {filteredDrivers.map(c => (
                     <li
                       key={c.crew_id}
-                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 flex justify-between"
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 flex justify-between items-center gap-2"
                       onMouseDown={(e) => {
                         e.preventDefault();
                         setSelectedDriverId(c.crew_id);
@@ -299,7 +313,12 @@ export default function AssignPage() {
                       }}
                     >
                       <span className="font-medium">{c.name}</span>
-                      <span className="text-gray-400 text-xs uppercase">{c.badge_number}</span>
+                      <div className="flex items-center gap-2">
+                        {c.active !== '1' && (
+                          <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-xs rounded">Inactive</span>
+                        )}
+                        <span className="text-gray-400 text-xs uppercase">{c.badge_number}</span>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -355,7 +374,7 @@ export default function AssignPage() {
                   {filteredConductors.map(c => (
                     <li
                       key={c.crew_id}
-                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 flex justify-between"
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-100 flex justify-between items-center gap-2"
                       onMouseDown={(e) => {
                         e.preventDefault();
                         setSelectedConductorId(c.crew_id);
@@ -365,7 +384,12 @@ export default function AssignPage() {
                       }}
                     >
                       <span className="font-medium">{c.name}</span>
-                      <span className="text-gray-400 text-xs uppercase">{c.badge_number}</span>
+                      <div className="flex items-center gap-2">
+                        {c.active !== '1' && (
+                          <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-xs rounded">Inactive</span>
+                        )}
+                        <span className="text-gray-400 text-xs uppercase">{c.badge_number}</span>
+                      </div>
                     </li>
                   ))}
                 </ul>
