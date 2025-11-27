@@ -55,7 +55,7 @@ export default function HomeTiles() {
       href: '/user/assign',
       icon: <BoltIcon className="w-6 h-6 text-white" />,
       bgClass: 'bg-green-600',
-      rightName: 'assign_crew', // Same right - can assign vehicles to crew
+      rightName: 'assign_crew', // Same right - quick assignment workflow
     },
     {
       title: 'Vehicle',
@@ -106,58 +106,8 @@ export default function HomeTiles() {
               )}
             </CardContent>
           </Card>
-        ))}
-        
-        {/* Assignment Status Cards */}
-        <Card
-          role="button"
-          tabIndex={0}
-          onClick={() => router.push('/user/assigned')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              router.push('/user/assigned');
-            }
-          }}
-          className="cursor-pointer transition-shadow hover:shadow-md rounded-2xl border-gray-200"
-        >
-          <CardContent className="p-5 flex flex-col items-center justify-center gap-2">
-            <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center shadow-sm">
-              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="text-center text-gray-800 font-medium tracking-wide">Assigned</div>
-            {typeof assignedVehicles === 'number' && (
-              <div className="text-xl font-semibold text-gray-900">{assignedVehicles}</div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card
-          role="button"
-          tabIndex={0}
-          onClick={() => router.push('/user/unassigned')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              router.push('/user/unassigned');
-            }
-          }}
-          className="cursor-pointer transition-shadow hover:shadow-md rounded-2xl border-gray-200"
-        >
-          <CardContent className="p-5 flex flex-col items-center justify-center gap-2">
-            <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-sm">
-              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="text-center text-gray-800 font-medium tracking-wide">Pending</div>
-            {typeof unassignedVehicles === 'number' && (
-              <div className="text-xl font-semibold text-gray-900">{unassignedVehicles}</div>
-            )}
-          </CardContent>
-        </Card>
+        ))}      
+          
       </div>
     </section>
   );
