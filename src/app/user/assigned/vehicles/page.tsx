@@ -115,7 +115,7 @@ export default function AssignedVehiclesPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Assigned Vehicles" backHref="/user/assigned" />
+      <PageHeader title="Assigned Vehicles" backHref="/user/vehicles" />
       <main className="px-4 pb-24 max-w-4xl mx-auto">
         {vehiclesLoading && (
           <div className="flex justify-center py-12"><Spinner className="w-6 h-6" /></div>
