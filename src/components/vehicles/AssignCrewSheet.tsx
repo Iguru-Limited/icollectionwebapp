@@ -70,6 +70,7 @@ export function AssignCrewSheet({
     }
   };
 
+  // Selected objects (unused externally but could be leveraged for preview)
   const selectedConductorObj = conductors.find(c => c.crew_id === selectedConductor);
   const selectedDriverObj = drivers.find(d => d.crew_id === selectedDriver);
 
@@ -83,10 +84,6 @@ export function AssignCrewSheet({
     setSelectedDriver(driver.crew_id);
     setDriverSearch(driver.name);
     setShowDriverDropdown(false);
-  };
-
-  const handleRemoveClick = (role: 'conductor' | 'driver', crewName: string) => {
-    setRemoveDialog({ open: true, role, crewName });
   };
 
   // Removal logic extracted; handled externally
