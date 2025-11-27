@@ -15,7 +15,7 @@ export default async function UserLayout({ children }: { children: ReactNode }) 
   return (
     <>
       <TopNavigation />
-      {children}
+      <div className="pb-24 md:pb-0">{children}</div>
       <BottomNavigation />
     </>
   );

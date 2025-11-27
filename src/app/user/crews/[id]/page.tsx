@@ -122,7 +122,7 @@ export default function CrewProfilePage({ params }: CrewProfilePageProps) {
         title="" 
         backHref="/user/crews"
       />
-      <main className="pb-24\">
+      <main className="pb-24">
         <CrewDetailHeader
           crew={crew}
           active={activeSection}
