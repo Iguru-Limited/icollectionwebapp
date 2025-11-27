@@ -1,1 +1,1 @@
-export { default } from '../../../../unassigned/conductors/page';
+export { default } from '../../../unassigned/conductors/page';

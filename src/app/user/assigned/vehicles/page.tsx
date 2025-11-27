@@ -208,13 +208,15 @@ export default function AssignedVehiclesPage() {
                     </div>
 
                     {/* Conductor */}
-                    {conductor && (
+                    {conductor && (() => {
+                      const conductorCrew = crews.find(c => c.crew_id === conductor.crew_id);
+                      return (
                       <div className="mb-3">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-10 w-10 bg-red-100">
-                            {crews.find(c => c.crew_id === conductor.crew_id)?.photo ? (
+                            {conductorCrew?.photo ? (
                               <AvatarImage 
-                                src={crews.find(c => c.crew_id === conductor.crew_id)?.photo!} 
+                                src={conductorCrew.photo} 
                                 alt={conductor.name || 'Conductor'} 
                               />
                             ) : null}
@@ -235,16 +237,19 @@ export default function AssignedVehiclesPage() {
                           </button>
                         </div>
                       </div>
-                    )}
+                      );
+                    })()}
 
                     {/* Driver */}
-                    {driver && (
+                    {driver && (() => {
+                      const driverCrew = crews.find(c => c.crew_id === driver.crew_id);
+                      return (
                       <div className="mb-4">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-10 w-10">
-                            {crews.find(c => c.crew_id === driver.crew_id)?.photo ? (
+                            {driverCrew?.photo ? (
                               <AvatarImage 
-                                src={crews.find(c => c.crew_id === driver.crew_id)?.photo!} 
+                                src={driverCrew.photo} 
                                 alt={driver.name || 'Driver'} 
                               />
                             ) : null}
@@ -265,7 +270,8 @@ export default function AssignedVehiclesPage() {
                           </button>
                         </div>
                       </div>
-                    )}
+                      );
+                    })()}
 
                     {/* Reassign Button */}
                     <Button 

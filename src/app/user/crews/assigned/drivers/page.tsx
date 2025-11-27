@@ -1,1 +1,1 @@
-export { default } from '../../../../assigned/drivers/page';
+export { default } from '../../../assigned/drivers/page';

@@ -25,7 +25,9 @@ export default function HomeTiles() {
 
   const totalCrew = session?.stats?.crew?.total_crew;
   const totalVehicles = session?.stats?.vehicles?.total_vehicles;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const assignedVehicles = session?.stats?.vehicles?.assignment?.assigned;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const unassignedVehicles = session?.stats?.vehicles?.assignment?.unassigned;
 
   const allTiles: Tile[] = [

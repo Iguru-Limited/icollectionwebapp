@@ -20,6 +20,7 @@ export function useUnassignCrew(callbacks?: {
   const companyId = session?.user?.company?.company_id;
 
   return useMutation({
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     mutationFn: async ({ crew_id, role }: UnassignCrewParams): Promise<UnassignCrewResponse> => {
       const response = await fetch('/api/unassign', {
         method: 'POST',

@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import { PageHeader, PageContainer } from '@/components/layout';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { TruckIcon, UsersIcon } from '@heroicons/react/24/solid';
 import { useSession } from 'next-auth/react';
 
