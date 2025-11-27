@@ -7,8 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
+import { useUnassignCrew } from '@/hooks/crew/useUnassignCrew';
 import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
 import { AssignmentConflictDialog, AssignCrewDialog } from '@/components/assign';
+import { RemoveCrewDialog } from '@/components/vehicles/RemoveCrewDialog';
 import { toast } from 'sonner';
 import { PencilSquareIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useMemo, useState } from 'react';
@@ -25,6 +27,7 @@ export default function AssignedVehiclesPage() {
   const [selectedRole, setSelectedRole] = useState<'driver' | 'conductor' | null>(null);
   const [selectedCrewId, setSelectedCrewId] = useState('');
   const [conflictState, setConflictState] = useState<{ open: boolean; error: string; message: string; pendingIds: string[] }>({ open: false, error: '', message: '', pendingIds: [] });
+  const [removeDialog, setRemoveDialog] = useState<{ open: boolean; crewName: string; crewId: string; role: 'conductor' | 'driver'; vehiclePlate: string }>({ open: false, crewName: '', crewId: '', role: 'conductor', vehiclePlate: '' });
 
   const vehicles: Vehicle[] = useMemo(() => (vehiclesData?.data || []) as Vehicle[], [vehiclesData?.data]);
   const crews = useMemo(() => crewsData?.data || [], [crewsData?.data]);
@@ -90,6 +93,24 @@ export default function AssignedVehiclesPage() {
     setOpenAssign(false);
     setSelectedRole(null);
     setSelectedCrewId('');
+  };
+
+  const unassignMutation = useUnassignCrew({
+    onSuccess: (data) => {
+      toast.success(data.message || 'Crew removed successfully');
+      setRemoveDialog({ ...removeDialog, open: false });
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to remove crew');
+    }
+  });
+
+  const openRemoveDialog = (crewId: string, crewName: string, role: 'conductor' | 'driver', vehiclePlate: string) => {
+    setRemoveDialog({ open: true, crewId, crewName, role, vehiclePlate });
+  };
+
+  const handleConfirmRemove = () => {
+    unassignMutation.mutate({ crew_id: removeDialog.crewId, role: removeDialog.role });
   };
 
   return (
@@ -200,15 +221,11 @@ export default function AssignedVehiclesPage() {
                             <div className="font-medium text-sm">{conductor.name}</div>
                           </div>
                           <button
-                            onClick={() => {
-                              setSelectedVehicle(vehicle);
-                              setSelectedRole('conductor');
-                              setOpenAssign(true);
-                            }}
+                            onClick={() => openRemoveDialog(conductor.crew_id, conductor.name || 'Conductor', 'conductor', vehicle.number_plate)}
                             className="p-2 hover:bg-gray-100 rounded-full"
-                            aria-label="Reassign conductor"
+                            aria-label="Remove conductor"
                           >
-                            <XMarkIcon className="w-5 h-5" />
+                            <XMarkIcon className="w-5 h-5 text-red-600" />
                           </button>
                         </div>
                       </div>
@@ -228,15 +245,11 @@ export default function AssignedVehiclesPage() {
                             <div className="font-medium text-sm">{driver.name}</div>
                           </div>
                           <button
-                            onClick={() => {
-                              setSelectedVehicle(vehicle);
-                              setSelectedRole('driver');
-                              setOpenAssign(true);
-                            }}
+                            onClick={() => openRemoveDialog(driver.crew_id, driver.name || 'Driver', 'driver', vehicle.number_plate)}
                             className="p-2 hover:bg-gray-100 rounded-full"
-                            aria-label="Reassign driver"
+                            aria-label="Remove driver"
                           >
-                            <XMarkIcon className="w-5 h-5" />
+                            <XMarkIcon className="w-5 h-5 text-red-600" />
                           </button>
                         </div>
                       </div>
@@ -291,6 +304,14 @@ export default function AssignedVehiclesPage() {
           cancelMutation.mutate({ assignment_ids: ids });
         }}
         isLoading={confirmMutation.isPending || cancelMutation.isPending}
+      />
+      <RemoveCrewDialog
+        open={removeDialog.open}
+        onOpenChange={(open) => !open && setRemoveDialog({ ...removeDialog, open: false })}
+        crewName={removeDialog.crewName}
+        vehiclePlate={removeDialog.vehiclePlate}
+        loading={unassignMutation.isPending}
+        onConfirm={handleConfirmRemove}
       />
     </PageContainer>
   );

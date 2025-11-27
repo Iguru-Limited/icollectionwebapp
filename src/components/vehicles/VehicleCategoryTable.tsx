@@ -11,6 +11,7 @@ import { useUnassignCrew } from '@/hooks/crew/useUnassignCrew';
 import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
 import { AssignmentConflictDialog } from '@/components/assign';
 import { AssignCrewSheet } from './AssignCrewSheet';
+import { RemoveCrewDialog } from './RemoveCrewDialog';
 import { toast } from 'sonner';
 import type { VehicleItem } from '@/types/vehicle';
 
@@ -48,6 +49,7 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
     message: string;
     pendingIds: string[];
   }>({ open: false, error: '', message: '', pendingIds: [] });
+  const [removeDialog, setRemoveDialog] = useState<{ open: boolean; crewName: string; crewId: string; role: 'conductor' | 'driver'; vehiclePlate: string }>({ open: false, crewName: '', crewId: '', role: 'conductor', vehiclePlate: '' });
   
   const { data: crewsData } = useCrews();
   const crews = crewsData?.data || [];
@@ -122,6 +124,10 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
 
   const handleRemoveCrew = (crewId: string, role: 'conductor' | 'driver') => {
     unassignMutation.mutate({ crew_id: crewId, role });
+  };
+
+  const openRemoveDialog = (crewId: string, crewName: string, role: 'conductor' | 'driver', vehiclePlate: string) => {
+    setRemoveDialog({ open: true, crewId, crewName, role, vehiclePlate });
   };
 
   const handleSheetClose = () => {
@@ -217,11 +223,11 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
                           <div className="font-medium text-sm">{conductor.name}</div>
                         </div>
                         <button
-                          onClick={() => setAssignSheet({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, typeName: v.type_name })}
+                          onClick={() => openRemoveDialog(conductor.crew_id, conductor.name, 'conductor', v.number_plate)}
                           className="p-2 hover:bg-gray-100 rounded-full"
-                          aria-label="Reassign conductor"
+                          aria-label="Remove conductor"
                         >
-                          <XMarkIcon className="w-5 h-5" />
+                          <XMarkIcon className="w-5 h-5 text-red-600" />
                         </button>
                       </div>
                     </div>
@@ -241,11 +247,11 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
                           <div className="font-medium text-sm">{driver.name}</div>
                         </div>
                         <button
-                          onClick={() => setAssignSheet({ open: true, vehicleId: v.vehicle_id, vehiclePlate: v.number_plate, typeName: v.type_name })}
+                          onClick={() => openRemoveDialog(driver.crew_id, driver.name, 'driver', v.number_plate)}
                           className="p-2 hover:bg-gray-100 rounded-full"
-                          aria-label="Reassign driver"
+                          aria-label="Remove driver"
                         >
-                          <XMarkIcon className="w-5 h-5" />
+                          <XMarkIcon className="w-5 h-5 text-red-600" />
                         </button>
                       </div>
                     </div>
@@ -351,11 +357,16 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
         conductors={conductors}
         drivers={drivers}
         onAssign={handleAssignCrew}
-        onRemoveCrew={handleRemoveCrew}
         loading={assignMutation.isPending}
-        removing={unassignMutation.isPending}
-        assignedConductor={assignedConductor}
-        assignedDriver={assignedDriver}
+      />
+
+      <RemoveCrewDialog
+        open={removeDialog.open}
+        onOpenChange={(open) => !open && setRemoveDialog({ ...removeDialog, open: false })}
+        crewName={removeDialog.crewName}
+        vehiclePlate={removeDialog.vehiclePlate}
+        loading={unassignMutation.isPending}
+        onConfirm={() => handleRemoveCrew(removeDialog.crewId, removeDialog.role)}
       />
 
       <AssignmentConflictDialog
