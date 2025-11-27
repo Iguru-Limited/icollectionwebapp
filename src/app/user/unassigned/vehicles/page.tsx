@@ -257,6 +257,7 @@ export default function PendingVehiclesPage() {
         vehicle={{
           number_plate: assignSheet.vehiclePlate,
           type_name: assignSheet.typeName,
+          vehicle_id: assignSheet.vehicleId,
         }}
         conductors={conductors}
         drivers={drivers}

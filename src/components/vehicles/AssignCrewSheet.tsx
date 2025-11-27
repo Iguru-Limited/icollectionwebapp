@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, MagnifyingGlassIcon, ExclamationTriangleIcon, TrashIcon } from '@heroicons/react/24/outline';
 import type { Crew } from '@/types/crew';
 import type { VehicleItem } from '@/types/vehicle';
 
@@ -14,11 +14,16 @@ interface AssignCrewSheetProps {
   vehicle: {
     number_plate: string;
     type_name: string;
+    vehicle_id?: string;
   } | null;
   conductors: Crew[];
   drivers: Crew[];
   onAssign: (crewId: string, role: 'conductor' | 'driver') => void;
+  onRemoveCrew?: (crewId: string, role: 'conductor' | 'driver') => void;
   loading?: boolean;
+  removing?: boolean;
+  assignedConductor?: Crew | null;
+  assignedDriver?: Crew | null;
 }
 
 export function AssignCrewSheet({
@@ -28,7 +33,11 @@ export function AssignCrewSheet({
   conductors,
   drivers,
   onAssign,
+  onRemoveCrew,
   loading = false,
+  removing = false,
+  assignedConductor = null,
+  assignedDriver = null,
 }: AssignCrewSheetProps) {
   const [selectedConductor, setSelectedConductor] = useState<string>('');
   const [selectedDriver, setSelectedDriver] = useState<string>('');
@@ -36,6 +45,11 @@ export function AssignCrewSheet({
   const [driverSearch, setDriverSearch] = useState('');
   const [showConductorDropdown, setShowConductorDropdown] = useState(false);
   const [showDriverDropdown, setShowDriverDropdown] = useState(false);
+  const [removeDialog, setRemoveDialog] = useState<{ open: boolean; role: 'conductor' | 'driver' | null; crewName: string }>({
+    open: false,
+    role: null,
+    crewName: '',
+  });
 
   // Filter conductors based on search
   const filteredConductors = useMemo(() => {
@@ -83,18 +97,25 @@ export function AssignCrewSheet({
     setShowDriverDropdown(false);
   };
 
+  const handleRemoveClick = (role: 'conductor' | 'driver', crewName: string) => {
+    setRemoveDialog({ open: true, role, crewName });
+  };
+
+  const handleConfirmRemove = () => {
+    if (removeDialog.role && onRemoveCrew) {
+      const crewId = removeDialog.role === 'conductor' ? assignedConductor?.crew_id : assignedDriver?.crew_id;
+      if (crewId) {
+        onRemoveCrew(crewId, removeDialog.role);
+      }
+    }
+    setRemoveDialog({ open: false, role: null, crewName: '' });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md p-0 gap-0 max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="relative p-6 pb-4 border-b">
-          <button
-            onClick={() => onOpenChange(false)}
-            className="absolute right-4 top-4 rounded-full p-2 bg-purple-100 hover:bg-purple-200 transition-colors"
-            aria-label="Close"
-          >
-            {/* <XMarkIcon className="h-5 w-5 text-purple-700" /> */}
-          </button>
           <h2 className="text-lg font-semibold text-gray-900">Assign Crew to Vehicle</h2>
         </div>
 
@@ -128,6 +149,25 @@ export function AssignCrewSheet({
                 {conductors.length} available
               </Badge>
             </div>
+
+            {assignedConductor && (
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900">{assignedConductor.name}</div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    {assignedConductor.badge_number && <span>Badge: {assignedConductor.badge_number}</span>}
+                    {assignedConductor.phone && <span>• {assignedConductor.phone}</span>}
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleRemoveClick('conductor', assignedConductor.name)}
+                  className="ml-2 p-2 rounded-full hover:bg-red-100 transition-colors"
+                  aria-label="Remove conductor"
+                >
+                  <XMarkIcon className="h-5 w-5 text-red-600" />
+                </button>
+              </div>
+            )}
 
             <div className="relative">
               <div className="relative">
@@ -184,6 +224,25 @@ export function AssignCrewSheet({
               </Badge>
             </div>
 
+            {assignedDriver && (
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900">{assignedDriver.name}</div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    {assignedDriver.badge_number && <span>Badge: {assignedDriver.badge_number}</span>}
+                    {assignedDriver.phone && <span>• {assignedDriver.phone}</span>}
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleRemoveClick('driver', assignedDriver.name)}
+                  className="ml-2 p-2 rounded-full hover:bg-red-100 transition-colors"
+                  aria-label="Remove driver"
+                >
+                  <XMarkIcon className="h-5 w-5 text-red-600" />
+                </button>
+              </div>
+            )}
+
             <div className="relative">
               <div className="relative">
                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -237,6 +296,41 @@ export function AssignCrewSheet({
           </Button>
         </div>
       </DialogContent>
+
+      {/* Remove Crew Confirmation Dialog */}
+      <Dialog open={removeDialog.open} onOpenChange={(open) => !open && setRemoveDialog({ open: false, role: null, crewName: '' })}>
+        <DialogContent className="sm:max-w-md">
+          <div className="flex flex-col items-center text-center space-y-4 py-4">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+              <ExclamationTriangleIcon className="w-8 h-8 text-red-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">Remove Crew Member?</h2>
+              <p className="text-sm text-gray-600">
+                Are you sure you want to remove {removeDialog.crewName} from {vehicle?.number_plate}?
+              </p>
+            </div>
+            <div className="flex gap-3 w-full pt-2">
+              <Button
+                onClick={() => setRemoveDialog({ open: false, role: null, crewName: '' })}
+                variant="outline"
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 border-0"
+                disabled={removing}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmRemove}
+                className="flex-1 bg-red-900 hover:bg-red-800 text-white"
+                disabled={removing}
+              >
+                <TrashIcon className="w-4 h-4 mr-2" />
+                {removing ? 'Removing...' : 'Remove'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }

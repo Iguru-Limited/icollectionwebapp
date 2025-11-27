@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { PencilSquareIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useCrews } from '@/hooks/crew/useCrews';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
+import { useUnassignCrew } from '@/hooks/crew/useUnassignCrew';
 import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
 import { AssignmentConflictDialog } from '@/components/assign';
 import { AssignCrewSheet } from './AssignCrewSheet';
@@ -98,6 +99,16 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
     },
   });
 
+  const unassignMutation = useUnassignCrew({
+    onSuccess: (data) => {
+      toast.success(data.message || 'Crew removed successfully');
+      window.location.reload();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to remove crew');
+    },
+  });
+
   const handleAssignCrew = (crewId: string, role: 'conductor' | 'driver') => {
     if (!crewId || !assignSheet.vehicleId) {
       toast.error('Please select a crew member');
@@ -109,9 +120,32 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
     });
   };
 
+  const handleRemoveCrew = (crewId: string, role: 'conductor' | 'driver') => {
+    unassignMutation.mutate({ crew_id: crewId, role });
+  };
+
   const handleSheetClose = () => {
     setAssignSheet({ open: false, vehicleId: '', vehiclePlate: '', typeName: '' });
   };
+
+  // Get assigned crew for the currently selected vehicle
+  const currentVehicle = useMemo(() => {
+    return vehicles.find(v => v.vehicle_id === assignSheet.vehicleId);
+  }, [vehicles, assignSheet.vehicleId]);
+
+  const assignedConductor = useMemo(() => {
+    if (!currentVehicle?.crew) return null;
+    const conductor = currentVehicle.crew.find(c => c.crew_role_id === '12');
+    if (!conductor) return null;
+    return crews.find(c => c.crew_id === conductor.crew_id) || null;
+  }, [currentVehicle, crews]);
+
+  const assignedDriver = useMemo(() => {
+    if (!currentVehicle?.crew) return null;
+    const driver = currentVehicle.crew.find(c => c.crew_role_id === '3');
+    if (!driver) return null;
+    return crews.find(c => c.crew_id === driver.crew_id) || null;
+  }, [currentVehicle, crews]);
 
   if (isLoading) {
     return (
@@ -309,11 +343,19 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
       <AssignCrewSheet
         open={assignSheet.open}
         onOpenChange={(open) => !open && handleSheetClose()}
-        vehicle={assignSheet.open ? { number_plate: assignSheet.vehiclePlate, type_name: assignSheet.typeName } : null}
+        vehicle={assignSheet.open ? { 
+          number_plate: assignSheet.vehiclePlate, 
+          type_name: assignSheet.typeName,
+          vehicle_id: assignSheet.vehicleId 
+        } : null}
         conductors={conductors}
         drivers={drivers}
         onAssign={handleAssignCrew}
+        onRemoveCrew={handleRemoveCrew}
         loading={assignMutation.isPending}
+        removing={unassignMutation.isPending}
+        assignedConductor={assignedConductor}
+        assignedDriver={assignedDriver}
       />
 
       <AssignmentConflictDialog
