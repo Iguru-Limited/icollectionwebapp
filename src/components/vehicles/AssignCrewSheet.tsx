@@ -93,7 +93,7 @@ export function AssignCrewSheet({
             className="absolute right-4 top-4 rounded-full p-2 bg-purple-100 hover:bg-purple-200 transition-colors"
             aria-label="Close"
           >
-            <XMarkIcon className="h-5 w-5 text-purple-700" />
+            {/* <XMarkIcon className="h-5 w-5 text-purple-700" /> */}
           </button>
           <h2 className="text-lg font-semibold text-gray-900">Assign Crew to Vehicle</h2>
         </div>
