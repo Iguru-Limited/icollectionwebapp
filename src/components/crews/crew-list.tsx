@@ -9,7 +9,8 @@ import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
 import { useConfirmAssignment, useCancelAssignment } from '@/hooks/crew/useConfirmAssignment';
 import { AssignmentConflictDialog } from '@/components/assign/AssignmentConflictDialog';
-import { AssignVehicleDialog } from '@/components/assign/AssignVehicleDialog';
+// Replaced dialog with bottom sheet version consistent with vehicle assignment UI
+import { AssignVehicleSheet } from '@/components/crews/AssignVehicleSheet';
 import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -358,9 +359,17 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
         })}
       </div>
 
-      <AssignVehicleDialog
+      <AssignVehicleSheet
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={(o) => {
+          if (!o) {
+            setOpen(false);
+            setActiveCrew(null);
+            setSelectedVehicleId('');
+          } else {
+            setOpen(true);
+          }
+        }}
         crew={activeCrew}
         vehicles={vehicles}
         selectedVehicleId={selectedVehicleId}
@@ -368,10 +377,7 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
         loading={isPending}
         onConfirm={() => {
           if (!activeCrew || !selectedVehicleId) return;
-          assignVehicle({
-            vehicle_id: Number(selectedVehicleId),
-            crew_id: Number(activeCrew.crew_id),
-          });
+          assignVehicle({ vehicle_id: Number(selectedVehicleId), crew_id: Number(activeCrew.crew_id) });
         }}
       />
 
