@@ -278,14 +278,6 @@ export default function PendingDriversPage() {
           </>
         )}
       </main>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </main>
 
       <AssignVehicleDialog
         open={openVehicleDialog}

@@ -280,16 +280,6 @@ export default function PendingConductorsPage() {
           </>
         )}
       </main>
-                    <TableCell colSpan={6} className="text-center text-gray-500 py-8">
-                      No pending conductors found
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </main>
 
       <AssignVehicleDialog
         open={openVehicleDialog}

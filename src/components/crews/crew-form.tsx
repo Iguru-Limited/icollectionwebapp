@@ -49,6 +49,11 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
     vehicle_id: null,
     vehicle_plate: null,
     vehicle_type_name: null,
+    active: '1',
+    profile_completion_percentage: '0',
+    created_at: '',
+    updated_at: '',
+    photo: null,
   };
 
   const editCrewMutation = useEditCrew(dummyCrew, {
