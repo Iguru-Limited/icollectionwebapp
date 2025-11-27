@@ -3,7 +3,7 @@ import { PageContainer, PageHeader } from '@/components/layout';
 import { Spinner } from '@/components/ui/spinner';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCrews } from '@/hooks/crew/useCrews';
@@ -135,6 +135,7 @@ export default function CrewAssignedListPage() {
                     {/* Avatar */}
                     <div className="relative flex-shrink-0">
                       <Avatar className="h-12 w-12 bg-red-600">
+                        {crew.photo ? <AvatarImage src={crew.photo} alt={crew.name} /> : null}
                         <AvatarFallback className="bg-red-600 text-white font-bold text-sm">
                           {initials}
                         </AvatarFallback>

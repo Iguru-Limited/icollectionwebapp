@@ -1,7 +1,7 @@
 "use client";
 import { PageContainer, PageHeader } from '@/components/layout';
 import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useVehicles } from '@/hooks/vehicle/useVehicles';
@@ -212,6 +212,12 @@ export default function AssignedVehiclesPage() {
                       <div className="mb-3">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-10 w-10 bg-red-100">
+                            {crews.find(c => c.crew_id === conductor.crew_id)?.photo ? (
+                              <AvatarImage 
+                                src={crews.find(c => c.crew_id === conductor.crew_id)?.photo!} 
+                                alt={conductor.name || 'Conductor'} 
+                              />
+                            ) : null}
                             <AvatarFallback className="bg-red-100 text-red-700 text-sm">
                               {conductor.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'C'}
                             </AvatarFallback>
@@ -236,6 +242,12 @@ export default function AssignedVehiclesPage() {
                       <div className="mb-4">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-10 w-10">
+                            {crews.find(c => c.crew_id === driver.crew_id)?.photo ? (
+                              <AvatarImage 
+                                src={crews.find(c => c.crew_id === driver.crew_id)?.photo!} 
+                                alt={driver.name || 'Driver'} 
+                              />
+                            ) : null}
                             <AvatarFallback className="bg-gray-100 text-gray-700 text-sm">
                               {driver.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'D'}
                             </AvatarFallback>

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PencilSquareIcon, PhoneIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { useAssignVehicle } from '@/hooks/crew/useAssignVehicle';
@@ -201,6 +201,9 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
                 <TableCell>
                   <div className="relative">
                     <Avatar className="h-10 w-10">
+                      {crew.photo ? (
+                        <AvatarImage src={crew.photo} alt={crew.name || 'Crew'} />
+                      ) : null}
                       <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
                         {getInitials(crew.name)}
                       </AvatarFallback>
@@ -276,6 +279,7 @@ export function CrewList({ crews, isLoading }: CrewListProps) {
                 {/* Avatar */}
                 <div className="relative flex-shrink-0">
                   <Avatar className="h-12 w-12 bg-red-600 text-white">
+                    {crew.photo && <AvatarImage src={crew.photo} alt={crew.name || 'Crew'} />}
                     <AvatarFallback className="bg-red-600 text-white font-bold">
                       {getInitials(crew.name)}
                     </AvatarFallback>
