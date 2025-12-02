@@ -15,7 +15,7 @@ import { XMarkIcon, PencilSquareIcon, MagnifyingGlassIcon } from '@heroicons/rea
 import type { Crew } from '@/types/crew';
 import { toast } from 'sonner';
 
-interface SimpleVehicle { vehicle_id: number | string; number_plate: string; crew?: { crew_id: string; crew_role_id: string; name: string }[] }
+interface SimpleVehicle { vehicle_id: number | string; number_plate: string; fleet_number?: string | null; crew?: { crew_id: string; crew_role_id: string; name: string }[] }
 
 export default function AssignPage() {
   const template = useCompanyTemplateStore((s) => s.template);
@@ -137,7 +137,7 @@ export default function AssignPage() {
     if (!q) {
       return showAllVehicles ? vehicles.slice(0, 8) : [];
     }
-    return vehicles.filter(v => v.number_plate.toLowerCase().includes(q)).slice(0, 8);
+    return vehicles.filter(v => v.number_plate.toLowerCase().includes(q) || (v.fleet_number || '').toLowerCase().includes(q)).slice(0, 8);
   }, [vehicleQuery, vehicles, showAllVehicles]);
 
   const filteredDrivers = useMemo(() => {
@@ -197,7 +197,7 @@ export default function AssignPage() {
                 }}
                 onFocus={() => { setVehicleMenuOpen(true); }}
                 onBlur={() => setTimeout(() => setVehicleMenuOpen(false), 120)}
-                placeholder="search by plate"
+                placeholder="search by plate or fleet number"
                 className="h-12 rounded-md border-gray-300 pr-12"
               />
               <button
