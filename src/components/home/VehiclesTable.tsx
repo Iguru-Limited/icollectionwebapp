@@ -61,7 +61,7 @@ export default function VehiclesTable() {
         >
           <div className="relative">
             <Input
-              placeholder="Quickly search vehicle...."
+              placeholder="Search by plate, fleet number, or crew..."
               value={tableSearch}
               onChange={(e) => setViewPreferences({ tableSearch: e.target.value })}
               className="md:w-80 bg-gray-50 border-gray-200 rounded-none"
@@ -89,6 +89,7 @@ export default function VehiclesTable() {
             <TableHeader>
               <TableRow className="">
                 <TableHead className="text-grey-400 font-medium">#</TableHead>
+                <TableHead className="text-grey-400 font-medium">Fleet Number</TableHead>
                 <TableHead className="text-grey-400 font-medium">Vehicle</TableHead>
                 <TableHead className="text-grey-400 font-medium">Driver</TableHead>
                 <TableHead className="text-grey-400 font-medium">Conductor</TableHead>
@@ -110,15 +111,16 @@ export default function VehiclesTable() {
                 const filtered = source.filter(v => {
                   if (!deferredSearch) return true;
                   const plate = v.number_plate.toLowerCase();
+                  const fleetNumber = (('fleet_number' in v ? v.fleet_number : null) || '') as string;
                   const driverName = v.crew?.find(c => c.crew_role_id === '3')?.name?.toLowerCase() || '';
                   const conductorName = v.crew?.find(c => c.crew_role_id === '12')?.name?.toLowerCase() || '';
-                  return plate.includes(deferredSearch) || driverName.includes(deferredSearch) || conductorName.includes(deferredSearch);
+                  return plate.includes(deferredSearch) || fleetNumber.toLowerCase().includes(deferredSearch) || driverName.includes(deferredSearch) || conductorName.includes(deferredSearch);
                 });
                 if (filtered.length === 0 && deferredSearch) {
                   return (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-sm text-gray-500">
-                        No vehicles match “{tableSearch}” (searched plate, driver, conductor)
+                      <TableCell colSpan={6} className="text-center text-sm text-gray-500">
+                        No vehicles match &ldquo;{tableSearch}&rdquo; (searched fleet number, plate, driver, conductor)
                       </TableCell>
                     </TableRow>
                   );
@@ -126,9 +128,11 @@ export default function VehiclesTable() {
                 return filtered.map((vehicle, index) => {
                     const driver = vehicle.crew?.find(c => c.crew_role_id === '3')?.name || '-';
                     const conductor = vehicle.crew?.find(c => c.crew_role_id === '12')?.name || '-';
+                    const fleetNum = (('fleet_number' in vehicle ? vehicle.fleet_number : null) || '-') as string;
                     return (
                       <TableRow key={`${vehicle.vehicle_id}-${index}`} className="hover:bg-gray-50">
                         <TableCell className="font-mono">{vehicle.vehicle_id}</TableCell>
+                        <TableCell className="font-mono">{fleetNum}</TableCell>
                         <TableCell className="font-mono">{vehicle.number_plate}</TableCell>
                         <TableCell className="font-mono">{driver}</TableCell>
                         <TableCell className="font-mono">{conductor}</TableCell>

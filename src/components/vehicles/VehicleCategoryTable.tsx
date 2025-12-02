@@ -193,11 +193,18 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
                   {/* Vehicle Details */}
                   <div>
                     <h3 className="text-lg font-bold uppercase">{v.number_plate}</h3>
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      <span>{v.type_name}</span>
+                    <div className="flex items-center gap-2">
+                      {v.fleet_number && (
+                        <div className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-medium">
+                          Fleet: {v.fleet_number}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span>{v.type_name}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -304,6 +311,7 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
           <TableHeader>
             <TableRow>
               <TableHead className="w-[60px]">#</TableHead>
+              <TableHead>Fleet Number</TableHead>
               <TableHead>Vehicle</TableHead>
               <TableHead>Driver</TableHead>
               <TableHead>Conductor</TableHead>
@@ -313,9 +321,10 @@ export function VehicleCategoryTable({ vehicles, isLoading }: VehicleCategoryTab
             {vehicles.map((v, idx) => {
               const driver = getDriverName(v.crew) || '-';
               const conductor = getConductorName(v.crew) || '-';
-              return (
+                return (
                 <TableRow key={v.vehicle_id} className="hover:bg-gray-50">
                   <TableCell>{idx + 1}</TableCell>
+                  <TableCell className="font-medium">{v.fleet_number || '-'}</TableCell>
                   <TableCell className="font-medium uppercase">{v.number_plate}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">

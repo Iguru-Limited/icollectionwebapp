@@ -53,10 +53,11 @@ export default function VehicleSearchPage() {
     const query = raw.toLowerCase();
     return vehicles.filter(v => {
       const plate = (v.number_plate || '').toLowerCase();
+      const fleetNumber = (v.fleet_number || '').toLowerCase();
       const type = (v.type_name || '').toLowerCase();
       const driver = v.crew?.find(c => c.crew_role_id === '3')?.name?.toLowerCase() || '';
       const conductor = v.crew?.find(c => c.crew_role_id === '12')?.name?.toLowerCase() || '';
-      return plate.includes(query) || type.includes(query) || driver.includes(query) || conductor.includes(query);
+      return plate.includes(query) || fleetNumber.includes(query) || type.includes(query) || driver.includes(query) || conductor.includes(query);
     });
   }, [q, vehicles]);
 
@@ -137,7 +138,7 @@ export default function VehicleSearchPage() {
         <SearchBar
           value={q}
           onChange={setQ}
-          placeholder="Search by plate or type..."
+          placeholder="Search by plate, fleet number, or type..."
         />
         
         {vehiclesLoading && (

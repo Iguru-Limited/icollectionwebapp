@@ -23,7 +23,7 @@ export default function VehicleTypePage() {
       const uncategorized = items.filter(v => !v.type_name);
       const baseSet = uncategorized.length > 0 ? uncategorized : items; // fallback if none explicitly null
       if (!deferredQ) return baseSet;
-      return baseSet.filter(v => (v.number_plate || '').toLowerCase().includes(deferredQ));
+      return baseSet.filter(v => (v.number_plate || '').toLowerCase().includes(deferredQ) || (v.fleet_number || '').toLowerCase().includes(deferredQ));
     }
 
     let base: typeof items;
@@ -36,12 +36,13 @@ export default function VehicleTypePage() {
     }
 
     if (!deferredQ) return base;
-    // Extended search: plate OR crew names
+    // Extended search: plate OR fleet number OR crew names
     return base.filter(v => {
       const plate = (v.number_plate || '').toLowerCase();
+      const fleetNumber = (v.fleet_number || '').toLowerCase();
       const driver = v.crew?.find(c => c.crew_role_id === '3')?.name?.toLowerCase() || '';
       const conductor = v.crew?.find(c => c.crew_role_id === '12')?.name?.toLowerCase() || '';
-      return plate.includes(deferredQ) || driver.includes(deferredQ) || conductor.includes(deferredQ);
+      return plate.includes(deferredQ) || fleetNumber.includes(deferredQ) || driver.includes(deferredQ) || conductor.includes(deferredQ);
     });
   }, [vehiclesData?.data, typeParam, deferredQ]);
 

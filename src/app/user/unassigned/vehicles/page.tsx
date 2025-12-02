@@ -41,6 +41,7 @@ export default function PendingVehiclesPage() {
     const query = searchQuery.toLowerCase();
     return unassignedVehicles.filter(v => 
       v.number_plate?.toLowerCase().includes(query) ||
+      (v.fleet_number || '')?.toLowerCase().includes(query) ||
       v.type_name?.toLowerCase().includes(query)
     );
   }, [unassignedVehicles, searchQuery]);
@@ -138,7 +139,7 @@ export default function PendingVehiclesPage() {
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Search by plate number, fleet, or investor."
+                placeholder="Search by plate, fleet number, type, or investor."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-12 rounded-xl border-gray-200"

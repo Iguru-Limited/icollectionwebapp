@@ -8,6 +8,7 @@ import type { Crew } from "@/types/crew";
 interface Vehicle {
   vehicle_id: number | string;
   number_plate: string;
+  fleet_number?: string | null;
   type_name?: string;
   crew?: { crew_id: string; crew_role_id: string; name?: string }[];
 }
@@ -42,7 +43,7 @@ export function AssignVehicleSheet({
     if (!search.trim()) return vehicles;
     const s = search.toLowerCase();
     return vehicles.filter(v =>
-      v.number_plate.toLowerCase().includes(s) || (v.type_name || "").toLowerCase().includes(s)
+      v.number_plate.toLowerCase().includes(s) || (v.fleet_number || '').toLowerCase().includes(s) || (v.type_name || "").toLowerCase().includes(s)
     );
   }, [vehicles, search]);
   
@@ -86,7 +87,7 @@ export function AssignVehicleSheet({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search vehicle by plate or type"
+                placeholder="Search vehicle by plate, fleet number, or type"
                 className="w-full pl-10 pr-4 py-3 border-2 border-dashed border-gray-300 rounded-lg focus:border-purple-400 focus:outline-none text-gray-900 placeholder:text-purple-500"
               />
             </div>
