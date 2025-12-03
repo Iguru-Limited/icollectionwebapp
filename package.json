@@ -38,6 +38,7 @@
     "date-fns": "^4.1.0",
     "electron-store": "^11.0.2",
     "electron-updater": "^6.6.2",
+    "firebase": "^12.6.0",
     "framer-motion": "^12.23.22",
     "input-otp": "^1.4.2",
     "jspdf": "^3.0.3",
