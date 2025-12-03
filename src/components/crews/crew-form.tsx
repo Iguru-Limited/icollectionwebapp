@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,10 @@ import { useCrewRoles, useEditCrew, useCreateCrew } from '@/hooks/crew';
 import { toast } from 'sonner';
 import type { Crew } from '@/types/crew';
 import { Spinner } from '@/components/ui/spinner';
+import imageCompression from 'browser-image-compression';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 interface CrewFormProps {
   crew?: Crew;
@@ -19,6 +23,7 @@ interface CrewFormProps {
 
 export function CrewForm({ crew, mode }: CrewFormProps) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [name, setName] = useState(crew?.name ?? '');
   const [phone, setPhone] = useState(crew?.phone ?? '');
   const [badgeNumber, setBadgeNumber] = useState(crew?.badge_number ?? '');
@@ -29,6 +34,8 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
   const [email, setEmail] = useState(crew?.email ?? '');
   const [employeeNo, setEmployeeNo] = useState(crew?.employee_no ?? '');
   const [idNumber, setIdNumber] = useState(crew?.id_number ?? '');
+  const [photoUrl, setPhotoUrl] = useState<string | null>(crew?.photo ?? null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const { data: rolesResponse, isLoading: rolesLoading } = useCrewRoles();
 
@@ -94,9 +101,10 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
         email: email || null,
         employee_no: employeeNo || null,
         id_number: idNumber || null,
+        photo: photoUrl || null,
       });
     } else {
-      // Create new crew member
+      // Create new crew member (photo upload stored but not part of create payload)
       createCrewMutation.mutate({
         name,
         crew_role_id: Number(crewRoleId),
@@ -110,6 +118,34 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
     }
   }
 
+  async function handleImageSelected(file: File) {
+    try {
+      setUploadingPhoto(true);
+      const compressed = await imageCompression(file, {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+      });
+      const fileNameBase = crew?.crew_id || name.replace(/\s+/g, '_') || 'crew';
+      const path = `icollection_images/${fileNameBase}-${Date.now()}.jpg`;
+      const storageRef = ref(storage, path);
+      const blob = compressed instanceof Blob ? compressed : new Blob([compressed]);
+      await uploadBytes(storageRef, blob, { contentType: 'image/jpeg' });
+      const url = await getDownloadURL(storageRef);
+      setPhotoUrl(url);
+      toast.success('Photo uploaded successfully');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to upload photo';
+      toast.error(message);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  }
+
+  function triggerFilePick() {
+    fileInputRef.current?.click();
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <Card>
@@ -117,6 +153,37 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
           <CardTitle>{mode === 'create' ? 'Add New Crew' : 'Edit Crew Details'}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Avatar edit */}
+          <div className="space-y-2">
+            <Label>Avatar</Label>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16">
+                {photoUrl ? (
+                  <AvatarImage src={photoUrl} alt={name || 'Crew'} />
+                ) : (
+                  <AvatarFallback>{(name || 'C').slice(0,2).toUpperCase()}</AvatarFallback>
+                )}
+              </Avatar>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={triggerFilePick} disabled={uploadingPhoto}>
+                  {uploadingPhoto ? 'Uploading…' : 'Upload/Change'}
+                </Button>
+                <label className="sr-only" htmlFor="camera-input">Camera</label>
+                <input
+                  id="camera-input"
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleImageSelected(f);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input 

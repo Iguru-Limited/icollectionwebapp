@@ -13,7 +13,7 @@ interface UseEditCrewOptions {
 function buildDiffPayload(original: Crew, updated: Partial<Crew>): EditCrewPayload {
   const payload: EditCrewPayload = { crew_id: original.crew_id };
   const keys: (keyof Crew)[] = [
-    'name','phone','badge_number','crew_role_id','role_name','badge_expiry','email','employee_no','id_number','type'
+    'name','phone','badge_number','crew_role_id','role_name','badge_expiry','email','employee_no','id_number','type','photo'
   ];
   keys.forEach((k) => {
     if (k === 'type') return; // not editable
