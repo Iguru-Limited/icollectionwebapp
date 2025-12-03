@@ -1,5 +1,6 @@
 // /src/lib/firebase.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
+import { getStorage } from "firebase/storage";
 
 // Use public env vars for client-side Firebase config
 // These are expected to be exposed in the browser for Firebase Web SDK
@@ -15,5 +16,7 @@ const firebaseConfig = {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-export { app };
+const storage = getStorage(app);
+
+export { app, storage };
 
