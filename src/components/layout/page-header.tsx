@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 
 interface PageHeaderProps {
   title: string;

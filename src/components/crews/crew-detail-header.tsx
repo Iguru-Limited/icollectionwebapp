@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
 import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,6 +19,7 @@ export function CrewDetailHeader({ crew, active, onSelect }: CrewDetailHeaderPro
   const isActive = crew.active === '1';
   const [imageOpen, setImageOpen] = useState(false);
   const hasPhoto = Boolean(crew.photo);
+  const photoSrc = crew.photo ?? '';
 
   return (
     <div className="bg-white pb-4">
@@ -48,7 +50,7 @@ export function CrewDetailHeader({ crew, active, onSelect }: CrewDetailHeaderPro
               <DialogContent className="max-w-4xl border-none bg-transparent shadow-none">
                 <div className="overflow-hidden rounded-xl bg-black/90 p-2">
                   <img
-                    src={crew.photo}
+                    src={photoSrc}
                     alt={crew.name || 'Crew'}
                     className="max-h-[80vh] w-full object-contain"
                   />
