@@ -26,7 +26,7 @@ export default function CrewRolePage() {
   return (
     <PageContainer>
       <PageHeader title={pluralLabel} backHref = '/user/crews' />
-      <main className="px-4 pb-24 max-w-3xl mx-auto space-y-4">
+      <main className="px-4 pb-24 max-w-screen-xl mx-auto space-y-4">
         {/* <button
           onClick={() => router.push('/user/crews')}
           className="flex items-center gap-2 text-sm text-purple-700 hover:text-purple-900 font-medium"

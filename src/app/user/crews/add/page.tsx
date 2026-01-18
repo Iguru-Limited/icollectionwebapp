@@ -6,7 +6,7 @@ export default function AddCrewPage() {
   return (
     <PageContainer>
       <PageHeader title="Add New Crew Member" backHref="/user/crews" />
-      <main className="px-4 pb-24 max-w-sm mx-auto">
+      <main className="px-4 pb-24 max-w-screen-xl mx-auto">
         <CrewForm mode="create" />
       </main>
     </PageContainer>

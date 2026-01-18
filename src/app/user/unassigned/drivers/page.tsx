@@ -134,7 +134,7 @@ export default function PendingDriversPage() {
   return (
     <PageContainer>
       <PageHeader title="Pending Drivers" backHref="/user/unassigned" />
-      <main className="px-4 pb-24 max-w-4xl mx-auto">
+      <main className="px-4 pb-24 max-w-screen-xl mx-auto">
         {isLoading && (
           <div className="flex justify-center py-12">
             <Spinner className="w-6 h-6" />

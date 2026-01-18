@@ -60,7 +60,7 @@ export default function VehicleTypePage() {
   return (
     <PageContainer>
       <PageHeader backHref="/user/vehicles" title={properLabel} />
-      <main className="px-4 pb-24 max-w-3xl mx-auto space-y-4">
+      <main className="px-4 pb-24 max-w-screen-xl mx-auto space-y-4">
         {/* Stats Section - Mobile Only */}
         <div className="md:hidden space-y-3">
           <div className="flex items-center gap-2">

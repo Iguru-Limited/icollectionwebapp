@@ -53,7 +53,7 @@ export default function CrewAssignedListPage() {
   return (
     <PageContainer>
       <PageHeader title="" backHref="/user/crews" />
-      <main className="px-4 pb-24 max-w-md mx-auto">
+      <main className="px-4 pb-24 max-w-screen-xl mx-auto">
         {/* Header */}
         <div className="bg-purple-50 rounded-2xl p-4 mb-4 flex items-start gap-3">
           <div className="bg-purple-600 rounded-full p-2.5 mt-1">

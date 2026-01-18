@@ -25,7 +25,7 @@ export default function VehiclesCategoriesPage() {
       <PageHeader title="Vehicles" backHref="/user"/>
       <main className="px-4 pb-24">
         {/* Header with total */}
-        <div className="bg-purple-100 rounded-2xl p-4 mb-6 flex items-center gap-3">
+        <div className="bg-purple-100 rounded-2xl p-4 mb-6 flex items-center gap-3 max-w-screen-xl mx-auto">
           <div className="bg-purple-700 rounded-full p-3">
             <UsersIcon className="w-6 h-6 text-white" />
           </div>
@@ -36,7 +36,7 @@ export default function VehiclesCategoriesPage() {
         </div>
 
         {/* Category Cards Grid */}
-        <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+        <div className="grid grid-cols-2 gap-4 max-w-screen-xl mx-auto">
           {isLoading && (
             [...Array(2)].map((_, i) => (
               <Card key={i} className="rounded-2xl">
@@ -85,7 +85,7 @@ export default function VehiclesCategoriesPage() {
         </div>
 
         {/* Assignment Status */}
-        <div className="mt-8 max-w-md mx-auto">
+        <div className="mt-8 max-w-screen-xl mx-auto">
           <h3 className="text-sm font-semibold text-gray-800 mb-3">Assignment Status</h3>
           <div className="grid grid-cols-2 gap-4">
             <Card

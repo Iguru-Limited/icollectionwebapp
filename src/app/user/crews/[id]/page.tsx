@@ -134,7 +134,7 @@ export default function CrewProfilePage({ params }: CrewProfilePageProps) {
           }}
         />
 
-        <div className="mt-6 px-4 max-w-2xl mx-auto">
+        <div className="mt-6 px-4 max-w-screen-xl mx-auto">
           {activeSection === 'bio' && <CrewBioData crew={crew} />}
           {activeSection === 'actions' && (
             <div className="space-y-3">
