@@ -14,6 +14,7 @@ import Link from 'next/link';
 export default function CrewPendingListPage() {
   const { data: crewsData, isLoading, error } = useCrews();
   const [searchQuery, setSearchQuery] = useState('');
+  const [visibleCount, setVisibleCount] = useState(20); // Lazy load: show 20 items at a time
   const crews = useMemo(() => crewsData?.data || [], [crewsData?.data]);
   const unassignedCrews = useMemo(() => crews.filter(c => !c.vehicle_id), [crews]);
 
@@ -27,6 +28,17 @@ export default function CrewPendingListPage() {
       c.employee_no?.toLowerCase().includes(q)
     );
   }, [unassignedCrews, searchQuery]);
+
+  // Lazy load: only display first visibleCount items
+  const displayedCrews = useMemo(() => {
+    return filteredCrews.slice(0, visibleCount);
+  }, [filteredCrews, visibleCount]);
+
+  const hasMore = filteredCrews.length > visibleCount;
+
+  const handleLoadMore = () => {
+    setVisibleCount(prev => prev + 20);
+  };
 
   // Stats
   const totalCount = unassignedCrews.length;
@@ -115,14 +127,22 @@ export default function CrewPendingListPage() {
         </div>
 
         {isLoading && (
-          <div className="flex justify-center py-12"><Spinner className="w-6 h-6" /></div>
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="space-y-2 p-4 rounded-2xl bg-gray-50">
+                <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse" />
+                <div className="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse" />
+                <div className="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded animate-pulse w-2/3" />
+              </div>
+            ))}
+          </div>
         )}
         {error && (
           <div className="text-center text-red-600 py-6">Failed to load crews</div>
         )}
         {!isLoading && !error && (
           <div className="space-y-3">
-            {filteredCrews.map(crew => {
+            {displayedCrews.map(crew => {
               const initials = crew.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'C';
               const badgeStatus = getBadgeExpiryStatus(crew.badge_expiry);
               const isActive = crew.active === '1';
@@ -221,6 +241,14 @@ export default function CrewPendingListPage() {
                 </Card>
               );
             })}
+            {hasMore && (
+              <button
+                onClick={handleLoadMore}
+                className="w-full py-3 mt-4 text-center font-semibold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              >
+                Load More ({visibleCount} of {filteredCrews.length})
+              </button>
+            )}
             {filteredCrews.length === 0 && (
               <div className="text-center text-gray-500 py-12">No pending crew found</div>
             )}
