@@ -47,7 +47,7 @@ export default function EditCrewPage({ params }: EditCrewPageProps) {
   return (
     <PageContainer>
       <PageHeader title="Edit Crew Member" backHref={`/user/crews/${id}`} />
-      <main className="px-4 pb-24 max-w-2xl mx-auto">
+      <main className="px-4 pb-24 max-w-screen-xl mx-auto">
         <CrewForm mode="edit" crew={crew} />
       </main>
     </PageContainer>

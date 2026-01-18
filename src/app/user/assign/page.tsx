@@ -181,7 +181,7 @@ export default function AssignPage() {
   return (
     <PageContainer>
       <PageHeader title="Assign vehicle" />
-      <main className="px-4 pb-24 max-w-md mx-auto">
+      <main className="px-4 pb-24 max-w-screen-xl mx-auto">
         <Card className="p-6 rounded-2xl space-y-6 border-2 border-white-500">
           {/* Vehicle Selection */}
           <div className="space-y-2">

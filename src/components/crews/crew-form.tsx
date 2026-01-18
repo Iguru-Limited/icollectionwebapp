@@ -23,7 +23,8 @@ interface CrewFormProps {
 
 export function CrewForm({ crew, mode }: CrewFormProps) {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const [name, setName] = useState(crew?.name ?? '');
   const [phone, setPhone] = useState(crew?.phone ?? '');
   const [badgeNumber, setBadgeNumber] = useState(crew?.badge_number ?? '');
@@ -142,8 +143,17 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
     }
   }
 
-  function triggerFilePick() {
-    fileInputRef.current?.click();
+  function triggerGalleryPick() {
+    galleryInputRef.current?.click();
+  }
+
+  function triggerCameraCapture() {
+    cameraInputRef.current?.click();
+  }
+
+  function onFileSelected(target: EventTarget & { files: FileList | null }) {
+    const f = target.files?.[0];
+    if (f) handleImageSelected(f);
   }
 
   return (
@@ -164,22 +174,29 @@ export function CrewForm({ crew, mode }: CrewFormProps) {
                   <AvatarFallback>{(name || 'C').slice(0,2).toUpperCase()}</AvatarFallback>
                 )}
               </Avatar>
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={triggerFilePick} disabled={uploadingPhoto}>
-                  {uploadingPhoto ? 'Uploading…' : 'Upload/Change'}
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="outline" onClick={triggerGalleryPick} disabled={uploadingPhoto}>
+                  {uploadingPhoto ? 'Uploading…' : 'Upload from device'}
                 </Button>
-                <label className="sr-only" htmlFor="camera-input">Camera</label>
+                <Button type="button" variant="outline" onClick={triggerCameraCapture} disabled={uploadingPhoto}>
+                  {uploadingPhoto ? 'Uploading…' : 'Use camera'}
+                </Button>
+
                 <input
-                  id="camera-input"
-                  ref={fileInputRef}
+                  ref={galleryInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => onFileSelected(e.target)}
+                />
+
+                <input
+                  ref={cameraInputRef}
                   type="file"
                   accept="image/*"
                   capture="environment"
                   className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) handleImageSelected(f);
-                  }}
+                  onChange={(e) => onFileSelected(e.target)}
                 />
               </div>
             </div>

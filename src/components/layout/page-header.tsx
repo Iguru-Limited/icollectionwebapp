@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 
 interface PageHeaderProps {
   title: string;
@@ -10,16 +9,18 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, showBack = true, backHref = '/user', rightAction }: PageHeaderProps) {
   return (
-    <header className="px-4 pt-4 pb-3 flex items-center gap-3 bg-white">
-      {showBack && (
-        <Link href={backHref} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Back">
-          <ChevronLeftIcon className="w-5 h-5 text-gray-700" />
-        </Link>
-      )}
-      <h1 className="text-base font-semibold flex-1 text-gray-900">
-        {title}
-      </h1>
-      {rightAction}
+    <header className="bg-white">
+      <div className="mx-auto flex max-w-screen-xl items-center gap-3 px-4 pb-3 pt-4">
+        {showBack && (
+          <Link href={backHref} className="p-2 bg-amber-200 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Back">
+            Back
+          </Link>
+        )}
+        <h1 className="text-base font-semibold flex-1 text-gray-900">
+          {title}
+        </h1>
+        {rightAction}
+      </div>
     </header>
   );
 }

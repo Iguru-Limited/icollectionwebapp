@@ -111,7 +111,7 @@ export default function CrewSearchPage() {
   return (
     <PageContainer>
       <PageHeader title="Search crew" />
-      <main className="px-4 pb-24 max-w-md mx-auto space-y-6">
+      <main className="px-4 pb-24 max-w-screen-xl mx-auto space-y-6">
         <SearchBar
           value={q}
           onChange={setQ}

@@ -47,7 +47,7 @@ export default function CrewBioPage({ params }: CrewBioPageProps) {
   return (
     <PageContainer>
       <PageHeader title="Bio data" backHref={`/user/crews/${id}`} />
-      <main className="px-4 pb-24 max-w-2xl mx-auto">
+      <main className="px-4 pb-24 max-w-screen-xl mx-auto">
         <CrewBioData crew={crew} />
       </main>
     </PageContainer>

@@ -103,7 +103,7 @@ export default function AssignedDriversPage() {
   return (
     <PageContainer>
       <PageHeader title="Assigned Drivers" backHref="/user/assigned" />
-      <main className="px-4 pb-24 max-w-4xl mx-auto">
+      <main className="px-4 pb-24 max-w-screen-xl mx-auto">
         {crewsLoading && (<div className="flex justify-center py-12"><Spinner className="w-6 h-6" /></div>)}
         {!crewsLoading && (
           <>

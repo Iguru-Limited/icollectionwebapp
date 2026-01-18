@@ -40,7 +40,7 @@ export default function AssignedCategoriesPage() {
   return (
     <PageContainer>
       <PageHeader title="Assigned" backHref="/user" />
-      <main className="px-4 pb-24 max-w-4xl mx-auto">
+      <main className="px-4 pb-24 max-w-screen-xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {categories.map(category => (
             <Card

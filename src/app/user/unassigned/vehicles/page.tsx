@@ -115,7 +115,7 @@ export default function PendingVehiclesPage() {
   return (
     <PageContainer>
       <PageHeader title="Pending Vehicles" backHref="/user" />
-      <main className="px-4 pb-24 max-w-4xl mx-auto space-y-4">
+      <main className="px-4 pb-24 max-w-screen-xl mx-auto space-y-4">
         {isLoading && (
           <div className="flex justify-center py-12">
             <Spinner className="w-6 h-6" />

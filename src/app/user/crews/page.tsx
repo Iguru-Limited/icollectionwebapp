@@ -29,7 +29,7 @@ export default function CrewCategoriesPage() {
       <PageHeader title="Crew" backHref="/user" />
       <main className="px-4 pb-24">
         {/* Header with total */}
-        <div className="bg-purple-100 rounded-2xl p-4 mb-6 flex items-center gap-3">
+        <div className="bg-purple-100 rounded-2xl p-4 mb-6 flex items-center gap-3 max-w-screen-xl mx-auto">
           <div className="bg-purple-700 rounded-full p-3">
             <UsersIcon className="w-6 h-6 text-white" />
           </div>
@@ -40,7 +40,7 @@ export default function CrewCategoriesPage() {
         </div>
 
         {/* Category Cards Grid */}
-        <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+        <div className="grid grid-cols-2 gap-4 max-w-screen-xl mx-auto">
           {roleStats.map((r) => {
             const count = parseInt(String(r.count), 10) || 0;
             const slug = r.role_name.toLowerCase();
@@ -79,7 +79,7 @@ export default function CrewCategoriesPage() {
         </div>
 
         {/* Assignment Status */}
-        <div className="mt-8 max-w-md mx-auto">
+        <div className="mt-8 max-w-screen-xl mx-auto">
           <h3 className="text-sm font-semibold text-gray-800 mb-3">Assignment Status</h3>
           <div className="grid grid-cols-2 gap-4">
             <Card
