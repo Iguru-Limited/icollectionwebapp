@@ -8,7 +8,7 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "build:web": "next build --turbopack",
-    "build:electron": "cross-env ELECTRON=true next build --turbopack && node scripts/fix-electron-paths.js",
+    "build:electron": "cross-env ELECTRON=true next build --turbopack",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
