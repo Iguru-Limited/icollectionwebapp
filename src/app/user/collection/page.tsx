@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useAppStore } from '@/store/appStore';
 import { useCompanyTemplateStore } from '@/store/companyTemplateStore';
 import { useCompanyTemplate } from '@/hooks/useCompanyTemplate';
+import { useCollectionSchema } from '@/hooks/collection/useCollectionSchema';
 import { ArrowLeftIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { IoReceiptOutline } from 'react-icons/io5';
 import { Button } from '@/components/ui/button';
@@ -44,6 +45,7 @@ export default function CollectionPage() {
   const template = useCompanyTemplateStore((s) => s.template);
   const setTemplate = useCompanyTemplateStore((s) => s.setTemplate);
   const { data: tplData, isLoading: tplLoading, error: tplError } = useCompanyTemplate();
+  const { data: schemaData, isLoading: schemaLoading, error: schemaError } = useCollectionSchema();
 
   const [additionalCollections, setAdditionalCollections] = useState<AdditionalCollection[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -85,11 +87,18 @@ export default function CollectionPage() {
   // Get the selected vehicle
   const selectedVehicle = template?.vehicles.find((v) => v.vehicle_id === selectedVehicleId);
 
-  // Pre-compute collection defaults & types so hooks stay top-level
-  const collectionDefaults = template?.company_collection_defaults || [];
-  const collectionTypes = Array.from(
-    new Set(collectionDefaults.map((field) => field.collection.title)),
-  );
+  // Use dynamic collection schema from API instead of template
+  const collectionFields = schemaData?.data || [];
+  const collectionTypes = collectionFields.map((field) => field.title);
+
+  // Debug: Log schema data
+  useEffect(() => {
+    console.log('Collection Schema Data:', schemaData);
+    console.log('Collection Fields:', collectionFields);
+    console.log('Collection Types:', collectionTypes);
+    console.log('Schema Loading:', schemaLoading);
+    console.log('Schema Error:', schemaError);
+  }, [schemaData, collectionFields, collectionTypes, schemaLoading, schemaError]);
 
   // Fetch today's collections total for this vehicle ONCE per (vehicleId, companyId, date)
   const lastFetchKeyRef = useRef<string | null>(null);
@@ -144,6 +153,11 @@ export default function CollectionPage() {
               </div>
             </Card>
           )}
+          {schemaError && (
+            <Card className="p-4 mt-4 text-center text-amber-600">
+              <p className="text-sm">Warning: Failed to load collection schema. Using fallback.</p>
+            </Card>
+          )}
         </div>
       </div>
     );
@@ -157,6 +171,11 @@ export default function CollectionPage() {
       amount: '',
     };
     setAdditionalCollections([...additionalCollections, newCollection]);
+  };
+
+  // Get field details by title
+  const getFieldByTitle = (title: string) => {
+    return collectionFields.find((field) => field.title === title);
   };
 
   const removeCollection = (id: string) => {
@@ -217,12 +236,14 @@ export default function CollectionPage() {
       const day = String(now.getDate()).padStart(2, '0');
       const tripDate = `${year}-${month}-${day}`;
 
-      // Prepare slugs object from collections
+      // Prepare slugs object from collections using API slugs
       const slugs: { [key: string]: number } = {};
       additionalCollections.forEach((collection) => {
-        // Convert collection type to snake_case slug
-        const slug = collection.collectionType.toLowerCase().replace(/\s+/g, '_');
-        slugs[slug] = parseFloat(collection.amount);
+        // Get the actual slug from the schema
+        const field = getFieldByTitle(collection.collectionType);
+        if (field) {
+          slugs[field.slug] = parseFloat(collection.amount);
+        }
       });
 
       // Prepare payload for API
@@ -437,11 +458,17 @@ export default function CollectionPage() {
                             <SelectValue placeholder="Select Type" />
                           </SelectTrigger>
                           <SelectContent>
-                            {collectionTypes.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
+                            {schemaLoading ? (
+                              <div className="p-2 text-center text-gray-500">Loading...</div>
+                            ) : collectionTypes.length === 0 ? (
+                              <div className="p-2 text-center text-gray-500">No collection types available</div>
+                            ) : (
+                              collectionTypes.map((type) => (
+                                <SelectItem key={type} value={type}>
+                                  {type}
+                                </SelectItem>
+                              ))
+                            )}
                           </SelectContent>
                         </Select>
                       </div>
