@@ -28,9 +28,8 @@ import { useReportByVehicleDate } from '@/hooks/report/useReportByVehicleDate';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { VehicleTable } from '@/components/vehicles/VehicleTable';
 
-interface AdditionalCollection {
-  id: string;
-  collectionType: string;
+interface CollectionFieldValue {
+  slug: string;
   amount: string;
 }
 
@@ -47,7 +46,7 @@ export default function CollectionPage() {
   const { data: tplData, isLoading: tplLoading, error: tplError } = useCompanyTemplate();
   const { data: schemaData, isLoading: schemaLoading, error: schemaError } = useCollectionSchema();
 
-  const [additionalCollections, setAdditionalCollections] = useState<AdditionalCollection[]>([]);
+  const [collectionValues, setCollectionValues] = useState<Record<string, string>>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [mpesaDialogOpen, setMpesaDialogOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
@@ -164,34 +163,19 @@ export default function CollectionPage() {
   }
 
 
-  const addCollection = () => {
-    const newCollection: AdditionalCollection = {
-      id: Date.now().toString(),
-      collectionType: collectionTypes[0] || '',
-      amount: '',
-    };
-    setAdditionalCollections([...additionalCollections, newCollection]);
+  // Update collection value for a specific slug
+  const updateCollectionValue = (slug: string, value: string) => {
+    setCollectionValues(prev => ({ ...prev, [slug]: value }));
   };
 
-  // Get field details by title
-  const getFieldByTitle = (title: string) => {
-    return collectionFields.find((field) => field.title === title);
-  };
-
-  const removeCollection = (id: string) => {
-    setAdditionalCollections(additionalCollections.filter((c) => c.id !== id));
-  };
-
-  const updateCollection = (id: string, field: keyof AdditionalCollection, value: string) => {
-    setAdditionalCollections(
-      additionalCollections.map((c) => (c.id === id ? { ...c, [field]: value } : c)),
-    );
-  };
-
-  const totalAmount = additionalCollections.reduce(
-    (sum, c) => sum + (parseFloat(c.amount) || 0),
+  // Calculate total from all collection values
+  const totalAmount = Object.values(collectionValues).reduce(
+    (sum, amount) => sum + (parseFloat(amount) || 0),
     0,
   );
+
+  // Check if any collection has a value
+  const hasAnyCollection = Object.values(collectionValues).some(val => val && parseFloat(val) > 0);
 
 
   const handleProcessCollection = async (shouldPrint: boolean = true) => {
@@ -207,19 +191,19 @@ export default function CollectionPage() {
       return;
     }
 
-    // Validate that we have collections
-    if (additionalCollections.length === 0) {
-      toast.error('Please add at least one collection before printing receipt');
+    // Validate that we have at least one collection with value
+    if (!hasAnyCollection) {
+      toast.error('Please enter at least one collection amount');
       return;
     }
 
-    // Validate that all collections have a type and amount
-    const invalidCollections = additionalCollections.filter(
-      (c) => !c.collectionType || parseFloat(c.amount) <= 0,
+    // Validate required fields from schema
+    const missingRequired = collectionFields.filter(
+      field => field.required && (!collectionValues[field.slug] || parseFloat(collectionValues[field.slug]) <= 0)
     );
 
-    if (invalidCollections.length > 0) {
-      toast.error('Please fill in all collection types and amounts');
+    if (missingRequired.length > 0) {
+      toast.error(`Please fill in required fields: ${missingRequired.map(f => f.title).join(', ')}`);
       return;
     }
 
@@ -236,13 +220,12 @@ export default function CollectionPage() {
       const day = String(now.getDate()).padStart(2, '0');
       const tripDate = `${year}-${month}-${day}`;
 
-      // Prepare slugs object from collections using API slugs
+      // Prepare slugs object from collection values
       const slugs: { [key: string]: number } = {};
-      additionalCollections.forEach((collection) => {
-        // Get the actual slug from the schema
-        const field = getFieldByTitle(collection.collectionType);
-        if (field) {
-          slugs[field.slug] = parseFloat(collection.amount);
+      Object.entries(collectionValues).forEach(([slug, amount]) => {
+        const value = parseFloat(amount);
+        if (value > 0) {
+          slugs[slug] = value;
         }
       });
 
@@ -304,8 +287,8 @@ export default function CollectionPage() {
         if (printResult.success) {
           toast.success(`Receipt #${result.data.receipt_number} saved and printed successfully!`);
 
-          // Clear collections after successful print
-          setAdditionalCollections([]);
+          // Clear form after successful save
+          setCollectionValues({});
           setPaymentMethod('cash');
           setMpesaRef('');
           setMpesaPhone('');
@@ -321,7 +304,7 @@ export default function CollectionPage() {
           );
 
           // Still clear and navigate since receipt was saved
-          setAdditionalCollections([]);
+          setCollectionValues({});
           setTimeout(() => {
             router.push('/user');
           }, 2000);
@@ -331,7 +314,7 @@ export default function CollectionPage() {
         toast.success(`Receipt #${result.data.receipt_number} saved successfully!`);
 
         // Clear collections after save
-        setAdditionalCollections([]);
+        setCollectionValues({});
         setPaymentMethod('cash');
         setMpesaRef('');
         setMpesaPhone('');
@@ -387,128 +370,56 @@ export default function CollectionPage() {
             {/* Removed the info card beneath the total as requested */}
           </div>
 
-          {/* Additional Collections Section */}
+          {/* Collections Section */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-2">
-                <IoWalletOutline className="w-5 h-5 text-purple-600" />
-                <h2 className="text-2xl font-bold text-gray-800">Additional Collections</h2>
-              </div>
-              {additionalCollections.length > 0 && (
-                <Badge className="bg-purple-600 text-white rounded-full px-3">
-                  {additionalCollections.length}
-                </Badge>
-              )}
+            <div className="flex items-center space-x-2 mb-4">
+              <IoWalletOutline className="w-5 h-5 text-purple-600" />
+              <h2 className="text-2xl font-bold text-gray-800">Collections</h2>
             </div>
 
-            {/* Additional Collections List */}
-            {additionalCollections.length === 0 ? (
+            {/* Schema-based Collection Fields */}
+            {schemaLoading ? (
               <Card className="bg-white rounded-xl p-6 text-center">
-                <div className="flex justify-center my-4">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="rounded-full w-12 h-12 bg-purple-600 text-white hover:bg-purple-700"
-                    onClick={addCollection}
-                  >
-                    <PlusIcon className="w-6 h-6" />
-                  </Button>
-                </div>
-                <h3 className="text-md font-medium text-gray-700 mb-1">No collections added</h3>
-                <p className="text-xl text-gray-500">Tap the button above to add a collection.</p>
+                <div className="animate-pulse text-gray-500">Loading collection fields...</div>
+              </Card>
+            ) : collectionFields.length === 0 ? (
+              <Card className="bg-white rounded-xl p-6 text-center text-amber-600">
+                <p>No collection fields available</p>
               </Card>
             ) : (
-              <Card className="bg-white rounded-xl p-4 relative overflow-hidden">
-                 {/* Floating Add Button */}
-                <div className="mt-4 flex  justify-center">
-                  <Button
-                    type="button"
-                    size="icon"
-                    className="rounded-full w-12 h-12 bg-purple-700 text-white hover:bg-purple-800 shadow-md"
-                    onClick={addCollection}
-                    aria-label="Add collection"
-                  >
-                    <PlusIcon className="w-6 h-6" />
-                  </Button>
-                </div>
-                {/* Table-like header */}
-                <div className="grid grid-cols-12 text-[20px] font-semibold text-black-600 mb-2 px-2">
-                  <div className="col-span-2">&nbsp;</div>
-                  <div className="col-span-6">Collection Type</div>
-                  <div className="col-span-4">Amount (KES)</div>
-                </div>
+              <div className="space-y-3">
+                {collectionFields.map((field) => (
+                  <Card key={field.slug} className="bg-white rounded-xl p-4">
+                    <label className="block mb-2">
+                      <span className="text-base font-medium text-gray-700">
+                        {field.title}
+                        {field.required && <span className="text-red-500 ml-1">*</span>}
+                      </span>
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min={field.min ?? 0}
+                      max={field.max ?? undefined}
+                      value={collectionValues[field.slug] || ''}
+                      onChange={(e) => updateCollectionValue(field.slug, e.target.value)}
+                      placeholder={field.placeholder || '0.00'}
+                      className="w-full text-lg"
+                    />
+                  </Card>
+                ))}
 
-                <div className="space-y-3">
-                  {additionalCollections.map((collection, idx) => (
-                    <div
-                      key={collection.id}
-                      className="grid grid-cols-12 items-center gap-2 p-3 border rounded-lg text-2xl"
-                    >
-                      <div className="col-span-2 text-2xl text-gray-500 font-semibold">
-                        {idx + 1}
-                      </div>
-                      <div className="col-span-6">
-                        <Select
-                          value={collection.collectionType}
-                          onValueChange={(value) =>
-                            updateCollection(collection.id, 'collectionType', value)
-                          }
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select Type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {schemaLoading ? (
-                              <div className="p-2 text-center text-gray-500">Loading...</div>
-                            ) : collectionTypes.length === 0 ? (
-                              <div className="p-2 text-center text-gray-500">No collection types available</div>
-                            ) : (
-                              collectionTypes.map((type) => (
-                                <SelectItem key={type} value={type}>
-                                  {type}
-                                </SelectItem>
-                              ))
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="col-span-3">
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={collection.amount}
-                          onChange={(e) =>
-                            updateCollection(collection.id, 'amount', e.target.value)
-                          }
-                        />
-                      </div>
-                      <div className="col-span-1 flex justify-end">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeCollection(collection.id)}
-                          className="text-purple-700 hover:text-purple-800 hover:bg-purple-50"
-                          aria-label="Remove"
-                        >
-                          <XMarkIcon className="w-9 h-9" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-               
-
-                {/* Total pill */}
-                <div className="bg-purple-700 text-white rounded-xl px-4 py-3 mt-4 font-semibold flex items-center justify-between">
-                  <span>Additional Collections Total</span>
-                  <span>Ksh {totalAmount.toFixed(2)}</span>
-                </div>
-              </Card>
+                {/* Total Display */}
+                {hasAnyCollection && (
+                  <div className="bg-purple-700 text-white rounded-xl px-4 py-3 mt-4 font-semibold flex items-center justify-between">
+                    <span>Total</span>
+                    <span>Ksh {totalAmount.toFixed(2)}</span>
+                  </div>
+                )}
+              </div>
             )}
-            {/* Bottom primary action with confirmation dialog */}
-            {/* Payment Method Selection (appears only after adding at least one collection) */}
-            {additionalCollections.length > 0 && (
+            {/* Payment Method Selection (appears only after entering collection values) */}
+            {hasAnyCollection && (
               <div className="mt-6 space-y-3">
                 <h3 className="text-lg font-semibold text-gray-800">Payment Method</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -581,7 +492,7 @@ export default function CollectionPage() {
                             }
                             setMpesaDialogOpen(true);
                           }}
-                          disabled={additionalCollections.length === 0}
+                          disabled={!hasAnyCollection}
                         >
                           Process Receipt
                         </Button>
@@ -646,7 +557,7 @@ export default function CollectionPage() {
                             }
                             setMpesaDialogOpen(true);
                           }}
-                          disabled={additionalCollections.length === 0}
+                          disabled={!hasAnyCollection}
                         >
                           Process Receipt
                         </Button>
@@ -696,7 +607,7 @@ export default function CollectionPage() {
             )}
 
             {/* Bottom primary action with confirmation dialog (only for Cash) */}
-            {paymentMethod === 'cash' && additionalCollections.length > 0 && (
+            {paymentMethod === 'cash' && hasAnyCollection && (
               <div className="mt-4">
                 <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
                   <div>
@@ -721,16 +632,16 @@ export default function CollectionPage() {
                       </DialogDescription>
                     </DialogHeader>
                     {/* Optional quick summary */}
-                    {additionalCollections.length > 0 && (
+                    {hasAnyCollection && (
                       <div className="mt-2 max-h-48 overflow-auto rounded-md border p-2 text-xl">
-                        {additionalCollections.map((c, i) => (
-                          <div key={c.id} className="flex items-center justify-between py-1">
+                        {collectionFields
+                          .filter(field => collectionValues[field.slug] && parseFloat(collectionValues[field.slug]) > 0)
+                          .map((field, i) => (
+                          <div key={field.slug} className="flex items-center justify-between py-1">
                             <span className="text-gray-600">
-                              #{i + 1} {c.collectionType || 'Type'}
+                              {i + 1}. {field.title}
                             </span>
-                            <span className="font-medium">
-                              Ksh {Number(c.amount || 0).toLocaleString()}
-                            </span>
+                            <span className="font-semibold">Ksh {parseFloat(collectionValues[field.slug]).toFixed(2)}</span>
                           </div>
                         ))}
                       </div>
